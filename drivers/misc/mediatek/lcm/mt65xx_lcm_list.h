@@ -275,6 +275,12 @@ extern LCM_DRIVER ili9806e_dsi_vdo_tcl_blu5039_drv;
 extern LCM_DRIVER otm8019a_dsi_vdo_boyi_t50m_drv;
 extern LCM_DRIVER ili9881c_hd_dsi_vdo_ilitek_nt50358_lcm_drv;
 extern LCM_DRIVER ili9881c_hd_dsi_vdo_ilitek_nt50358_3lane_lcm_drv;
+extern LCM_DRIVER FL11281_lcm_drv;
+extern LCM_DRIVER NT35521_SHM047160B_lcm_drv;
+extern LCM_DRIVER SHM047160A_lcm_drv;
+extern LCM_DRIVER ILI988IC_S047HAB003_A00_lcm_drv;
+extern LCM_DRIVER ILI9881_HSD47_lcm_drv;
+extern LCM_DRIVER ILI988IC_J0CPB_AB30_BOE_lcm_drv;
 #ifdef BUILD_LK
 extern void mdelay(unsigned long msec);
 #endif

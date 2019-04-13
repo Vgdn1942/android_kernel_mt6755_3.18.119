@@ -33,6 +33,39 @@ LCM_DSI_MODE_CON lcm_dsi_mode;
 #define LCD_DEBUG(fmt, args...)  pr_debug("[KERNEL/LCM]"fmt, ##args)
 #endif
 
+/*************************/
+//static LCM_UTIL_FUNCS lcm_util;
+//#define set_gpio_lcd_enp(cmd) lcm_util.set_gpio_lcd_enp_bias(cmd)
+#define LCM_POWER_PIN 11
+#ifndef BUILD_LK
+#include <linux/gpio.h>
+#endif
+int lcm_power_on(void)
+{
+	#ifdef BUILD_LK
+	mt_set_gpio_mode(GPIO_LCD_BIAS_ENP_PIN, GPIO_MODE_00);
+	mt_set_gpio_dir(GPIO_LCD_BIAS_ENP_PIN, GPIO_DIR_OUT);
+	mt_set_gpio_out(GPIO_LCD_BIAS_ENP_PIN, GPIO_OUT_ONE);
+	#else
+	//set_gpio_lcd_enp(1);
+	gpio_set_value(LCM_POWER_PIN, 1);
+	#endif
+	return 0;
+}
+int lcm_power_down(void)
+{
+	#ifdef BUILD_LK
+	mt_set_gpio_mode(GPIO_LCD_BIAS_ENP_PIN, GPIO_MODE_00);
+	mt_set_gpio_dir(GPIO_LCD_BIAS_ENP_PIN, GPIO_DIR_OUT);
+	mt_set_gpio_out(GPIO_LCD_BIAS_ENP_PIN, GPIO_OUT_ZERO);
+	#else
+	//set_gpio_lcd_enp(0);
+	gpio_set_value(LCM_POWER_PIN, 0);
+	#endif
+	return 0;
+}
+/*************************/
+
 LCM_DRIVER *lcm_driver_list[] = {
 #if defined(ILI9881C_HD_DSI_VDO_ILITEK_NT50358_3LANE)
 	&ili9881c_hd_dsi_vdo_ilitek_nt50358_3lane_lcm_drv,
@@ -1059,6 +1092,25 @@ LCM_DRIVER *lcm_driver_list[] = {
 #if defined(AUO_WUXGA_DSI_VDO)
 	&auo_wuxga_dsi_vdo_lcm_drv,
 #endif
+
+#if defined(FL11281)
+	&FL11281_lcm_drv,
+#endif
+#if defined(NT35521_SHM047160B)
+	&NT35521_SHM047160B_lcm_drv,
+#endif
+#if defined(SHM047160A)
+	&SHM047160A_lcm_drv,
+#endif
+#if defined(ILI988IC_S047HAB003_A00)
+	&ILI988IC_S047HAB003_A00_lcm_drv,
+#endif
+#if defined(ILI9881_HSD47)
+	&ILI9881_HSD47_lcm_drv,
+#endif
+#if defined(ILI988IC_J0CPB_AB30_BOE)
+	&ILI988IC_J0CPB_AB30_BOE_lcm_drv,
+#endif
 };
 
 unsigned char lcm_name_list[][128] = {
@@ -1111,6 +1163,25 @@ unsigned char lcm_name_list[][128] = {
 
 #if defined(R63417_FHD_DSI_CMD_TRULY_NT50358_HD)
 	"r63417_fhd_dsi_cmd_truly_nt50358_hd_drv",
+#endif
+
+#if defined(FL11281)
+	"FL11281",
+#endif
+#if defined(NT35521_SHM047160B)
+	"NT35521_SHM047160B",
+#endif
+#if defined(SHM047160A)
+	"SHM047160A",
+#endif
+#if defined(ILI988IC_S047HAB003_A00)
+	"ILI988IC_S047HAB003_A00",
+#endif
+#if defined(ILI9881_HSD47)
+	"ILI9881_HSD47",
+#endif
+#if defined(ILI988IC_J0CPB_AB30_BOE)
+	"ILI988IC_J0CPB_AB30_BOE",
 #endif
 };
 
