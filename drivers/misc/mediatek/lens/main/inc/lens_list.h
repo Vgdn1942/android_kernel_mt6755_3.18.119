@@ -61,6 +61,27 @@ extern int DW9714AF_SetI2Cclient(struct i2c_client *pstAF_I2Cclient, spinlock_t 
 extern long DW9714AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command, unsigned long a_u4Param);
 extern int DW9714AF_Release(struct inode *a_pstInode, struct file *a_pstFile);
 
+#define DW9763AF_SetI2Cclient DW9763AF_SetI2Cclient_Main
+#define DW9763AF_Ioctl DW9763AF_Ioctl_Main
+#define DW9763AF_Release DW9763AF_Release_Main
+extern int DW9763AF_SetI2Cclient(struct i2c_client *pstAF_I2Cclient, spinlock_t *pAF_SpinLock, int *pAF_Opened);
+extern long DW9763AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command, unsigned long a_u4Param);
+extern int DW9763AF_Release(struct inode *a_pstInode, struct file *a_pstFile);
+
+#define DW9763XAF_SetI2Cclient DW9763XAF_SetI2Cclient_Main
+#define DW9763XAF_Ioctl DW9763XAF_Ioctl_Main
+#define DW9763XAF_Release DW9763XAF_Release_Main
+extern int DW9763XAF_SetI2Cclient(struct i2c_client *pstAF_I2Cclient, spinlock_t *pAF_SpinLock, int *pAF_Opened);
+extern long DW9763XAF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command, unsigned long a_u4Param);
+extern int DW9763XAF_Release(struct inode *a_pstInode, struct file *a_pstFile);
+
+#define DW9800AF_SetI2Cclient DW9800AF_SetI2Cclient_Main
+#define DW9800AF_Ioctl DW9800AF_Ioctl_Main
+#define DW9800AF_Release DW9800AF_Release_Main
+extern int DW9800AF_SetI2Cclient(struct i2c_client *pstAF_I2Cclient, spinlock_t *pAF_SpinLock, int *pAF_Opened);
+extern long DW9800AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command, unsigned long a_u4Param);
+extern int DW9800AF_Release(struct inode *a_pstInode, struct file *a_pstFile);
+
 #define DW9814AF_SetI2Cclient DW9814AF_SetI2Cclient_Main
 #define DW9814AF_Ioctl DW9814AF_Ioctl_Main
 #define DW9814AF_Release DW9814AF_Release_Main
