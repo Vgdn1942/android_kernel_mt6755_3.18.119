@@ -45,6 +45,26 @@ config MTK_BQ25898_DUAL_SUPPORT
 	Set n and choose other chargers.
 	This driver uses I2c bus.
 
+config MTK_NCP1851_SUPPORT
+	bool "MTK_NCP1851_SUPPORT"
+	select MTK_SWITCH_INPUT_OUTPUT_CURRENT_SUPPORT
+	default n
+	---help---
+	Mediatek MTK_NCP1851_SUPPORT driver.
+	Set y to support this driver.
+	Set n and choose other chargers.
+	This driver uses I2c bus.
+
+config MTK_NCP1854_SUPPORT
+	bool "MTK_NCP1854_SUPPORT"
+	select MTK_SWITCH_INPUT_OUTPUT_CURRENT_SUPPORT
+	default n
+	---help---
+	Mediatek MTK_NCP1854_SUPPORT.
+	Set y to support this driver.
+	Set n and choose other chargers.
+	This driver uses I2c bus.
+
 config MTK_SWITCH_INPUT_OUTPUT_CURRENT_SUPPORT
 	bool "MTK_SWITCH_INPUT_OUTPUT_CURRENT_SUPPORT"
 	default n

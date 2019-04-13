@@ -83,6 +83,15 @@ config MTK_BQ24296_SUPPORT
 	  and config MTK_SWCHR_SUPPORT
 	  Set to Yes if BQ24296 is used.
 
+config MTK_NCP1851_SUPPORT
+	bool "MTK_NCP1851_SUPPORT"
+	default n
+	help
+	  This is to enable MediaTek supports to NCP1851.
+	  It depends on config MTK_SMART_BATTERY
+	  and config MTK_SWCHR_SUPPORT
+	  Set to Yes if NCP1851 is used.
+
 config MTK_NCP1854_SUPPORT
 	bool "MTK_NCP1854_SUPPORT"
 	default n
