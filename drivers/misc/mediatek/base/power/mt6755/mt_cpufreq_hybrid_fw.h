@@ -35,7 +35,7 @@ struct pcm_desc {
 	u32 vec1;		/* event vector 1 config */
 };
 
-#ifdef CONFIG_MTK_PMIC_CHIP_MT6353
+#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
 static const u32 dvfs_binary[] = {
 	0x1ad0001f, 0x1022761c, 0x8ac0000b, 0x0000000f, 0x12c02c1f, 0xf0000000,
 	0x17c07c1f, 0x1850001f, 0x1022761c, 0x88400001, 0xfffffff0, 0xa0502c01,

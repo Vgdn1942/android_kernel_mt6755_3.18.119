@@ -69,8 +69,11 @@
 /* local includes */
 #include "mt_cpufreq.h"
 
+#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
 #include "../../../pmic/include/pmic_api.h"
+#else
 #include "../../../power/mt6755/mt6311.h"
+#endif
 
 #include <mt-plat/upmu_common.h>
 #include <mach/upmu_sw.h>
@@ -168,6 +171,7 @@ ktime_t max[NR_SET_V_F];
 	(((((old_volt) - (new_volt)) * 2)  / 625) + PMIC_CMD_DELAY_TIME)
 #define PLL_SETTLE_TIME         (20)
 
+#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
 /* for DVFS OPP table LL/FY */
 #define CPU_DVFS_FREQ0_LL_6353   (1001000)	/* KHz */
 #define CPU_DVFS_FREQ1_LL_6353    (910000)	/* KHz */
@@ -188,6 +192,8 @@ ktime_t max[NR_SET_V_F];
 #define CPU_DVFS_FREQ6_L_6353    (663000)	/* KHz */
 #define CPU_DVFS_FREQ7_L_6353    (286000)	/* KHz */
 
+#else
+
 /* for DVFS OPP table LL/FY */
 #define CPU_DVFS_FREQ0_LL   (1001000)	/* KHz */
 #define CPU_DVFS_FREQ1_LL    (910000)	/* KHz */
@@ -207,6 +213,7 @@ ktime_t max[NR_SET_V_F];
 #define CPU_DVFS_FREQ5_L    (871000)	/* KHz */
 #define CPU_DVFS_FREQ6_L    (663000)	/* KHz */
 #define CPU_DVFS_FREQ7_L    (286000)	/* KHz */
+#endif
 
 /* for DVFS OPP table LL/SB */
 #define CPU_DVFS_FREQ0_LL_SB    (1144000)	/* KHz */
@@ -411,6 +418,7 @@ static unsigned int _mt_cpufreq_get_cpu_level(void)
 
 		cpufreq_ver("CPU clock-frequency from DT = %d MHz\n", cpu_speed);
 
+#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
 		if (cpu_speed == 1001) /* FY */
 			return CPU_LEVEL_1;
 		else {
@@ -426,6 +434,23 @@ static unsigned int _mt_cpufreq_get_cpu_level(void)
 				if ((2 == ((binLevel_eng >> 4) & 0x07)) || (2 == ((binLevel_eng >> 10) & 0x07)))
 					return CPU_LEVEL_1;
 				return CPU_LEVEL_2;
+#else
+		if (cpu_speed == 1001) /* FY */
+			return CPU_LEVEL_0;
+		else {
+			if ((1 == func_code_0) || (3 == func_code_0))
+				return CPU_LEVEL_0;
+			else if ((2 == func_code_0) || (4 == func_code_0))
+				return CPU_LEVEL_1;
+#ifdef CONFIG_ARCH_MT6755_TURBO
+			else if (0x22 == func_code_0)
+				return CPU_LEVEL_2;
+#endif
+			else {
+				if ((2 == ((binLevel_eng >> 4) & 0x07)) || (2 == ((binLevel_eng >> 10) & 0x07)))
+					return CPU_LEVEL_0;
+				return CPU_LEVEL_1;
+#endif
 			}
 		}
 	}
@@ -695,6 +720,7 @@ static void notify_cpu_volt_sampler(struct mt_cpu_dvfs *p, unsigned int volt)
 #define NR_MAX_OPP_TBL  8
 #define NR_MAX_CPU      8
 
+#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
 /* CPU LEVEL 0 of LL, FY segment */
 static struct mt_cpu_freq_info opp_tbl_little_e0_0[] = {
 	OP(CPU_DVFS_FREQ0_LL_6353, 115000),
@@ -706,6 +732,7 @@ static struct mt_cpu_freq_info opp_tbl_little_e0_0[] = {
 	OP(CPU_DVFS_FREQ6_LL_6353, 90000),
 	OP(CPU_DVFS_FREQ7_LL_6353, 80000),
 };
+#endif
 
 /* CPU LEVEL 1 of LL, FY segment */
 static struct mt_cpu_freq_info opp_tbl_little_e1_0[] = {
@@ -743,6 +770,7 @@ static struct mt_cpu_freq_info opp_tbl_little_e3_0[] = {
 	OP(CPU_DVFS_FREQ7_LL_P15, 80000),
 };
 
+#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
 /* CPU LEVEL 0 of L, FY segment */
 static struct mt_cpu_freq_info opp_tbl_big_e0_0[] = {
 	OP(CPU_DVFS_FREQ0_L_6353, 115000),
@@ -754,6 +782,7 @@ static struct mt_cpu_freq_info opp_tbl_big_e0_0[] = {
 	OP(CPU_DVFS_FREQ6_L_6353, 90000),
 	OP(CPU_DVFS_FREQ7_L_6353, 80000),
 };
+#endif
 
 /* CPU LEVEL 1 of L, FY segment */
 static struct mt_cpu_freq_info opp_tbl_big_e1_0[] = {
@@ -791,6 +820,7 @@ static struct mt_cpu_freq_info opp_tbl_big_e3_0[] = {
 	OP(CPU_DVFS_FREQ7_L_P15, 80000),
 };
 
+#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
 static struct mt_cpu_freq_method opp_tbl_method_L_e0[] = {
 	/* Target Frequency, POS, CLK, CCI */
 	FP(CPU_DVFS_FREQ0_L_6353,	1,	1,	2),
@@ -814,6 +844,7 @@ static struct mt_cpu_freq_method opp_tbl_method_LL_e0[] = {
 	FP(CPU_DVFS_FREQ6_LL_6353,	2,	2,	4),
 	FP(CPU_DVFS_FREQ7_LL_6353,	2,	4,	6),
 };
+#endif
 
 static struct mt_cpu_freq_method opp_tbl_method_L_e1[] = {
 	/* Target Frequency, POS, CLK, CCI */
@@ -892,6 +923,7 @@ struct opp_tbl_info {
 	const int size;
 };
 
+#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
 static struct opp_tbl_info opp_tbls_little[2][4] = {
 	{
 		[CPU_LV_TO_OPP_IDX(CPU_LEVEL_0)] = {opp_tbl_little_e0_0, ARRAY_SIZE(opp_tbl_little_e0_0),},
@@ -921,6 +953,35 @@ static struct opp_tbl_info opp_tbls_big[2][4] = {
 		[CPU_LV_TO_OPP_IDX(CPU_LEVEL_3)] = {opp_tbl_big_e3_0, ARRAY_SIZE(opp_tbl_big_e3_0),},
 	},
 };
+
+#else
+
+static struct opp_tbl_info opp_tbls_little[2][3] = {
+	{
+		[CPU_LV_TO_OPP_IDX(CPU_LEVEL_0)] = {opp_tbl_little_e1_0, ARRAY_SIZE(opp_tbl_little_e1_0),},
+		[CPU_LV_TO_OPP_IDX(CPU_LEVEL_1)] = {opp_tbl_little_e2_0, ARRAY_SIZE(opp_tbl_little_e2_0),},
+		[CPU_LV_TO_OPP_IDX(CPU_LEVEL_2)] = {opp_tbl_little_e3_0, ARRAY_SIZE(opp_tbl_little_e3_0),},
+	},
+	{
+		[CPU_LV_TO_OPP_IDX(CPU_LEVEL_0)] = {opp_tbl_little_e1_0, ARRAY_SIZE(opp_tbl_little_e1_0),},
+		[CPU_LV_TO_OPP_IDX(CPU_LEVEL_1)] = {opp_tbl_little_e2_0, ARRAY_SIZE(opp_tbl_little_e2_0),},
+		[CPU_LV_TO_OPP_IDX(CPU_LEVEL_2)] = {opp_tbl_little_e3_0, ARRAY_SIZE(opp_tbl_little_e3_0),},
+	},
+};
+
+static struct opp_tbl_info opp_tbls_big[2][3] = {
+	{
+		[CPU_LV_TO_OPP_IDX(CPU_LEVEL_0)] = {opp_tbl_big_e1_0, ARRAY_SIZE(opp_tbl_big_e1_0),},
+		[CPU_LV_TO_OPP_IDX(CPU_LEVEL_1)] = {opp_tbl_big_e2_0, ARRAY_SIZE(opp_tbl_big_e2_0),},
+		[CPU_LV_TO_OPP_IDX(CPU_LEVEL_2)] = {opp_tbl_big_e3_0, ARRAY_SIZE(opp_tbl_big_e3_0),},
+	},
+	{
+		[CPU_LV_TO_OPP_IDX(CPU_LEVEL_0)] = {opp_tbl_big_e1_0, ARRAY_SIZE(opp_tbl_big_e1_0),},
+		[CPU_LV_TO_OPP_IDX(CPU_LEVEL_1)] = {opp_tbl_big_e2_0, ARRAY_SIZE(opp_tbl_big_e2_0),},
+		[CPU_LV_TO_OPP_IDX(CPU_LEVEL_2)] = {opp_tbl_big_e3_0, ARRAY_SIZE(opp_tbl_big_e3_0),},
+	},
+};
+#endif
 
 static struct notifier_block __refdata _mt_cpufreq_cpu_notifier = {
 	.notifier_call = _mt_cpufreq_cpu_CB,
@@ -3366,10 +3427,15 @@ static int _mt_cpufreq_init(struct cpufreq_policy *policy)
 
 		if (MT_CPU_DVFS_BIG == id) {
 			if (lv == CPU_LEVEL_0)
+#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
 				p->freq_tbl = opp_tbl_method_L_e0;
 			else if (lv == CPU_LEVEL_1)
 				p->freq_tbl = opp_tbl_method_L_e1;
 			else if (lv == CPU_LEVEL_2)
+#else
+				p->freq_tbl = opp_tbl_method_L_e1;
+			else if (lv == CPU_LEVEL_1)
+#endif
 				p->freq_tbl = opp_tbl_method_L_e2;
 			else
 				p->freq_tbl = opp_tbl_method_L_e3;
@@ -3377,10 +3443,15 @@ static int _mt_cpufreq_init(struct cpufreq_policy *policy)
 			p->armpll_clk_src = TOP_CKMUXSEL_ARMPLL_L;
 		} else {
 			if (lv == CPU_LEVEL_0)
+#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
 				p->freq_tbl = opp_tbl_method_LL_e0;
 			else if (lv == CPU_LEVEL_1)
 				p->freq_tbl = opp_tbl_method_LL_e1;
 			else if (lv == CPU_LEVEL_2)
+#else
+				p->freq_tbl = opp_tbl_method_LL_e1;
+			else if (lv == CPU_LEVEL_1)
+#endif
 				p->freq_tbl = opp_tbl_method_LL_e2;
 			else
 				p->freq_tbl = opp_tbl_method_LL_e3;
@@ -3630,14 +3701,22 @@ static int _mt_cpufreq_pdrv_probe(struct platform_device *pdev)
 		}
 
 		if (j == MT_CPU_DVFS_LITTLE) {
+#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
 			if (lv == CPU_LEVEL_0 || lv == CPU_LEVEL_1)
+#else
+			if (lv == CPU_LEVEL_0)
+#endif
 				mt_ppm_set_dvfs_table(0, p->freq_tbl_for_cpufreq,
 					opp_tbl_info->size, DVFS_TABLE_TYPE_FY);
 			else
 				mt_ppm_set_dvfs_table(0, p->freq_tbl_for_cpufreq,
 					opp_tbl_info->size, DVFS_TABLE_TYPE_SB);
 		} else {
+#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
 			if (lv == CPU_LEVEL_0 || lv == CPU_LEVEL_1)
+#else
+			if (lv == CPU_LEVEL_0)
+#endif
 				mt_ppm_set_dvfs_table(4, p->freq_tbl_for_cpufreq,
 					opp_tbl_info->size, DVFS_TABLE_TYPE_FY);
 			else
