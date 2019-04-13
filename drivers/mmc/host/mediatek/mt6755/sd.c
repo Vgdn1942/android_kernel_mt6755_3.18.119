@@ -5238,7 +5238,9 @@ static void msdc_check_data_timeout(struct work_struct *work)
 
 	msdc_hang_detect_dump(host->id);
 	msdc_dump_info(host->id);
+#ifdef CONFIG_MTK_EMMC_CQ_SUPPORT
 	mmc_cmd_dump(host->mmc);
+#endif
 
 	if ((msdc_use_async_dma(data->host_cookie)) &&
 	    (!host->async_tuning_in_progress)) {
