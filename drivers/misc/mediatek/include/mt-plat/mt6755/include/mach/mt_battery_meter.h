@@ -17,11 +17,12 @@
 /* ============================================================*/
 /* define*/
 /* ============================================================*/
+#if !defined(CONFIG_OZ8806_SUPPORT)
 /*#define SOC_BY_AUXADC*/
 #define SOC_BY_HW_FG
 /*#define HW_FG_FORCE_USE_SW_OCV*/
 /*#define SOC_BY_SW_FG*/
-
+#endif
 /*#define CONFIG_DIS_CHECK_BATTERY*/
 /*#define FIXED_TBAT_25*/
 
@@ -151,7 +152,9 @@
 /*7. Qmax variant by current loading.*/
 /* #define Q_MAX_BY_CURRENT */
 
+#if !defined(CONFIG_OZ8806_SUPPORT)
 #define FG_BAT_INT
+#endif
 #define IS_BATTERY_REMOVE_BY_PMIC
 /* #define USE_EMBEDDED_BATTERY */
 

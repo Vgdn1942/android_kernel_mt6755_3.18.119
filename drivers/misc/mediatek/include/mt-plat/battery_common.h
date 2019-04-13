@@ -369,6 +369,9 @@ extern unsigned char bat_is_kpoc(void);
 extern void wake_up_bat(void);
 extern void wake_up_bat2(void);
 extern void wake_up_bat3(void);
+#ifdef CONFIG_OZ8806_SUPPORT
+extern void wake_up_bat_bmu(void);
+#endif
 
 extern unsigned long BAT_Get_Battery_Voltage(int polling_mode);
 extern void mt_battery_charging_algorithm(void);
