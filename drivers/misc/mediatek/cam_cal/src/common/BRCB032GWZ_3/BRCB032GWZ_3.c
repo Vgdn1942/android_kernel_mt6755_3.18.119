@@ -1,26 +1,15 @@
 /*
- * Copyright (C) 2015 MediaTek Inc.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- */
-/*
  * Driver for CAM_CAL
  *
  *
  */
 
-#ifndef CONFIG_MTK_I2C_EXTENSION
-#define CONFIG_MTK_I2C_EXTENSION
-#endif
+//#define CONFIG_MTK_I2C_EXTENSION
+
+#include <linux/kernel.h>
+#include <linux/module.h>
 #include <linux/i2c.h>
-#undef CONFIG_MTK_I2C_EXTENSION
+//#undef CONFIG_MTK_I2C_EXTENSION
 #include <linux/platform_device.h>
 #include <linux/delay.h>
 #include <linux/cdev.h>
@@ -31,20 +20,30 @@
 #include "cam_cal.h"
 #include "cam_cal_define.h"
 #include "BRCB032GWZ_3.h"
+
 /*#include <asm/system.h>//for SMP */
+#ifdef CONFIG_COMPAT
+/* 64 bit */
+#include <linux/compat.h>
+#endif
 
 /* #define CAM_CALGETDLT_DEBUG */
-/*#define CAM_CAL_DEBUG*/
+#define CAM_CAL_DEBUG
 #ifdef CAM_CAL_DEBUG
-#define CAM_CALDB pr_debug
+#define CAM_CALDB printk
+#define PFX "Camera_eeprom"
+#define CAM_CALINF(format, args...)    pr_info(PFX "[%s] " format, __func__, ##args)
+//#define CAM_CALDB(format, args...)     pr_info(PFX "[%s] " format, __func__, ##args)
+#define CAM_CALERR(format, args...)    printk(KERN_ERR format, ##args)
 #else
 #define CAM_CALDB(x, ...)
+#define CAM_CALERR(x, ...)
 #endif
 
 
 static DEFINE_SPINLOCK(g_CAM_CALLock);/* for SMP */
 /* #define CAM_CAL_I2C_BUSNUM 1 */
-#define CAM_CAL_I2C_BUSNUM 3
+#define CAM_CAL_I2C_BUSNUM 2                  //3
 #define CAM_CAL_DEV_MAJOR_NUMBER 226
 
 /* CAM_CAL READ/WRITE ID */
@@ -61,7 +60,7 @@ static DEFINE_SPINLOCK(g_CAM_CALLock);/* for SMP */
 *
 ********************************************************************************/
 /* for init.rc #define CAM_CAL_DRVNAME "CAM_CAL_S24CS64A" */
-#define CAM_CAL_DRVNAME "CAM_CAL_DRV"
+#define CAM_CAL_DRVNAME "BRCB032GWZ_3"
 /* #define CAM_CAL_I2C_GROUP_ID 0 */
 /*******************************************************************************
 *
@@ -70,14 +69,14 @@ static DEFINE_SPINLOCK(g_CAM_CALLock);/* for SMP */
 static struct i2c_client *g_pstI2Cclient;
 
 /* 81 is used for V4L driver */
-/*static dev_t g_CAM_CALdevno = MKDEV(CAM_CAL_DEV_MAJOR_NUMBER, 0);*/
-/*static struct cdev *g_pCAM_CAL_CharDrv;*/
-/* static spinlock_t g_CAM_CALLock; */
+static dev_t g_CAM_CALdevno = MKDEV(CAM_CAL_DEV_MAJOR_NUMBER, 0);
+static struct cdev *g_pCAM_CAL_CharDrv;
+static spinlock_t g_CAM_CALLock;
 /* spin_lock(&g_CAM_CALLock); */
 /* spin_unlock(&g_CAM_CALLock); */
 
-/*static struct class *CAM_CAL_class;*/
-/*static atomic_t g_CAM_CALatomic;*/
+static struct class *CAM_CAL_class;
+static atomic_t g_CAM_CALatomic;
 /* static DEFINE_SPINLOCK(kdcam_cal_drv_lock); */
 /* spin_lock(&kdcam_cal_drv_lock); */
 /* spin_unlock(&kdcam_cal_drv_lock); */
@@ -86,7 +85,7 @@ static struct i2c_client *g_pstI2Cclient;
 *
 ********************************************************************************/
 /* maximun read length is limited at "I2C_FIFO_SIZE" in I2c-mt65xx.c which is 8 bytes */
-#if 0
+#if 1
 static int iWriteCAM_CAL(u16 a_u2Addr  , u32 a_u4Bytes, u8 *puDataInBytes)
 {
 	int  i4RetValue = 0;
@@ -117,6 +116,7 @@ static int iWriteCAM_CAL(u16 a_u2Addr  , u32 a_u4Bytes, u8 *puDataInBytes)
 /* maximun read length is limited at "I2C_FIFO_SIZE" in I2c-mt65xx.c which is 8 bytes */
 static int iReadCAM_CAL(u16 a_u2Addr, u32 ui4_length, u8 *a_puBuff)
 {
+	int i = 0;
 	int  i4RetValue = 0;
 	char puReadCmd[2] = {(char)(a_u2Addr >> 8) , (char)(a_u2Addr & 0xFF)};
 
@@ -140,6 +140,10 @@ static int iReadCAM_CAL(u16 a_u2Addr, u32 ui4_length, u8 *a_puBuff)
 
 	/* CAM_CALDB("[CAM_CAL] i2c_master_recv\n"); */
 	i4RetValue = i2c_master_recv(g_pstI2Cclient, (char *)a_puBuff, ui4_length);
+	for( ;i<ui4_length;i++)
+	{
+	    CAM_CALDB("data[%d]\n",(int)*a_puBuff++);
+	}
 	if (i4RetValue != ui4_length) {
 		CAM_CALDB("[CAM_CAL] I2C read data failed!!\n");
 		return -1;
@@ -153,7 +157,7 @@ static int iReadCAM_CAL(u16 a_u2Addr, u32 ui4_length, u8 *a_puBuff)
 	return 0;
 }
 
-#if 0
+#if 1
 static int iWriteData(unsigned int  ui4_offset, unsigned int  ui4_length, unsigned char *pinputdata)
 {
 	int  i4RetValue = 0;
@@ -240,23 +244,26 @@ static int iReadData(unsigned int  ui4_offset, unsigned int  ui4_length, unsigne
 				CAM_CALDB("[BRCB032GWZ] I2C iReadData failed!!\n");
 				return -1;
 			}
-			u4IncOffset += 8;
+			u4IncOffset += i4ResidueDataLength;  //8
 			i4ResidueDataLength -= 8;
 			u4CurrentOffset = ui4_offset + u4IncOffset;
 			pBuff = pinputdata + u4IncOffset;
+			CAM_CALDB("[zbl]u4IncOffset = %d\n",u4IncOffset);
 			/* break; */
 		}
 	} while (i4ResidueDataLength > 0);
 	/* CAM_CALDB("[S24EEPORM] iReadData finial address is %d length is %d buffer address is
 	0x%x\n",u4CurrentOffset, i4ResidueDataLength, pBuff); */
 	/* CAM_CALDB("[S24EEPORM] iReadData done\n" ); */
-	return 0;
+	return 0;   //0
 }
 
 unsigned int brcb032gwz_selective_read_region(struct i2c_client *client, unsigned int addr,
 	unsigned char *data, unsigned int size)
 {
 	g_pstI2Cclient = client;
+
+	printk("caozheng 0x%X\n",g_pstI2Cclient->addr);
 	if (iReadData(addr, size, data) == 0)
 		return size;
 	else
@@ -264,9 +271,86 @@ unsigned int brcb032gwz_selective_read_region(struct i2c_client *client, unsigne
 }
 
 
-/*#define BRCB032GWZ_DRIVER_ON*/
+#define BRCB032GWZ_DRIVER_ON
 #ifdef BRCB032GWZ_DRIVER_ON
 
+#ifdef CONFIG_COMPAT
+static int compat_put_cal_info_struct(
+	COMPAT_stCAM_CAL_INFO_STRUCT __user *data32,
+	stCAM_CAL_INFO_STRUCT __user *data)
+{
+	compat_uptr_t p;
+	compat_uint_t i;
+	int err;
+
+	err = get_user(i, &data->u4Offset);
+	err |= put_user(i, &data32->u4Offset);
+	err |= get_user(i, &data->u4Length);
+	err |= put_user(i, &data32->u4Length);
+	/* Assume pointer is not change */
+#if 1
+	err |= get_user(p, (compat_uptr_t *)&data->pu1Params);
+	err |= put_user(p, &data32->pu1Params);
+#endif
+	return err;
+}
+static int compat_get_cal_info_struct(
+	COMPAT_stCAM_CAL_INFO_STRUCT __user *data32,
+	stCAM_CAL_INFO_STRUCT __user *data)
+{
+	compat_uptr_t p;
+	compat_uint_t i;
+	int err;
+
+	err = get_user(i, &data32->u4Offset);
+	err |= put_user(i, &data->u4Offset);
+	err |= get_user(i, &data32->u4Length);
+	err |= put_user(i, &data->u4Length);
+	err |= get_user(p, &data32->pu1Params);
+	err |= put_user(compat_ptr(p), &data->pu1Params);
+
+	return err;
+}
+
+static long brcb032gez_Ioctl_Compat(struct file *filp, unsigned int cmd, unsigned long arg)
+{
+	long ret;
+	COMPAT_stCAM_CAL_INFO_STRUCT __user *data32;
+	stCAM_CAL_INFO_STRUCT __user *data;
+	int err;
+	CAM_CALDB("[CAMERA SENSOR] brcb032gez_Ioctl_Compat,%p %p %x ioc size %d\n",
+	filp->f_op , filp->f_op->unlocked_ioctl, cmd, _IOC_SIZE(cmd));
+
+	if (!filp->f_op || !filp->f_op->unlocked_ioctl)
+		return -ENOTTY;
+
+	switch (cmd) {
+
+	case COMPAT_CAM_CALIOC_G_READ: {
+		data32 = compat_ptr(arg);
+		data = compat_alloc_user_space(sizeof(*data));
+		if (data == NULL)
+			return -EFAULT;
+
+		err = compat_get_cal_info_struct(data32, data);
+		if (err)
+			return err;
+
+		ret = filp->f_op->unlocked_ioctl(filp, CAM_CALIOC_G_READ, (unsigned long)data);
+		err = compat_put_cal_info_struct(data32, data);
+
+
+		if (err != 0)
+			CAM_CALERR("[CAMERA SENSOR] compat_put_acdk_sensor_getinfo_struct failed\n");
+		return ret;
+	}
+	default:
+		return -ENOIOCTLCMD;
+	}
+}
+
+
+#endif
 /*******************************************************************************
 *
 ********************************************************************************/
@@ -313,12 +397,7 @@ static long CAM_CAL_Ioctl(
 				return -EFAULT;
 			}
 		}
-	} else {
-		CAM_CALDB("[BRCB032GWZ] a_u4Command failed\n");
-		return -EFAULT;
 	}
-
-
 
 	ptempbuf = (stCAM_CAL_INFO_STRUCT *)pBuff;
 	pWorkingBuff = kmalloc(ptempbuf->u4Length, GFP_KERNEL);
@@ -327,9 +406,8 @@ static long CAM_CAL_Ioctl(
 		CAM_CALDB("[BRCB032GWZ] ioctl allocate mem failed\n");
 		return -ENOMEM;
 	}
-	CAM_CALDB("[BRCB032GWZ] init Working buffer address 0x%8x  command is 0x%8x\n",
-	(u32)pWorkingBuff, (u32)a_u4Command);
-
+	CAM_CALDB("[BRCB032GWZ] init Working buffer address %p  command is 0x%x\n",(void*)pWorkingBuff, a_u4Command);
+    CAM_CALDB("CAM_CALIOC_G_READ = %ld",(long)CAM_CALIOC_G_READ);
 
 	if (copy_from_user((u8 *)pWorkingBuff , (u8 *)ptempbuf->pu1Params, ptempbuf->u4Length)) {
 		kfree(pBuff);
@@ -362,18 +440,20 @@ static long CAM_CAL_Ioctl(
 #endif
 		CAM_CALDB("[BRCB032GWZ] offset %d\n", ptempbuf->u4Offset);
 		CAM_CALDB("[BRCB032GWZ] length %d\n", ptempbuf->u4Length);
-		CAM_CALDB("[BRCB032GWZ] Before read Working buffer address 0x%8x\n", (u32)pWorkingBuff);
+//		CAM_CALDB("[BRCB032GWZ] Before read Working buffer address 0x%8x\n", (u32)pWorkingBuff);
 
 		/* i4RetValue = iReadData((u16)ptempbuf->u4Offset, ptempbuf->u4Length, pWorkingBuff); */
 		CAM_CALDB("[BRCB032GWZ_3_CAM_CAL] After read Working buffer data  0x%4x\n", *pWorkingBuff);
 
-		if (ptempbuf->u4Offset == 0x800) {
+		/*if (ptempbuf->u4Offset == 0x800) {
 			*(u16 *)pWorkingBuff = 0x3;
-
-		} else if (ptempbuf->u4Offset == 0x000CB032) {
+        CAM_CALDB("11111111111\n");
+		} else*/ if (ptempbuf->u4Offset == 0x000CB032) {
 			*(u32 *)pWorkingBuff = 0x000CB032;
+		CAM_CALDB("22222222\n");
 		} else if (ptempbuf->u4Offset == 0x100CB032) {
 			*(u32 *)pWorkingBuff = 0x100CB032;
+		CAM_CALDB("3333333333\n");
 		} else if (ptempbuf->u4Offset == 0xFFFFFFFF) {
 			char puSendCmd[1] = {0, };
 
@@ -394,8 +474,9 @@ static long CAM_CAL_Ioctl(
 				ptempbuf->u4Length, pWorkingBuff); */
 				/* i4RetValue =  iReadDataFromM24C08F((u16)ptempbuf->u4Offset,
 				ptempbuf->u4Length, pWorkingBuff); */
-				i4RetValue = iReadData((u16)ptempbuf->u4Offset, ptempbuf->u4Length,
-				pWorkingBuff);
+			CAM_CALDB("[zbl]ptempbuf->u4Length=0x%x\n",ptempbuf->u4Length);
+			i4RetValue = iReadData((u16)ptempbuf->u4Offset, ptempbuf->u4Length,pWorkingBuff);
+
 #if 0
 				if (0 < test_retry) {
 					CAM_CALDB("[BRCB032GWZ] Test error (%d) Read retry (%d)\n",
@@ -416,7 +497,7 @@ static long CAM_CAL_Ioctl(
 
 		}
 
-#if 1
+#if 0
 		if (1) {
 			unsigned short addr;
 			unsigned short get_byte = 0, loop = 0;
@@ -546,7 +627,7 @@ static long CAM_CAL_Ioctl(
 	if (_IOC_READ & _IOC_DIR(a_u4Command)) {
 		/* copy data to user space buffer, keep other input paremeter unchange. */
 		CAM_CALDB("[BRCB032GWZ] to user length %d\n", ptempbuf->u4Length);
-		CAM_CALDB("[BRCB032GWZ] to user  Working buffer address 0x%8x\n", (u32)pWorkingBuff);
+//		CAM_CALDB("[BRCB032GWZ] to user  Working buffer address 0x%8x\n", (u32)pWorkingBuff);
 		if (copy_to_user((u8 __user *) ptempbuf->pu1Params , (u8 *)pWorkingBuff ,
 			ptempbuf->u4Length)) {
 			kfree(pBuff);
@@ -612,6 +693,9 @@ static const struct file_operations g_stCAM_CAL_fops = {
 	.open = CAM_CAL_Open,
 	.release = CAM_CAL_Release,
 	/* .ioctl = CAM_CAL_Ioctl */
+	#ifdef CONFIG_COMPAT
+	.compat_ioctl = brcb032gez_Ioctl_Compat,
+    #endif
 	.unlocked_ioctl = CAM_CAL_Ioctl
 };
 
@@ -704,12 +788,21 @@ I2C_CLIENT_END}; */
 /* static const unsigned short * const forces[] = { force, NULL }; */
 /* static struct i2c_client_address_data addr_data = { .forces = forces,}; */
 
+#ifdef CONFIG_OF
+static const struct of_device_id imx258otp_of_match[] = {
+	{.compatible = "mediatek,EEPROM"},
+	{},
+};
+#endif
 
 static struct i2c_driver CAM_CAL_i2c_driver = {
 	.probe = CAM_CAL_i2c_probe,
 	.remove = CAM_CAL_i2c_remove,
 	/* .detect = CAM_CAL_i2c_detect, */
 	.driver.name = CAM_CAL_DRVNAME,
+	#ifdef CONFIG_OF
+	.driver.of_match_table = imx258otp_of_match,
+	#endif
 	.id_table = CAM_CAL_i2c_id,
 };
 
@@ -783,7 +876,8 @@ static struct platform_device g_stCAM_CAL_Device = {
 
 static int __init CAM_CAL_i2C_init(void)
 {
-	i2c_register_board_info(CAM_CAL_I2C_BUSNUM, &kd_cam_cal_dev, 1);
+	//i2c_register_board_info(CAM_CAL_I2C_BUSNUM, &kd_cam_cal_dev, 1);
+	CAM_CALDB("[BRCB032GWZ_3_CAM_CAL] CAM_CAL_i2C_init\n");
 	if (platform_driver_register(&g_stCAM_CAL_Driver)) {
 		CAM_CALDB("failed to register BRCB032GWZ_3_CAM_CAL driver\n");
 		return -ENODEV;
