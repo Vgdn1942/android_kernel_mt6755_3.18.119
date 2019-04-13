@@ -21,6 +21,7 @@
 #include <asm/atomic.h>
 #include <linux/slab.h>
 
+#define IMX258_PDAFOTP_DEBUG
 #ifdef IMX258_PDAFOTP_DEBUG
 #define PFX "IMX258_pdafotp"
 #define LOG_INF(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
@@ -32,6 +33,7 @@
 #include "kd_imgsensor.h"
 #include "kd_imgsensor_define.h"
 #include "kd_imgsensor_errcode.h"
+
 extern int iReadRegI2C(u8 *a_pSendData , u16 a_sizeSendData, u8 * a_pRecvData, u16 a_sizeRecvData, u16 i2cId);
 extern int iWriteRegI2C(u8 *a_pSendData , u16 a_sizeSendData, u16 i2cId);
 extern void kdSetI2CSpeed(u16 i2cSpeed);
@@ -43,84 +45,121 @@ extern int iMultiReadReg(u16 a_u2Addr , u8 * a_puBuff , u16 i2cId, u8 number);
 #define BYTE               unsigned char
 #define Sleep(ms) mdelay(ms)
 
-#define IMX258_EEPROM_READ_ID  0xA0
-#define IMX258_EEPROM_WRITE_ID   0xA1
+#define IMX258_EEPROM_READ_ID  0xB1
+#define IMX258_EEPROM_WRITE_ID   0xB0
+
 #define IMX258_I2C_SPEED        100
 #define IMX258_MAX_OFFSET		0xFFFF
 
 #define DATA_SIZE 2048
 BYTE imx258_eeprom_data[DATA_SIZE]= {0};
-static bool get_done = false;
-static int last_size = 0;
-static int last_offset = 0;
+//static bool get_done = false;
+//static int last_size = 0;
+//static int last_offset = 0;
 
+typedef struct {
+//        u8     	proc1_flag;                      // 0x0x790
+	u8    	proc1_data[496];		 // 0x791---0x980
+//	u8     	proc1_checksum;	                //  0x981
+//        u8     	proc2_flag;                     //  0x982
+	u8    	proc2_data[860];		//  0x0983------0x0ca8
+//	u8     	proc2_checksum;	                 // 0x0ca9
 
-static bool selective_read_eeprom(kal_uint16 addr, BYTE* data)
+}PDAF_MTK_TYPE;
+
+typedef union {
+        u8 Data[DATA_SIZE];
+        PDAF_MTK_TYPE       MtkPdafData;
+} PDAF_DATA_UNIO;
+
+PDAF_DATA_UNIO imx258_pdaf_data = {{0}};
+
+static int read_cmos_sensor(kal_uint16 slave_id,kal_uint16 addr,BYTE* data)
 {
-	char pu_send_cmd[2] = {(char)(addr >> 8) , (char)(addr & 0xFF) };
-    if(addr > IMX258_MAX_OFFSET)
-        return false;
-
-	kdSetI2CSpeed(IMX258_I2C_SPEED);
-
-	if(iReadRegI2C(pu_send_cmd, 2, (u8*)data, 1, IMX258_EEPROM_READ_ID)<0)
-		return false;
-    return true;
+    char puSendCmd[2] = {(char)(addr >> 8) , (char)(addr & 0xFF) };
+    return iReadRegI2C(puSendCmd , 2, data, 1, slave_id);
 }
 
-static bool _read_imx258_eeprom(kal_uint16 addr, BYTE* data, kal_uint32 size ){
+
+int read_imx258_eeprom(u8 slv_id, u16 offset, u8* data)
+{
+    int ret = 0;
+    ret = read_cmos_sensor(slv_id,offset,data);
+//    CAM_CALINF("imx258 read_imx258_eeprom= %x %x\n",offset, *data);
+    return ret;
+}
+
+int read_imx258_eeprom_size(u8 slv_id, u16 offset, u8* data,int size)
+{
 	int i = 0;
-	int offset = addr;
-	for(i = 0; i < size; i++) {
-		if(!selective_read_eeprom(offset, &data[i])){
-			return false;
-		}
-		LOG_INF("read_eeprom 0x%0x %d\n",offset, data[i]);
-		offset++;
+	for(i = 0; i < size; i++){
+		if(read_imx258_eeprom(slv_id, offset+i, data+i) != 0)
+			return -1;
 	}
-	get_done = true;
-	last_size = size;
-	last_offset = addr;
-    return true;
-}
-
-bool read_imx258_eeprom( kal_uint16 addr, BYTE* data, kal_uint32 size){
-	addr = 0x0763;
-	size = 1404;
-
-	LOG_INF("read imx258 eeprom, size = %d\n", size);
-
-	if(!get_done || last_size != size || last_offset != addr) {
-		if(!_read_imx258_eeprom(addr, imx258_eeprom_data, size)){
-			get_done = 0;
-            last_size = 0;
-            last_offset = 0;
-			return false;
-		}
-	}
-
-	memcpy(data, imx258_eeprom_data, size);
-    return true;
+	return 0;
 }
 
 bool read_imx258_eeprom_SPC( kal_uint16 addr, BYTE* data, kal_uint32 size){
 
-	addr = 0x0F73;//0x0F73;
-	size = 126;
+//	addr = 0x0F73;//0x0F73;
+//	size = 126;
 
-	LOG_INF("read imx258 eeprom, size = %d\n", size);
+//	LOG_INF("read imx258 eeprom, size = %d\n", size);
 
-	if(!get_done || last_size != size || last_offset != addr) {
-		if(!_read_imx258_eeprom(addr, imx258_eeprom_data, size)){
-			get_done = 0;
-            last_size = 0;
-            last_offset = 0;
+
+		if(!read_imx258_eeprom_size(IMX258_EEPROM_READ_ID,addr, imx258_eeprom_data, size))
+		{
 			return false;
 		}
-	}
-
 	memcpy(data, imx258_eeprom_data, size);
     return true;
 }
 
+kal_bool read_imx258_otp_eeprom( kal_uint16 addr, BYTE* data, kal_uint32 size)
+{
+	int i;
+	//addr_1 = 0x0800;
+	//int total_size = 1404;
+	size = 1404;
+	addr=0xb1;
+
+
+
+	LOG_INF("read imx258 eeprom, size = %d\n", size);
+
+
+       	read_imx258_eeprom_size(addr,0x0791,imx258_pdaf_data.MtkPdafData.proc1_data,496);
+	memcpy(data, imx258_pdaf_data.MtkPdafData.proc1_data,496);
+	for(i = 0; i < 496; i++){
+		LOG_INF("imx258_pdaf_data.MtkPdafData.proc1_data[ %d]= %d   \n", i,imx258_pdaf_data.MtkPdafData.proc1_data[i]);
+	}
+
+       	read_imx258_eeprom_size(addr,0x0983,imx258_pdaf_data.MtkPdafData.proc2_data,860);
+	memcpy(data+496, imx258_pdaf_data.MtkPdafData.proc2_data,860);
+	for(i = 0; i < 860; i++){
+		LOG_INF("imx258_pdaf_data.MtkPdafData.proc2_data[ %d]= %d   \n", i,imx258_pdaf_data.MtkPdafData.proc2_data[i]);
+	}
+
+    return KAL_TRUE;
+}
+
+bool IMX258CheckLensVersion(void)
+{
+    kal_uint8 otp_flag = 0;
+    kal_uint8 data[8] = { 0 };
+
+    LOG_INF("IMX258CheckLensVersion enter\n");
+    read_cmos_sensor(IMX258_EEPROM_READ_ID,0x0000,&otp_flag);
+    LOG_INF("[zbl]read imx258 otp flag = %d\n", otp_flag);
+
+    if(otp_flag!=0x01)
+    {
+        LOG_INF("[zbl]read otp failed!\n");
+        return false;
+    }
+
+    read_imx258_eeprom_size(IMX258_EEPROM_READ_ID,0x0001,data,7);
+
+    return true;
+}
 

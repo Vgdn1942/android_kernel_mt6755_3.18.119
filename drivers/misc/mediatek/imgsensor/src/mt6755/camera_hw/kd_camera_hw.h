@@ -112,6 +112,7 @@ typedef enum {
 #else
 
 #define VOL2800 2800000
+#define VOL2500 2500000
 #define VOL1800 1800000
 #define VOL1500 1500000
 #define VOL1200 1200000
@@ -130,6 +131,7 @@ typedef enum {
 	AFVDD,
 	SUB_DVDD,
 	MAIN2_DVDD,
+	SUB_AVDD
 } PowerType;
 
 typedef enum {
@@ -141,6 +143,7 @@ typedef enum {
 	Vol_1220 = VOL1220,
 	Vol_1500 = VOL1500,
 	Vol_1800 = VOL1800,
+	Vol_2500 = VOL2500,
 	Vol_2800 = VOL2800,
 } Voltage;
 #define CAMERA_CMRST_PIN            0
@@ -183,7 +186,7 @@ typedef struct {
 } PowerSequence;
 
 typedef struct {
-	PowerSequence PowerSeq[16];
+	PowerSequence PowerSeq[32];
 } PowerUp;
 
 typedef struct {

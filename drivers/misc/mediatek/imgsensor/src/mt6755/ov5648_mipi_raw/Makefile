@@ -12,5 +12,5 @@
 #
 
 
-obj-y += ov5648mipi_Sensor.o
+obj-y += ov5648mipi_Sensor.o ov5648_otp.o
 

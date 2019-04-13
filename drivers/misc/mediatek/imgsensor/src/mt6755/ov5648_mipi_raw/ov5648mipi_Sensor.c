@@ -56,6 +56,9 @@
 
 #define LOG_INF(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
 
+extern void OV5648CheckLensVersion(kal_uint8 write_id);
+extern int update_otp(void);
+
 static DEFINE_SPINLOCK(imgsensor_drv_lock);
 
 
@@ -390,10 +393,18 @@ static void ihdr_write_shutter_gain(kal_uint16 le, kal_uint16 se, kal_uint16 gai
     //LOG_INF("le:0x%x, se:0x%x, gain:0x%x\n",le,se,gain);
 }
 
-#if 0
+
 static void set_mirror_flip(kal_uint8 image_mirror)
 {
     LOG_INF("image_mirror = %d\n", image_mirror);
+
+    #if defined(IMGSENSOR_OV5648_H_MIRROR)
+	image_mirror ^= 0x01;
+	#elif defined(IMGSENSOR_OV5648_V_MIRROR)
+	image_mirror ^= 0x02;
+	#elif defined(IMGSENSOR_OV5648_HV_MIRROR)
+	image_mirror ^= 0x03;
+	#endif
 
     /********************************************************
        *
@@ -429,7 +440,6 @@ static void set_mirror_flip(kal_uint8 image_mirror)
     }
 
 }
-#endif
 
 /*************************************************************************
 * FUNCTION
@@ -517,7 +527,11 @@ static void sensor_init(void)
 
     write_cmos_sensor(0x3034, 0x1a); // 10-bit mode
     write_cmos_sensor(0x3035, 0x21); // PLL
+	#if defined(FLICKER_XHGT)
+	write_cmos_sensor(0x3036, 0x6D); // PLL---------0x69
+	#else
     write_cmos_sensor(0x3036, 0x69); // PLL
+	#endif
 
     write_cmos_sensor(0x3037, 0x03); // PLL
 
@@ -1135,6 +1149,8 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
             *sensor_id = return_sensor_id();
             if (*sensor_id == imgsensor_info.sensor_id) {
                 LOG_INF("i2c write id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id,*sensor_id);
+				 sensor_init();
+                OV5648CheckLensVersion(imgsensor.i2c_write_id);
                 return ERROR_NONE;
             }
             LOG_INF("Read sensor id fail, write id:0x%x id: 0x%x\n", imgsensor.i2c_write_id,*sensor_id);
@@ -1200,7 +1216,7 @@ static kal_uint32 open(void)
 
     /* initail sequence write in  */
     sensor_init();
-
+	update_otp();
     spin_lock(&imgsensor_drv_lock);
 
     imgsensor.autoflicker_en= KAL_FALSE;
@@ -1279,7 +1295,7 @@ static kal_uint32 preview(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
     imgsensor.autoflicker_en = KAL_FALSE;
     spin_unlock(&imgsensor_drv_lock);
     preview_setting();
-    //set_mirror_flip(sensor_config_data->SensorImageMirror);
+    set_mirror_flip(imgsensor.mirror);
     return ERROR_NONE;
 }    /*    preview   */
 
@@ -1322,7 +1338,7 @@ static kal_uint32 capture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
     }
     spin_unlock(&imgsensor_drv_lock);
     capture_setting(imgsensor.current_fps);
-    //set_mirror_flip(sensor_config_data->SensorImageMirror);
+    set_mirror_flip(imgsensor.mirror);
     return ERROR_NONE;
 }    /* capture() */
 static kal_uint32 normal_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
@@ -1340,7 +1356,7 @@ static kal_uint32 normal_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
     imgsensor.autoflicker_en = KAL_FALSE;
     spin_unlock(&imgsensor_drv_lock);
     normal_video_setting(imgsensor.current_fps);
-    //set_mirror_flip(sensor_config_data->SensorImageMirror);
+    set_mirror_flip(imgsensor.mirror);
     return ERROR_NONE;
 }    /*    normal_video   */
 
@@ -1361,7 +1377,7 @@ static kal_uint32 hs_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
     imgsensor.autoflicker_en = KAL_FALSE;
     spin_unlock(&imgsensor_drv_lock);
     hs_video_setting();
-    //set_mirror_flip(sensor_config_data->SensorImageMirror);
+    set_mirror_flip(imgsensor.mirror);
     return ERROR_NONE;
 }    /*    hs_video   */
 
@@ -1381,7 +1397,7 @@ static kal_uint32 slim_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
     imgsensor.autoflicker_en = KAL_FALSE;
     spin_unlock(&imgsensor_drv_lock);
     slim_video_setting();
-    //set_mirror_flip(sensor_config_data->SensorImageMirror);
+    set_mirror_flip(imgsensor.mirror);
 
     return ERROR_NONE;
 }    /*    slim_video     */
@@ -1801,7 +1817,6 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
                     memcpy((void *)wininfo,(void *)&imgsensor_winsize_info[0],sizeof(SENSOR_WINSIZE_INFO_STRUCT));
                     break;
             }
-			break;
         case SENSOR_FEATURE_SET_IHDR_SHUTTER_GAIN:
             LOG_INF("SENSOR_SET_SENSOR_IHDR LE=%d, SE=%d, Gain=%d\n",(UINT16)*feature_data,(UINT16)*(feature_data+1),(UINT16)*(feature_data+2));
             ihdr_write_shutter_gain((UINT16)*feature_data,(UINT16)*(feature_data+1),(UINT16)*(feature_data+2));
@@ -1822,7 +1837,7 @@ static SENSOR_FUNCTION_STRUCT sensor_func = {
     close
 };
 
-UINT32 OV5648MIPISensorInit(PSENSOR_FUNCTION_STRUCT *pfFunc)
+UINT32 OV5648_MIPI_RAW_SensorInit(PSENSOR_FUNCTION_STRUCT *pfFunc)
 {
     /* To Do : Check Sensor status here */
     if (pfFunc!=NULL)
