@@ -46,21 +46,21 @@ int  fts_5x46_ctpm_fw_upgrade(struct i2c_client * client, u8* pbt_buf, u32 dw_le
 
 int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 			  u32 dw_lenth);
-		
 
-static unsigned char CTPM_FW[] = 
+
+static unsigned char CTPM_FW[] =
 {
-	#ifdef AGOLD_TPD_FT_AUTO_UPGRADE
-		#if defined(AGOLD_DFL_C221_FOR_TRULY)
+	#ifdef TPD_FT_AUTO_UPGRADE
+		#if defined(DFL_C221_FOR_TRULY)
 		#include  "FT5436I_truly_app.i"
-		#elif defined(AGOLD_LEMU_55C2K_FOR_GESTURE)
+		#elif defined(LEMU_55C2K_FOR_GESTURE)
 		#include  "FT5436I_lemu_truly_app.i"
 		#endif
 	#endif
 };
 
 static DEFINE_MUTEX(g_device_mutex);
- 
+
 
 
 
@@ -88,12 +88,12 @@ int fts_i2c_Read_byte(struct i2c_client *client, char reg, int writelen, char *v
 	{
 		printk("[FTS] write reg[0x%x] fail, ret = %d\n",reg,ret);
 	}
-	
+
 	if((ret = i2c_master_recv(client, value, 1)) < 0)
 	{
 		printk("[FTS] read reg[0x%x] fail, ret = %d\n",reg,ret);
 	}
-	return ret;		
+	return ret;
 }
 */
 int fts_i2c_Write_byte(struct i2c_client *client, char reg, int writelen, char *value)
@@ -102,16 +102,16 @@ int fts_i2c_Write_byte(struct i2c_client *client, char reg, int writelen, char *
 	u8 buf[2];
 	buf[0]=reg;
 	buf[1]=value[0];
-	
+
 	client->addr = client->addr & I2C_MASK_FLAG;
 	client->timing = 100;
-	
+
 	if((ret = i2c_master_send(client, buf, 2)) < 0)
 	{
-		printk("[AGold Bruce] write reg[0xc0=0x%x] value[0x%x] fail, ret = %d\n",reg,buf[1],ret);
+		printk("[FTS] write reg[0xc0=0x%x] value[0x%x] fail, ret = %d\n",reg,buf[1],ret);
 	}
 	printk("[FTS] write reg[0xc0=0x%x] value[0x%x] , ret = %d\n",reg,buf[1],ret);
-	return ret;		
+	return ret;
 }
 
 
@@ -126,7 +126,7 @@ int fts_i2c_Read(struct i2c_client *client, char *writebuf,
 		//DMA Write
 		if(0)//if(writelen < 8  )
 		{
-			
+
 			//MSE_ERR("Sensor non-dma write timing is %x!\r\n", this_client->timing);
 			ret= i2c_master_send(client, writebuf, writelen);
 		}
@@ -138,7 +138,7 @@ int fts_i2c_Read(struct i2c_client *client, char *writebuf,
 			}
 
 			client->addr = (client->addr & I2C_MASK_FLAG) | I2C_DMA_FLAG;
-		
+
 			if((ret=i2c_master_send(client, (unsigned char *)gpDMABuf_pa, writelen))!=writelen)
 				dev_err(&client->dev, "###%s i2c write len=%x,buffaddr=%llu\n", __func__,ret,gpDMABuf_pa);
 			//MSE_ERR("Sensor dma timing is %x!\r\n", this_client->timing);
@@ -147,7 +147,7 @@ int fts_i2c_Read(struct i2c_client *client, char *writebuf,
 
 		}
 	}
-	//DMA Read 
+	//DMA Read
 	if(readlen!=0)
 	{
 		if(0)//if (readlen <8) {
@@ -178,9 +178,9 @@ int fts_i2c_Write(struct i2c_client *client, char *writebuf, int writelen)
 	int ret = 0;
 	int i = 0;
 	//printk("fts_i2c_Write  %d  %x  %x %x %x",writelen,writebuf,ft_gpDMABuf_va,gpDMABuf_pa,client);
-	
+
    client->addr = client->addr & I2C_MASK_FLAG;
-  // client->ext_flag |= I2C_DIRECTION_FLAG; 
+  // client->ext_flag |= I2C_DIRECTION_FLAG;
   // client->timing = 100;
     #if 0
 	struct i2c_msg msg[] = {
@@ -196,10 +196,10 @@ int fts_i2c_Write(struct i2c_client *client, char *writebuf, int writelen)
 	if (ret < 0)
 		dev_err(&client->dev, "%s i2c write error.\n", __func__);
 	#else
-	
+
 	if(0)//if(writelen < 8)
 	{
-		
+
 		//MSE_ERR("Sensor non-dma write timing is %x!\r\n", this_client->timing);
 		ret = i2c_master_send(client, writebuf, writelen);
 	}
@@ -217,7 +217,7 @@ int fts_i2c_Write(struct i2c_client *client, char *writebuf, int writelen)
 		//MSE_ERR("Sensor dma timing is %x!\r\n", this_client->timing);
 		client->addr = client->addr & I2C_MASK_FLAG &(~ I2C_DMA_FLAG);
 
-	} 
+	}
 	#endif
 	return ret;
 
@@ -263,10 +263,10 @@ int fts_ctpm_auto_clb(struct i2c_client *client)
 				/*if 0x02, then auto clb ok, else 0xff, auto clb failure*/
 			    break;
 			}
-			msleep(20);	    
+			msleep(20);
 		}
-	} 
-	else 
+	}
+	else
 	{
 		for(i=0;i<100;i++)
 		{
@@ -275,7 +275,7 @@ int fts_ctpm_auto_clb(struct i2c_client *client)
 			{
 			    break;
 			}
-			msleep(20);	    
+			msleep(20);
 		}
 	}
 	/*calibration OK*/
@@ -305,7 +305,7 @@ int fts_ctpm_fw_upgrade_with_i_file(struct i2c_client *client)
 	*/
 	if ((fts_updateinfo_curr.CHIP_ID==0x54))
 	{
-		if (fw_len < 8 || fw_len > 54 * 1024) 
+		if (fw_len < 8 || fw_len > 54 * 1024)
 		{
 			dev_err(&client->dev, "%s:FW length error\n", __func__);
 			return -EIO;
@@ -318,8 +318,8 @@ int fts_ctpm_fw_upgrade_with_i_file(struct i2c_client *client)
 					__func__);
 		return i_ret;
 	}
-	
-	if (fw_len < 8 || fw_len > 32 * 1024) 
+
+	if (fw_len < 8 || fw_len > 32 * 1024)
 	{
 		dev_err(&client->dev, "%s:FW length error\n", __func__);
 		return -EIO;
@@ -341,8 +341,8 @@ int fts_ctpm_fw_upgrade_with_i_file(struct i2c_client *client)
 		else if(fts_updateinfo_curr.AUTO_CLB==AUTO_CLB_NEED)
 			fts_ctpm_auto_clb(client);	/*start auto CLB */
 
-	} 
-	else 
+	}
+	else
 	{
 		dev_err(&client->dev, "%s:FW format error\n", __func__);
 		return -EBADFD;
@@ -416,7 +416,7 @@ int fts_ctpm_update_project_setting(struct i2c_client *client)
 	/*********Step 2:Enter upgrade mode *****/
 	auc_i2c_write_buf[0] = 0x55;
 	auc_i2c_write_buf[1] = 0xaa;
-	do 
+	do
 	{
 		i++;
 		i_ret = fts_i2c_Write(client, auc_i2c_write_buf, 2);
@@ -497,30 +497,30 @@ int fts_ctpm_auto_upgrade(struct i2c_client *client)
     fts_read_reg(client, FT_REG_VENDOR_ID, &uc_tp_vendor_id);
 	uc_host_vendor_id = fts_ctpm_get_i_file_vendor();
 	if(uc_tp_vendor_id!=uc_host_vendor_id)return 0;
-	
+
 	fts_read_reg(client, FT_REG_FW_VER, &uc_tp_fm_ver);
 	uc_host_fm_ver = fts_ctpm_get_i_file_ver();
 
     printk("[FTS] uc_tp_fm_ver = 0x%x, uc_host_fm_ver = 0x%x\n",uc_tp_fm_ver, uc_host_fm_ver);
-	   
+
 	if (/*the firmware in touch panel maybe corrupted */
 		uc_tp_fm_ver == FT_REG_FW_VER ||
 		/*the firmware in host flash is new, need upgrade */
 	     uc_tp_fm_ver < uc_host_fm_ver
-	    ) 
+	    )
 		{
 		msleep(100);
 		dev_dbg(&client->dev, "[FTS] uc_tp_fm_ver = 0x%x, uc_host_fm_ver = 0x%x\n",
 				uc_tp_fm_ver, uc_host_fm_ver);
 		i_ret = fts_ctpm_fw_upgrade_with_i_file(client);
-		if (i_ret == 0)	
+		if (i_ret == 0)
 		{
 			msleep(300);
 			uc_host_fm_ver = fts_ctpm_get_i_file_ver();
 			dev_dbg(&client->dev, "[FTS] upgrade to new version 0x%x\n",
 					uc_host_fm_ver);
-		} 
-		else 
+		}
+		else
 		{
 			pr_err("[FTS] upgrade failed ret=%d.\n", i_ret);
 			return -EIO;
@@ -566,12 +566,12 @@ int hid_to_i2c(struct i2c_client * client)
 
 	if(0xeb==auc_i2c_write_buf[0] && 0xaa==auc_i2c_write_buf[1] && 0x08==auc_i2c_write_buf[2])
 	{
-		bRet = 1;		
+		bRet = 1;
 	}
 	else bRet = 0;
 
 	return bRet;
-	
+
 }
 
 
@@ -610,12 +610,12 @@ int fts_6x36_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 		DBG("[FTS] Fw length is invalid \n");
 		return -1;
 	}
-	
-	for (i = 0; i < FTS_UPGRADE_LOOP; i++) 
+
+	for (i = 0; i < FTS_UPGRADE_LOOP; i++)
 	{
 		/*********Step 1:Reset  CTPM *****/
 		/*write 0xaa to register 0xbc */
-		
+
 		fts_write_reg(client, 0xbc, FT_UPGRADE_AA);
 		msleep(fts_updateinfo_curr.delay_aa);
 
@@ -632,7 +632,7 @@ int fts_6x36_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 		fts_i2c_Write(client, auc_i2c_write_buf, 1);
 		msleep(fts_updateinfo_curr.delay_readid);
 
-		/*********Step 3:check READ-ID***********************/		
+		/*********Step 3:check READ-ID***********************/
 		auc_i2c_write_buf[0] = 0x90;
 		auc_i2c_write_buf[1] = auc_i2c_write_buf[2] = auc_i2c_write_buf[3] =
 			0x00;
@@ -642,7 +642,7 @@ int fts_6x36_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 
 
 		if (reg_val[0] == fts_updateinfo_curr.upgrade_id_1
-			&& reg_val[1] == fts_updateinfo_curr.upgrade_id_2) 
+			&& reg_val[1] == fts_updateinfo_curr.upgrade_id_2)
 		{
 			DBG("[FTS] Step 3: GET CTPM ID OK,ID1 = 0x%x,ID2 = 0x%x\n",
 				reg_val[0], reg_val[1]);
@@ -661,7 +661,7 @@ int fts_6x36_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 	auc_i2c_write_buf[3] = 0x00;
 	auc_i2c_write_buf[4] = 0x00;
 	fts_i2c_Write(client, auc_i2c_write_buf, 5);
-	
+
 	//auc_i2c_write_buf[0] = 0xcd;
 	//fts_i2c_Read(client, auc_i2c_write_buf, 1, reg_val, 1);
 
@@ -698,7 +698,7 @@ int fts_6x36_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 	packet_buf[0] = 0xbf;
 	packet_buf[1] = 0x00;
 
-	for (j = 0; j < packet_number; j++) 
+	for (j = 0; j < packet_number; j++)
 	{
 		temp = j * FTS_PACKET_LENGTH;
 		packet_buf[2] = (u8) (temp >> 8);
@@ -707,14 +707,14 @@ int fts_6x36_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 		packet_buf[4] = (u8) (lenght >> 8);
 		packet_buf[5] = (u8) lenght;
 
-		for (i = 0; i < FTS_PACKET_LENGTH; i++) 
+		for (i = 0; i < FTS_PACKET_LENGTH; i++)
 		{
 			packet_buf[6 + i] = pbt_buf[j * FTS_PACKET_LENGTH + i];
 			bt_ecc ^= packet_buf[6 + i];
 		}
-		
+
 		fts_i2c_Write(client, packet_buf, FTS_PACKET_LENGTH + 6);
-		
+
 		for(i = 0;i < 30;i++)
 		{
 			auc_i2c_write_buf[0] = 0x6a;
@@ -733,7 +733,7 @@ int fts_6x36_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 		}
 	}
 
-	if ((dw_lenth) % FTS_PACKET_LENGTH > 0) 
+	if ((dw_lenth) % FTS_PACKET_LENGTH > 0)
 	{
 		temp = packet_number * FTS_PACKET_LENGTH;
 		packet_buf[2] = (u8) (temp >> 8);
@@ -742,7 +742,7 @@ int fts_6x36_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 		packet_buf[4] = (u8) (temp >> 8);
 		packet_buf[5] = (u8) temp;
 
-		for (i = 0; i < temp; i++) 
+		for (i = 0; i < temp; i++)
 		{
 			packet_buf[6 + i] = pbt_buf[packet_number * FTS_PACKET_LENGTH + i];
 			bt_ecc ^= packet_buf[6 + i];
@@ -774,7 +774,7 @@ int fts_6x36_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 	DBG("Step 6: read out checksum\n");
 	auc_i2c_write_buf[0] = 0xcc;
 	fts_i2c_Read(client, auc_i2c_write_buf, 1, reg_val, 1);
-	if (reg_val[0] != bt_ecc) 
+	if (reg_val[0] != bt_ecc)
 	{
 		dev_err(&client->dev, "[FTS]--ecc error! FW=%02x bt_ecc=%02x\n",
 					reg_val[0],
@@ -793,7 +793,7 @@ int fts_6x36_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 
 int  fts_5x46_ctpm_fw_upgrade(struct i2c_client * client, u8* pbt_buf, u32 dw_lenth)
 {
-	
+
 	u8 reg_val[4] = {0};
 	u32 i = 0;
 	u32 packet_number;
@@ -812,14 +812,14 @@ int  fts_5x46_ctpm_fw_upgrade(struct i2c_client * client, u8* pbt_buf, u32 dw_le
 		DBG("[FTS] hid change to i2c fail ! \n");
 	}
 
-	for (i = 0; i < FTS_UPGRADE_LOOP; i++) 
+	for (i = 0; i < FTS_UPGRADE_LOOP; i++)
 	{
 		/*********Step 1:Reset  CTPM *****/
 		/*write 0xaa to register 0xfc */
 		fts_write_reg(client, 0xfc, FT_UPGRADE_AA);
 		msleep(fts_updateinfo_curr.delay_aa);
 
-		//write 0x55 to register 0xfc 
+		//write 0x55 to register 0xfc
 		fts_write_reg(client, 0xfc, FT_UPGRADE_55);
 		msleep(200);
 		/*********Step 2:Enter upgrade mode *****/
@@ -845,13 +845,13 @@ int  fts_5x46_ctpm_fw_upgrade(struct i2c_client * client, u8* pbt_buf, u32 dw_le
 		auc_i2c_write_buf[0] = 0x90;
 		auc_i2c_write_buf[1] = auc_i2c_write_buf[2] = auc_i2c_write_buf[3] =
 			0x00;
-		
+
 		reg_val[0] = reg_val[1] = 0x00;
-		
+
 		fts_i2c_Read(client, auc_i2c_write_buf, 4, reg_val, 2);
 
 		if (reg_val[0] == fts_updateinfo_curr.upgrade_id_1
-			&& reg_val[1] == fts_updateinfo_curr.upgrade_id_2) 
+			&& reg_val[1] == fts_updateinfo_curr.upgrade_id_2)
 		{
 			DBG("[FTS] Step 3: READ OK CTPM ID,ID1 = 0x%x,ID2 = 0x%x\n",
 				reg_val[0], reg_val[1]);
@@ -859,7 +859,7 @@ int  fts_5x46_ctpm_fw_upgrade(struct i2c_client * client, u8* pbt_buf, u32 dw_le
 		} else {
 			dev_err(&client->dev, "[FTS] Step 3: CTPM ID,ID1 = 0x%x,ID2 = 0x%x\n",
 				reg_val[0], reg_val[1]);
-			
+
 			continue;
 		}
 	}
@@ -869,7 +869,7 @@ int  fts_5x46_ctpm_fw_upgrade(struct i2c_client * client, u8* pbt_buf, u32 dw_le
 	/*Step 4:erase app and panel paramenter area*/
 	DBG("Step 4:erase app and panel paramenter area\n");
 	auc_i2c_write_buf[0] = 0x61;
-	fts_i2c_Write(client, auc_i2c_write_buf, 1);	//erase app area 
+	fts_i2c_Write(client, auc_i2c_write_buf, 1);	//erase app area
 	msleep(1350);
 
 	for(i = 0;i < 15;i++)
@@ -883,7 +883,7 @@ int  fts_5x46_ctpm_fw_upgrade(struct i2c_client * client, u8* pbt_buf, u32 dw_le
 			break;
 		}
 		msleep(50);
-		
+
 	}
 
 	auc_i2c_write_buf[0] = 0xB0;
@@ -901,7 +901,7 @@ int  fts_5x46_ctpm_fw_upgrade(struct i2c_client * client, u8* pbt_buf, u32 dw_le
 	packet_buf[0] = 0xbf;
 	packet_buf[1] = 0x00;
 
-	for (j = 0; j < packet_number; j++) 
+	for (j = 0; j < packet_number; j++)
 	{
 		temp = j * FTS_PACKET_LENGTH;
 		packet_buf[2] = (u8) (temp >> 8);
@@ -910,7 +910,7 @@ int  fts_5x46_ctpm_fw_upgrade(struct i2c_client * client, u8* pbt_buf, u32 dw_le
 		packet_buf[4] = (u8) (lenght >> 8);
 		packet_buf[5] = (u8) lenght;
 
-		for (i = 0; i < FTS_PACKET_LENGTH; i++) 
+		for (i = 0; i < FTS_PACKET_LENGTH; i++)
 		{
 			packet_buf[6 + i] = pbt_buf[j * FTS_PACKET_LENGTH + i];
 			bt_ecc ^= packet_buf[6 + i];
@@ -928,11 +928,11 @@ int  fts_5x46_ctpm_fw_upgrade(struct i2c_client * client, u8* pbt_buf, u32 dw_le
 				break;
 			}
 			msleep(1);
-			
+
 		}
 	}
 
-	if ((dw_lenth) % FTS_PACKET_LENGTH > 0) 
+	if ((dw_lenth) % FTS_PACKET_LENGTH > 0)
 	{
 		temp = packet_number * FTS_PACKET_LENGTH;
 		packet_buf[2] = (u8) (temp >> 8);
@@ -941,11 +941,11 @@ int  fts_5x46_ctpm_fw_upgrade(struct i2c_client * client, u8* pbt_buf, u32 dw_le
 		packet_buf[4] = (u8) (temp >> 8);
 		packet_buf[5] = (u8) temp;
 
-		for (i = 0; i < temp; i++) 
+		for (i = 0; i < temp; i++)
 		{
 			packet_buf[6 + i] = pbt_buf[packet_number * FTS_PACKET_LENGTH + i];
 			bt_ecc ^= packet_buf[6 + i];
-		}	
+		}
 		fts_i2c_Write(client, packet_buf, temp + 6);
 
 		for(i = 0;i < 30;i++)
@@ -959,17 +959,17 @@ int  fts_5x46_ctpm_fw_upgrade(struct i2c_client * client, u8* pbt_buf, u32 dw_le
 				break;
 			}
 			msleep(1);
-			
+
 		}
 	}
 
 	msleep(50);
-	
+
 	/*********Step 6: read out checksum***********************/
 	/*send the opration head */
 	DBG("Step 6: read out checksum\n");
 	auc_i2c_write_buf[0] = 0x64;
-	fts_i2c_Write(client, auc_i2c_write_buf, 1); 
+	fts_i2c_Write(client, auc_i2c_write_buf, 1);
 	msleep(300);
 
 	temp = 0;
@@ -980,7 +980,7 @@ int  fts_5x46_ctpm_fw_upgrade(struct i2c_client * client, u8* pbt_buf, u32 dw_le
 	temp = dw_lenth;
 	auc_i2c_write_buf[4] = (u8)(temp >> 8);
 	auc_i2c_write_buf[5] = (u8)(temp);
-	i_ret = fts_i2c_Write(client, auc_i2c_write_buf, 6); 
+	i_ret = fts_i2c_Write(client, auc_i2c_write_buf, 6);
 	msleep(dw_lenth/256);
 
 	for(i = 0;i < 100;i++)
@@ -994,24 +994,24 @@ int  fts_5x46_ctpm_fw_upgrade(struct i2c_client * client, u8* pbt_buf, u32 dw_le
 			break;
 		}
 		msleep(1);
-			
+
 	}
 	auc_i2c_write_buf[0] = 0x66;
 	fts_i2c_Read(client, auc_i2c_write_buf, 1, reg_val, 1);
-	if (reg_val[0] != bt_ecc) 
+	if (reg_val[0] != bt_ecc)
 	{
 		dev_err(&client->dev, "[FTS]--ecc error! FW=%02x bt_ecc=%02x\n",
 					reg_val[0],
 					bt_ecc);
-				
+
 		return -EIO;
 	}
-	printk(KERN_WARNING "checksum %X %X \n",reg_val[0],bt_ecc);	
+	printk(KERN_WARNING "checksum %X %X \n",reg_val[0],bt_ecc);
 	/*********Step 7: reset the new FW***********************/
 	DBG("Step 7: reset the new FW\n");
 	auc_i2c_write_buf[0] = 0x07;
 	fts_i2c_Write(client, auc_i2c_write_buf, 1);
-	msleep(130);	//make sure CTP startup normally 
+	msleep(130);	//make sure CTP startup normally
 
 	return 0;
 }
@@ -1032,20 +1032,20 @@ int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 	u8 bt_ecc;
 
       // struct Upgrade_Info upgradeinfo;
-	   
+
 	//fts_get_upgrade_info(&upgradeinfo);
-	
+
 	focaltech_get_upgrade_array();
-	
+
 	if(*(pbt_buf+dw_lenth-12) == 30)
 	{
 		is_5336_fwsize_30 = 1;
 	}
-	else 
+	else
 	{
 		is_5336_fwsize_30 = 0;
 	}
-	for (i = 0; i < FTS_UPGRADE_LOOP; i++) 
+	for (i = 0; i < FTS_UPGRADE_LOOP; i++)
 	{
 	        msleep(100);
 		printk("[FTS] Step 1:Reset  CTPM\n");
@@ -1053,7 +1053,7 @@ int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 		/*write 0xaa to register 0xfc */
 		//if (DEVICE_IC_TYPE == IC_FT6208 || DEVICE_IC_TYPE == IC_FT6x06)
 #if 1
-	if(fts_updateinfo_curr.CHIP_ID==0x06 || fts_updateinfo_curr.CHIP_ID==0x36) 
+	if(fts_updateinfo_curr.CHIP_ID==0x06 || fts_updateinfo_curr.CHIP_ID==0x36)
 		fts_write_reg(client, 0xbc, FT_UPGRADE_AA);
 	else
 		fts_write_reg(client, 0xfc, FT_UPGRADE_AA);
@@ -1067,10 +1067,10 @@ int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 	else
 		fts_write_reg(client, 0xfc, FT_UPGRADE_55);
 #else
-	
-    tpd_gpio_output(GPIO_CTP_RST_PIN, 0);  
-    msleep(2);  
-  
+
+    tpd_gpio_output(GPIO_CTP_RST_PIN, 0);
+    msleep(2);
+
     tpd_gpio_output(GPIO_CTP_RST_PIN, 1);
 #endif
 	if(i<=15)
@@ -1116,17 +1116,17 @@ int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 		DBG("[FTS] Step 3: CTPM ID,ID1 = 0x%x,ID2 = 0x%x\n",
 			reg_val[0], reg_val[1]);
 		break;
-	} 
-	else 
+	}
+	else
 	{
 		dev_err(&client->dev, "[FTS] Step 3: CTPM ID,ID1 = 0x%x,ID2 = 0x%x\n",
 			reg_val[0], reg_val[1]);
 	}
-#endif	
+#endif
 	}
 	if (i >= FTS_UPGRADE_LOOP)
 		return -EIO;
-	
+
 	auc_i2c_write_buf[0] = 0xcd;
 	fts_i2c_Read(client, auc_i2c_write_buf, 1, reg_val, 1);
 	/*********0705 mshl ********************/
@@ -1175,7 +1175,7 @@ int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 	{
 		dw_lenth = dw_lenth - 8;
 	}
-	else if(is_5336_new_bootloader == BL_VERSION_GZF) 
+	else if(is_5336_new_bootloader == BL_VERSION_GZF)
 	{
 	      dw_lenth = dw_lenth - 14;
 	}
@@ -1183,7 +1183,7 @@ int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 	packet_buf[0] = 0xbf;
 	packet_buf[1] = 0x00;
 
-	for (j = 0; j < packet_number; j++) 
+	for (j = 0; j < packet_number; j++)
 	{
 		temp = j * FTS_PACKET_LENGTH;
 		packet_buf[2] = (u8) (temp >> 8);
@@ -1192,12 +1192,12 @@ int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 		packet_buf[4] = (u8) (lenght >> 8);
 		packet_buf[5] = (u8) lenght;
 
-		for (i = 0; i < FTS_PACKET_LENGTH; i++) 
+		for (i = 0; i < FTS_PACKET_LENGTH; i++)
 		{
 			packet_buf[6 + i] = pbt_buf[j * FTS_PACKET_LENGTH + i];
 			bt_ecc ^= packet_buf[6 + i];
 		}
-		
+
 		fts_i2c_Write(client, packet_buf, FTS_PACKET_LENGTH + 6);
 		msleep(FTS_PACKET_LENGTH / 6 + 1);
 		if((((j+1) * FTS_PACKET_LENGTH)%1024)==0)
@@ -1205,7 +1205,7 @@ int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 		//delay_qt_ms(FTS_PACKET_LENGTH / 6 + 1);
 	}
 
-	if ((dw_lenth) % FTS_PACKET_LENGTH > 0) 
+	if ((dw_lenth) % FTS_PACKET_LENGTH > 0)
 	{
 		temp = packet_number * FTS_PACKET_LENGTH;
 		packet_buf[2] = (u8) (temp >> 8);
@@ -1214,7 +1214,7 @@ int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 		packet_buf[4] = (u8) (temp >> 8);
 		packet_buf[5] = (u8) temp;
 
-		for (i = 0; i < temp; i++) 
+		for (i = 0; i < temp; i++)
 		{
 			packet_buf[6 + i] = pbt_buf[packet_number * FTS_PACKET_LENGTH + i];
 			bt_ecc ^= packet_buf[6 + i];
@@ -1227,7 +1227,7 @@ int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 	/*send the last six byte*/
 	for (i = 0; i<6; i++)
 	{
-		if (is_5336_new_bootloader && ((fts_updateinfo_curr.CHIP_ID==0x11) ||(fts_updateinfo_curr.CHIP_ID==0x12) ||(fts_updateinfo_curr.CHIP_ID==0x13) ||(fts_updateinfo_curr.CHIP_ID==0x14)))//5x36,5x36i 
+		if (is_5336_new_bootloader && ((fts_updateinfo_curr.CHIP_ID==0x11) ||(fts_updateinfo_curr.CHIP_ID==0x12) ||(fts_updateinfo_curr.CHIP_ID==0x13) ||(fts_updateinfo_curr.CHIP_ID==0x14)))//5x36,5x36i
 			temp = 0x7bfa + i;
 		else
 			temp = 0x6ffa + i;
@@ -1236,7 +1236,7 @@ int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 		temp =1;
 		packet_buf[4] = (u8)(temp>>8);
 		packet_buf[5] = (u8)temp;
-		packet_buf[6] = pbt_buf[ dw_lenth + i]; 
+		packet_buf[6] = pbt_buf[ dw_lenth + i];
 		bt_ecc ^= packet_buf[6];
 		fts_i2c_Write(client, packet_buf, 7);
 		msleep(20);
@@ -1247,7 +1247,7 @@ int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 	{
 		for (i = 0; i<6; i++)
 		{
-			if (is_5336_new_bootloader  == BL_VERSION_Z7 ) 
+			if (is_5336_new_bootloader  == BL_VERSION_Z7 )
 			{
 				temp = 0x7bfa + i;
 			}
@@ -1260,23 +1260,23 @@ int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 			temp =1;
 			packet_buf[4] = (u8)(temp>>8);
 			packet_buf[5] = (u8)temp;
-			packet_buf[6] = pbt_buf[ dw_lenth + i]; 
+			packet_buf[6] = pbt_buf[ dw_lenth + i];
 			bt_ecc ^= packet_buf[6];
-  
+
 			fts_i2c_Write(client, packet_buf, 7);
 			msleep(20);
 		}
 	}
 	else if(is_5336_new_bootloader == BL_VERSION_GZF)
 	{
-	    
+
 		for (i = 0; i<12; i++)
 		{
-			if (is_5336_fwsize_30) 
+			if (is_5336_fwsize_30)
 			{
 				temp = 0x7ff4 + i;
 			}
-			else 
+			else
 			{
 				temp = 0x7bf4 + i;
 			}
@@ -1285,9 +1285,9 @@ int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 			temp =1;
 			packet_buf[4] = (u8)(temp>>8);
 			packet_buf[5] = (u8)temp;
-			packet_buf[6] = pbt_buf[ dw_lenth + i]; 
+			packet_buf[6] = pbt_buf[ dw_lenth + i];
 			bt_ecc ^= packet_buf[6];
-  
+
 			fts_i2c_Write(client, packet_buf, 7);
 			msleep(20);
 
@@ -1301,7 +1301,7 @@ int fts_ctpm_fw_upgrade(struct i2c_client *client, u8 *pbt_buf,
 	DBG("Step 6: read out checksum\n");
 	auc_i2c_write_buf[0] = 0xcc;
 	fts_i2c_Read(client, auc_i2c_write_buf, 1, reg_val, 1);
-	if (reg_val[0] != bt_ecc) 
+	if (reg_val[0] != bt_ecc)
 	{
 		dev_err(&client->dev, "[FTS]--ecc error! FW=%02x bt_ecc=%02x\n",
 					reg_val[0],
@@ -1342,7 +1342,7 @@ static int fts_GetFirmwareSize(char *firmware_name)
 	if (NULL == pfile)
 		pfile = filp_open(filepath, O_RDONLY, 0);
 
-	if (IS_ERR(pfile)) 
+	if (IS_ERR(pfile))
 	{
 		pr_err("error occured while opening file %s.\n", filepath);
 		return -EIO;
@@ -1381,7 +1381,7 @@ static int fts_ReadFirmware(char *firmware_name,
 	sprintf(filepath, "%s", firmware_name);
 	if (NULL == pfile)
 		pfile = filp_open(filepath, O_RDONLY, 0);
-	if (IS_ERR(pfile)) 
+	if (IS_ERR(pfile))
 	{
 		pr_err("error occured while opening file %s.\n", filepath);
 		return -EIO;
@@ -1413,24 +1413,24 @@ int fts_ctpm_fw_upgrade_with_app_file(struct i2c_client *client,
 	int i_ret=0;
 	int fwsize = fts_GetFirmwareSize(firmware_name);
 
-	if (fwsize <= 0) 
+	if (fwsize <= 0)
 	{
 		dev_err(&client->dev, "%s ERROR:Get firmware size failed\n",
 					__func__);
 		return -EIO;
 	}
 
-	if (fwsize < 8 || fwsize > 54 * 1024) 
+	if (fwsize < 8 || fwsize > 54 * 1024)
 	{
 		dev_dbg(&client->dev, "%s:FW length error\n", __func__);
 		return -EIO;
 	}
-	
-    
+
+
 	/*=========FW upgrade========================*/
 	pbt_buf = kmalloc(fwsize + 1, GFP_ATOMIC);
 
-	if (fts_ReadFirmware(firmware_name, pbt_buf)) 
+	if (fts_ReadFirmware(firmware_name, pbt_buf))
 	{
 		dev_err(&client->dev, "%s() - ERROR: request_firmware failed\n",
 					__func__);
@@ -1439,7 +1439,7 @@ int fts_ctpm_fw_upgrade_with_app_file(struct i2c_client *client,
 		i_ret = -EIO;
 		goto err_ret;
 	}
-	
+
 	/*call the upgrade function */
 	if ((fts_updateinfo_curr.CHIP_ID==0x54))
 	{
@@ -1460,11 +1460,11 @@ int fts_ctpm_fw_upgrade_with_app_file(struct i2c_client *client,
 		fts_ctpm_auto_clb(client);
 
 err_ret:
-	
-	
-	
+
+
+
 	kfree(pbt_buf);
-    
+
 	return i_ret;
 }
 
@@ -1522,9 +1522,9 @@ static ssize_t fts_tprwreg_store(struct device *dev,
 	mutex_lock(&g_device_mutex);
 	num_read_chars = count - 1;
 
-	if (num_read_chars != 2) 
+	if (num_read_chars != 2)
 	{
-		if (num_read_chars != 4) 
+		if (num_read_chars != 4)
 		{
 			printk("please input 2 or 4 character\n");
 			goto error_return;
@@ -1535,11 +1535,11 @@ static ssize_t fts_tprwreg_store(struct device *dev,
 	//retval = strict_strtoul(valbuf, 16, &wmreg);
 /*
 	if (0 != retval) {
-		
+
 		goto error_return;
 	}
 */
-	if (2 == num_read_chars) 
+	if (2 == num_read_chars)
 	{
 		/*read register*/
 		regaddr = wmreg;
@@ -1548,8 +1548,8 @@ static ssize_t fts_tprwreg_store(struct device *dev,
 		else
 			printk("the register(0x%x) is 0x%x\n",
 					regaddr, regvalue);
-	} 
-	else 
+	}
+	else
 	{
 		regaddr = wmreg >> 8;
 		regvalue = wmreg;
@@ -1592,12 +1592,12 @@ static ssize_t fts_fwupdate_store(struct device *dev,
 	//disable_irq(client->irq);
 	disable_irq(ft_irq);
 	i_ret = fts_ctpm_fw_upgrade_with_i_file(client);
-	if (i_ret == 0) 
+	if (i_ret == 0)
 	{
 		msleep(300);
 		uc_host_fm_ver = fts_ctpm_get_i_file_ver();
 		pr_info("%s [FTS] upgrade to new version 0x%x\n", __func__,uc_host_fm_ver);
-	} 
+	}
 	else
 		dev_err(&client->dev, "%s ERROR:[FTS] upgrade failed.\n",__func__);
 
@@ -1662,7 +1662,7 @@ static int ft5x0x_GetInISize(char *config_name)
 	if (NULL == pfile)
 		pfile = filp_open(filepath, O_RDONLY, 0);
 
-	if (IS_ERR(pfile)) 
+	if (IS_ERR(pfile))
 	{
 		pr_err("error occured while opening file %s.\n", filepath);
 		return -EIO;
@@ -1689,7 +1689,7 @@ static int ft5x0x_ReadInIData(char *config_name, char *config_buf)
 	sprintf(filepath, "%s%s", FT5X0X_INI_FILEPATH, config_name);
 	if (NULL == pfile)
 		pfile = filp_open(filepath, O_RDONLY, 0);
-	if (IS_ERR(pfile)) 
+	if (IS_ERR(pfile))
 	{
 		pr_err("error occured while opening file %s.\n", filepath);
 		return -EIO;
@@ -1717,11 +1717,11 @@ static int ft5x0x_get_testparam_from_ini(char *config_name)
 	inisize = ft5x0x_GetInISize(config_name);
 
   	printk("lxh:*** %s  _ 2 *** \n", __func__);  // lxh:test
-	
+
 
 	printk("lxh:*** inisize = %d  *** \n ", inisize);  // lxh:test
-	
-	if (inisize <= 0) 
+
+	if (inisize <= 0)
 	{
 		printk("lxh: *** %s ERROR:Get firmware size failed *** \n",
 					__func__);
@@ -1729,15 +1729,15 @@ static int ft5x0x_get_testparam_from_ini(char *config_name)
 	}
 
 	filedata = kmalloc(inisize + 1, GFP_ATOMIC);
-		
-	if (ft5x0x_ReadInIData(config_name, filedata)) 
+
+	if (ft5x0x_ReadInIData(config_name, filedata))
 	{
 		printk(" lxh: *** %s() - ERROR: request_firmware failed ***\n",
 					__func__);
 		kfree(filedata);
 		return -EIO;
-	} 
-	else 
+	}
+	else
 	{
 		printk("lxh:*** ft5x0x_ReadInIData successful *** \n");
 	}
@@ -1753,7 +1753,7 @@ static int ft5x0x_get_testparam_from_ini(char *config_name)
  }
 int focal_i2c_Write(unsigned char *writebuf, int writelen)
 {
-	fts_i2c_Write(g_focalclient,writebuf,writelen);	
+	fts_i2c_Write(g_focalclient,writebuf,writelen);
 }
 #else
 int focal_i2c_Read(unsigned char *writebuf,
@@ -1761,9 +1761,9 @@ int focal_i2c_Read(unsigned char *writebuf,
 {
 	int ret;
 
-	if (writelen > 0) 
+	if (writelen > 0)
 	{
-		struct i2c_msg msgs[] = 
+		struct i2c_msg msgs[] =
 		{
 			{
 			.addr = g_focalclient->addr,
@@ -1802,7 +1802,7 @@ int focal_i2c_Write(unsigned char *writebuf, int writelen)
 {
 	int ret;
 
-	struct i2c_msg msg[] = 
+	struct i2c_msg msg[] =
 	{
 		{
 		.addr = g_focalclient->addr,
@@ -1820,12 +1820,12 @@ int focal_i2c_Write(unsigned char *writebuf, int writelen)
 }
 #endif
 
-enum  
+enum
 {
-   SCAP_ORG_STATUS = 0,	
+   SCAP_ORG_STATUS = 0,
    GET_INIT_FILE_FAIL,
    GET_TP_VENDOR_FAIL,
-   UNKNOWN_TP_VENDOR,	
+   UNKNOWN_TP_VENDOR,
    SCAP_TEST_PASS,
    SCAP_TEST_FAIL,
 };
@@ -1834,10 +1834,10 @@ static int scap_test_ret = SCAP_ORG_STATUS;
 
 static ssize_t ft5x0x_ftsscaptest_show(struct device *dev,
 				struct device_attribute *attr, char *buf)
-{	
-	int ret_num = 0;	
+{
+	int ret_num = 0;
 
-	switch (scap_test_ret) 
+	switch (scap_test_ret)
 	{
 		case SCAP_ORG_STATUS:
 			ret_num = sprintf(buf, "%s", "test haven't done \n");
@@ -1856,18 +1856,18 @@ static ssize_t ft5x0x_ftsscaptest_show(struct device *dev,
 		break;
 
 		case GET_TP_VENDOR_FAIL:
-			ret_num = sprintf(buf, "%s", "get tp vendor id fail \n");  	
+			ret_num = sprintf(buf, "%s", "get tp vendor id fail \n");
 		break;
 
 		case UNKNOWN_TP_VENDOR:
-			ret_num = sprintf(buf, "%s", "unknown tp vendor \n");		
+			ret_num = sprintf(buf, "%s", "unknown tp vendor \n");
 		break;
 
 		default:
 			scap_test_ret = SCAP_ORG_STATUS;
 			ret_num = sprintf(buf, "%s", "unknow status \n");
 		break;
-	} 
+	}
 
 	return ret_num;
 }
@@ -1879,7 +1879,7 @@ static ssize_t ft5x0x_ftsscaptest_store(struct device *dev,
 	/* place holder for future use */
 	char  cfgname[128];
   //  	u8     vendor_id;
-    	int     ret , i = 0;	
+    	int     ret , i = 0;
 //	struct i2c_client *client = container_of(dev, struct i2c_client, dev);
 	memset(cfgname, 0, sizeof(cfgname));
 	sprintf(cfgname, "%s", buf);
@@ -1889,24 +1889,24 @@ static ssize_t ft5x0x_ftsscaptest_store(struct device *dev,
 	 cfgname[count -1] = '\0';
 
 
- #if 0 
-    /**  get tp vendor id  **/ 
+ #if 0
+    /**  get tp vendor id  **/
           do {
 		  ret = fts_read_reg(client, FT6x06_REG_VENDOR_ID, &vendor_id);
 		  if ((ret < 0) || ((vendor_id != FTS_VENDOR_OFM) && (vendor_id != FTS_VENDOR_XQH)))  {
 		    	i ++;
-			msleep(50);	
+			msleep(50);
 		  } else {
-			 printk(" lxh:*** vendor id is: 0x%x *** \n",  vendor_id); //lxh:test	
+			 printk(" lxh:*** vendor id is: 0x%x *** \n",  vendor_id); //lxh:test
 			 break;
-		  }	
+		  }
           }  while (i < 3 );
 
-	if (i >=3) { 
-	  	scap_test_ret = GET_TP_VENDOR_FAIL; 
+	if (i >=3) {
+	  	scap_test_ret = GET_TP_VENDOR_FAIL;
 		 printk(" lxh:***  get vendor id fail...  *** \n"); //lxh:test
-		return -1;	  
-	 }	  
+		return -1;
+	 }
       /**  rename scap_test to scap_test_ofm.ini  or ..xqh.ini  **/
   	 if (vendor_id == FTS_VENDOR_OFM) {
 	   	sprintf(cfgname+count -1, "%s", "_ofm.ini");
@@ -1915,41 +1915,41 @@ static ssize_t ft5x0x_ftsscaptest_store(struct device *dev,
          }  else {
 		scap_test_ret = UNKNOWN_TP_VENDOR;
 		return -1;
-	}   
-		 
+	}
+
 	cfgname[count+8-1] = '\0';
 
-	
+
 
           printk(" lxh:*** cfgname_2 is: %s *** \n", cfgname); //lxh:test
  #endif
 
 	mutex_lock(&g_device_mutex);
 
-	Init_I2C_Write_Func(focal_i2c_Write);  
+	Init_I2C_Write_Func(focal_i2c_Write);
 	Init_I2C_Read_Func(focal_i2c_Read);
-	if(ft5x0x_get_testparam_from_ini(cfgname) <0)  
+	if(ft5x0x_get_testparam_from_ini(cfgname) <0)
 	{
 		printk("lxh:***get testparam from ini failure ***\n");
 		scap_test_ret = GET_INIT_FILE_FAIL;
-	} 
-	else 
+	}
+	else
 	{
 	 	printk("lxh:***get testparam from ini OK, begin to test... ***\n");
-		if(true == StartTestTP()) 
+		if(true == StartTestTP())
 		{
 			printk("lxh:*** tp test pass ***\n");
 			scap_test_ret = SCAP_TEST_PASS;
-		} 
-		else 
+		}
+		else
 		{
 	  		printk("lxh:*** tp test failure ***\n");
-	            	 scap_test_ret = SCAP_TEST_FAIL;		
+	            	 scap_test_ret = SCAP_TEST_FAIL;
 		}
 	    printk("lxh:***  test finished, going to FreeTestParamData()... ***\n");
 		FreeTestParamData();
 	}
-	
+
 	mutex_unlock(&g_device_mutex);
 
 	return count;
@@ -1991,7 +1991,7 @@ static DEVICE_ATTR(ftsfwupgradeapp, S_IRUGO | S_IWUSR, fts_fwupgradeapp_show,
 
 
 /*add your attr in here*/
-static struct attribute *fts_attributes[] = 
+static struct attribute *fts_attributes[] =
 {
 	&dev_attr_ftstpfwver.attr,
 	&dev_attr_ftsfwupdate.attr,
@@ -2003,7 +2003,7 @@ static struct attribute *fts_attributes[] =
 	NULL
 };
 
-static struct attribute_group fts_attribute_group = 
+static struct attribute_group fts_attribute_group =
 {
 	.attrs = fts_attributes
 };
@@ -2013,7 +2013,7 @@ int fts_create_sysfs(struct i2c_client *client)
 {
 	int err;
 	ft_gpDMABuf_va = (u8 *)dma_alloc_coherent(&tpd->dev->dev, FTS_DMA_BUF_SIZE, &gpDMABuf_pa, GFP_KERNEL);
-	
+
     if(!ft_gpDMABuf_va)
 	{
 		dev_dbg(&client->dev,"%s Allocate DMA I2C Buffer failed!\n",__func__);
@@ -2021,15 +2021,15 @@ int fts_create_sysfs(struct i2c_client *client)
 	}
 	printk("FTP: gpDMABuf_pa=%p,val=%llu val2=%p\n",&gpDMABuf_pa,gpDMABuf_pa,(unsigned char *)gpDMABuf_pa);
 	err = sysfs_create_group(&client->dev.kobj, &fts_attribute_group);
-	if (0 != err) 
+	if (0 != err)
 	{
 		dev_err(&client->dev,
 					 "%s() - ERROR: sysfs_create_group() failed.\n",
 					 __func__);
 		sysfs_remove_group(&client->dev.kobj, &fts_attribute_group);
 		return -EIO;
-	} 
-	else 
+	}
+	else
 	{
 		mutex_init(&g_device_mutex);
 		pr_info("ft6x06:%s() - sysfs_create_group() succeeded.\n",
@@ -2048,7 +2048,7 @@ void fts_release_sysfs(struct i2c_client *client)
 		ft_gpDMABuf_va = NULL;
 		gpDMABuf_pa = 0;
 	}
-	
+
 }
 /*create apk debug channel*/
 
@@ -2074,15 +2074,15 @@ static ssize_t ft5x0x_debug_write(struct file *filp, const char __user *buffer, 
 	int buflen = count;
 	int writelen = 0;
 	int ret = 0;
-	
-	if (copy_from_user(&writebuf, buffer, buflen)) 
+
+	if (copy_from_user(&writebuf, buffer, buflen))
 	{
 		dev_err(&client->dev, "%s:copy from user error\n", __func__);
 		return -EFAULT;
 	}
 	proc_operate_mode = writebuf[0];
-	
-	switch (proc_operate_mode) 
+
+	switch (proc_operate_mode)
 	{
 		case PROC_UPGRADE:
 			{
@@ -2096,7 +2096,7 @@ static ssize_t ft5x0x_debug_write(struct file *filp, const char __user *buffer, 
 				ret = fts_ctpm_fw_upgrade_with_app_file(client, upgrade_file_path);
 
 				enable_irq(client->irq);
-				if (ret < 0) 
+				if (ret < 0)
 				{
 					dev_err(&client->dev, "%s:upgrade failed.\n", __func__);
 					return ret;
@@ -2107,7 +2107,7 @@ static ssize_t ft5x0x_debug_write(struct file *filp, const char __user *buffer, 
 			writelen = 1;
 			DBG("%s:register addr=0x%02x\n", __func__, writebuf[1]);
 			ret = fts_i2c_Write(client, writebuf + 1, writelen);
-			if (ret < 0) 
+			if (ret < 0)
 			{
 				dev_err(&client->dev, "%s:write iic error\n", __func__);
 				return ret;
@@ -2116,7 +2116,7 @@ static ssize_t ft5x0x_debug_write(struct file *filp, const char __user *buffer, 
 		case PROC_WRITE_REGISTER:
 			writelen = 2;
 			ret = fts_i2c_Write(client, writebuf + 1, writelen);
-			if (ret < 0) 
+			if (ret < 0)
 			{
 				dev_err(&client->dev, "%s:write iic error\n", __func__);
 				return ret;
@@ -2131,7 +2131,7 @@ static ssize_t ft5x0x_debug_write(struct file *filp, const char __user *buffer, 
 		case PROC_WRITE_DATA:
 			writelen = count - 1;
 			ret = fts_i2c_Write(client, writebuf + 1, writelen);
-			if (ret < 0) 
+			if (ret < 0)
 			{
 				dev_err(&client->dev, "%s:write iic error\n", __func__);
 				return ret;
@@ -2140,7 +2140,7 @@ static ssize_t ft5x0x_debug_write(struct file *filp, const char __user *buffer, 
 		default:
 			break;
 	}
-	
+
 	return count;
 }
 
@@ -2148,7 +2148,7 @@ static ssize_t ft5x0x_debug_write(struct file *filp, const char __user *buffer, 
 /*interface of read proc*/
 /*static int ft5x0x_debug_read( char *page, char **start,
 	off_t off, int count, int *eof, void *data )*/
-#if 0 
+#if 0
 static ssize_t ft5x0x_debug_read(struct file *file, char __user *page, size_t size, loff_t *ppos)
 {
 	struct i2c_client *client = fts_proc_entry_i2c_client;
@@ -2189,7 +2189,7 @@ static ssize_t ft5x0x_debug_read(struct file *file, char __user *page, size_t si
 			dev_err(&client->dev, "%s:read iic error\n", __func__);
 			return ret;
 		}
-		
+
 		num_read_chars = readlen;
 		break;
 	case PROC_WRITE_DATA:
@@ -2197,13 +2197,13 @@ static ssize_t ft5x0x_debug_read(struct file *file, char __user *page, size_t si
 	default:
 		break;
 	}
-	
+
 	memcpy(page, buf, num_read_chars);
 
 	return num_read_chars;
 }
 #endif
-static const struct file_operations ft5x0x_proc_fops = 
+static const struct file_operations ft5x0x_proc_fops =
 {
 		.write = ft5x0x_debug_write,
 		.read = NULL,
@@ -2214,7 +2214,7 @@ int ft5x0x_create_apk_debug_channel(struct i2c_client * client)
 	if (NULL == ft5x0x_proc_entry) {
 		dev_err(&client->dev, "Couldn't create proc entry!\n");
 		return -ENOMEM;
-	} 
+	}
 	else
 	{
 		dev_info(&client->dev, "Create proc entry success!\n");
@@ -2267,7 +2267,7 @@ static ssize_t ft5x0x_debug_read(struct file *file, char __user *page, size_t si
 			dev_err(&client->dev, "%s:read iic error\n", __func__);
 			return ret;
 		}
-		
+
 		num_read_chars = readlen;
 		break;
 	case PROC_WRITE_DATA:
@@ -2275,7 +2275,7 @@ static ssize_t ft5x0x_debug_read(struct file *file, char __user *page, size_t si
 	default:
 		break;
 	}
-	
+
 	memcpy(page, buf, num_read_chars);
 
 	return num_read_chars;
@@ -2287,8 +2287,8 @@ int ft5x0x_create_apk_debug_channel(struct i2c_client * client)
 	if (NULL == ft5x0x_proc_entry) {
 		dev_err(&client->dev, "Couldn't create proc entry!\n");
 		return -ENOMEM;
-	} 
-	else 
+	}
+	else
 	{
 		dev_info(&client->dev, "Create proc entry success!\n");
 		ft5x0x_proc_entry->data = client;

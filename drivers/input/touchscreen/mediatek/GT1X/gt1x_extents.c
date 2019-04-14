@@ -12,8 +12,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
- * Version: 1.4   
+ *
+ * Version: 1.4
  * Release Date:  2015/07/10
  */
 
@@ -56,7 +56,7 @@ typedef struct {
 #define CHKBITS_8           8
 #if GTP_GESTURE_WAKEUP
 //extern int g_gesture_support;
-extern char *agold_tpd_get_gesture(char *buf_from);
+extern char *tpd_get_gesture(char *buf_from);
 #endif
 int gesture_enabled = 0;    /* module switch */
 DOZE_T gesture_doze_status = DOZE_DISABLED; /* doze status */
@@ -109,14 +109,14 @@ static ssize_t gt1x_gesture_data_write(struct file *filp, const char __user * bu
 static bool calc_checksum(u8 *buf, int len, int bits)
 {
     int i;
-    
+
     if (bits == CHKBITS_16) {
         u16 chksum, *b = (u16 *)buf;
-        
+
         if (len % 2) {
             return false;
         }
-        
+
         len /= 2;
         for (i = 0, chksum = 0; i < len; i++) {
             if (i == len - 1)
@@ -133,7 +133,7 @@ static bool calc_checksum(u8 *buf, int len, int bits)
         }
         return chksum == 0 ? true : false;
     }
-    
+
     return false;
 }
 
@@ -166,27 +166,27 @@ s32 gesture_event_handler(struct input_dev * dev)
     if (DOZE_ENABLED != gesture_doze_status) {
         return -1;
     }
-    
-    /** package: -head 4B + track points + extra info- 
+
+    /** package: -head 4B + track points + extra info-
         * - head -
-        *  doze_buf[0]: gesture type, 
+        *  doze_buf[0]: gesture type,
         *  doze_buf[1]: number of gesture points ,
-        *  doze_buf[2]: protocol type, 
+        *  doze_buf[2]: protocol type,
         *  doze_buf[3]: gesture extra data length.
         */
 	ret = gt1x_i2c_read(GTP_REG_WAKEUP_GESTURE, doze_buf, 4);
 	if (ret < 0) {
         return 0;
     }
-    
+
     ges_type = doze_buf[0];
     len = doze_buf[1];
     need_chk = doze_buf[2] & 0x80;
     extra_len = doze_buf[3];
-    
+
     GTP_DEBUG("0x%x = 0x%02X,0x%02X,0x%02X,0x%02X", GTP_REG_WAKEUP_GESTURE,
         doze_buf[0], doze_buf[1], doze_buf[2], doze_buf[3]);
-    
+
     if (len > GESTURE_MAX_POINT_COUNT) {
 		GTP_ERROR("Gesture contain too many points!(%d)", len);
 		len = GESTURE_MAX_POINT_COUNT;
@@ -222,38 +222,38 @@ s32 gesture_event_handler(struct input_dev * dev)
                     ret = 0;
                     goto clear_reg;
                 } else {
-                    /* just return 0 without clear reg, 
+                    /* just return 0 without clear reg,
                                     this will receive another int, we
                                     check the data in the next frame */
                     err_flag1 = 1;
                     return 0;
                 }
             }
-            
+
             err_flag1 = 0;
         }
-        
+
         mutex_lock(&gesture_data_mutex);
         memcpy(&gesture_data.data[4 + len * 4], ges_data, extra_len);
         mutex_unlock(&gesture_data_mutex);
     }
-    
+
     /* check gesture type (if available?) */
 	if (ges_type == 0 || !QUERYBIT(gestures_flag, ges_type)) {
 		GTP_INFO("Gesture[0x%02X] has been disabled.", doze_buf[0]);
-		
+
 		if ((doze_buf[0] == 'a') || (doze_buf[0] == 'b') || (doze_buf[0] == 'c') ||
-			(doze_buf[0] == 'd') || (doze_buf[0] == 'e') || (doze_buf[0] == 'g') || 
+			(doze_buf[0] == 'd') || (doze_buf[0] == 'e') || (doze_buf[0] == 'g') ||
 			(doze_buf[0] == 'h') || (doze_buf[0] == 'm') || (doze_buf[0] == 'o') ||
-			(doze_buf[0] == 'q') || (doze_buf[0] == 's') || (doze_buf[0] == 'v') || 
+			(doze_buf[0] == 'q') || (doze_buf[0] == 's') || (doze_buf[0] == 'v') ||
 			(doze_buf[0] == 'w') || (doze_buf[0] == 'y') || (doze_buf[0] == 'z') ||
 			(doze_buf[0] == '^'))
 	 	{
 			if ('o' == doze_buf[0])
 			{
-				GTP_DEBUG("Gesture[%c] wake up.\n", doze_buf[0]);		
+				GTP_DEBUG("Gesture[%c] wake up.\n", doze_buf[0]);
 				strcpy(gesture_tmp,"o");
-				agold_tpd_get_gesture(gesture_tmp);			
+				tpd_get_gesture(gesture_tmp);
 				input_report_key(dev, KEY_TV, 1);
 				input_sync(dev);
 				input_report_key(dev, KEY_TV, 0);
@@ -261,13 +261,13 @@ s32 gesture_event_handler(struct input_dev * dev)
 
 				doze_buf[0] = 0x00;
 				gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
-				
+
 			}
 			else if ('c' == doze_buf[0])
 			{
 				GTP_DEBUG("Gesture[%c] wake up.\n", doze_buf[0]);
 				strcpy(gesture_tmp,"c");
-				agold_tpd_get_gesture(gesture_tmp);			
+				tpd_get_gesture(gesture_tmp);
 				input_report_key(dev, KEY_TV, 1);
 				input_sync(dev);
 				input_report_key(dev, KEY_TV, 0);
@@ -275,13 +275,13 @@ s32 gesture_event_handler(struct input_dev * dev)
 
 				doze_buf[0] = 0x00;
 				gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
-				
+
 			}
 			else if ('m' == doze_buf[0])
 			{
-				GTP_DEBUG("Gesture[%c] wake up.\n", doze_buf[0]);			
+				GTP_DEBUG("Gesture[%c] wake up.\n", doze_buf[0]);
 				strcpy(gesture_tmp,"m");
-				agold_tpd_get_gesture(gesture_tmp);			
+				tpd_get_gesture(gesture_tmp);
 				input_report_key(dev, KEY_TV, 1);
 				input_sync(dev);
 				input_report_key(dev, KEY_TV, 0);
@@ -289,13 +289,13 @@ s32 gesture_event_handler(struct input_dev * dev)
 
 				doze_buf[0] = 0x00;
 				gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
-				
+
 			}
 			else if ('w' == doze_buf[0])
 			{
-				GTP_DEBUG("Gesture[%c] wake up.\n", doze_buf[0]);				
+				GTP_DEBUG("Gesture[%c] wake up.\n", doze_buf[0]);
 				strcpy(gesture_tmp,"w");
-				agold_tpd_get_gesture(gesture_tmp);			
+				tpd_get_gesture(gesture_tmp);
 				input_report_key(dev, KEY_TV, 1);
 				input_sync(dev);
 				input_report_key(dev, KEY_TV, 0);
@@ -303,13 +303,13 @@ s32 gesture_event_handler(struct input_dev * dev)
 
 				doze_buf[0] = 0x00;
 				gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
-				
+
 			}
 			else if ('z' == doze_buf[0])
-			{	
-				GTP_DEBUG("Gesture[%c] wake up.\n", doze_buf[0]);	
+			{
+				GTP_DEBUG("Gesture[%c] wake up.\n", doze_buf[0]);
 				strcpy(gesture_tmp,"z");
-				agold_tpd_get_gesture(gesture_tmp);			
+				tpd_get_gesture(gesture_tmp);
 				input_report_key(dev, KEY_TV, 1);
 				input_sync(dev);
 				input_report_key(dev, KEY_TV, 0);
@@ -317,13 +317,13 @@ s32 gesture_event_handler(struct input_dev * dev)
 
 				doze_buf[0] = 0x00;
 				gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
-				
+
 			}
 			else if ('e' == doze_buf[0])
 			{
-				GTP_DEBUG("Gesture[%c] wake up.\n", doze_buf[0]);	
+				GTP_DEBUG("Gesture[%c] wake up.\n", doze_buf[0]);
 				strcpy(gesture_tmp,"e");
-				agold_tpd_get_gesture(gesture_tmp);			
+				tpd_get_gesture(gesture_tmp);
 				input_report_key(dev, KEY_TV, 1);
 				input_sync(dev);
 				input_report_key(dev, KEY_TV, 0);
@@ -331,13 +331,13 @@ s32 gesture_event_handler(struct input_dev * dev)
 
 				doze_buf[0] = 0x00;
 				gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
-				
+
 			}
 			else if ('s' == doze_buf[0])
 			{
-				GTP_DEBUG("Gesture[%c] wake up.\n", doze_buf[0]);			
+				GTP_DEBUG("Gesture[%c] wake up.\n", doze_buf[0]);
 				strcpy(gesture_tmp,"s");
-				agold_tpd_get_gesture(gesture_tmp);			
+				tpd_get_gesture(gesture_tmp);
 				input_report_key(dev, KEY_TV, 1);
 				input_sync(dev);
 				input_report_key(dev, KEY_TV, 0);
@@ -345,13 +345,13 @@ s32 gesture_event_handler(struct input_dev * dev)
 
 				doze_buf[0] = 0x00;
 				gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
-				
+
 			}
 			else if ('v' == doze_buf[0])
 			{
-				GTP_DEBUG("Gesture[%c] wake up.\n", doze_buf[0]);			
+				GTP_DEBUG("Gesture[%c] wake up.\n", doze_buf[0]);
 				strcpy(gesture_tmp,"v");
-				agold_tpd_get_gesture(gesture_tmp);			
+				tpd_get_gesture(gesture_tmp);
 				input_report_key(dev, KEY_TV, 1);
 				input_sync(dev);
 				input_report_key(dev, KEY_TV, 0);
@@ -359,13 +359,13 @@ s32 gesture_event_handler(struct input_dev * dev)
 
 				doze_buf[0] = 0x00;
 				gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
-				
+
 			}
 			else if ('^' == doze_buf[0])
 			{
-				GTP_DEBUG("[Jason] Gesture[%c] wake up.\n", doze_buf[0]);			
+				GTP_DEBUG("[Jason] Gesture[%c] wake up.\n", doze_buf[0]);
 				strcpy(gesture_tmp,"reversev");
-				agold_tpd_get_gesture(gesture_tmp);			
+				tpd_get_gesture(gesture_tmp);
 				input_report_key(dev, KEY_TV, 1);
 				input_sync(dev);
 				input_report_key(dev, KEY_TV, 0);
@@ -373,83 +373,83 @@ s32 gesture_event_handler(struct input_dev * dev)
 
 				doze_buf[0] = 0x00;
 				gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
-				
+
 			}
 		}
 		else if (doze_buf[0] == 0xCC)
 		{
 			//if(double_click_flag==1) {
-				GTP_DEBUG("Gesture[%dul] double click wake up.\n", doze_buf[0]);		
+				GTP_DEBUG("Gesture[%dul] double click wake up.\n", doze_buf[0]);
 				strcpy(gesture_tmp,"doubletap");
-				agold_tpd_get_gesture(gesture_tmp);			
+				tpd_get_gesture(gesture_tmp);
 				input_report_key(dev, KEY_TV, 1);
 				input_sync(dev);
 				input_report_key(dev, KEY_TV, 0);
 				input_sync(dev);
-				
+
 				doze_buf[0] = 0x00;
 				gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
-			
+
 		}
 		else if (doze_buf[0] == 0xAA)
 		{
-				GTP_DEBUG("Gesture[%dul] right wake up.\n", doze_buf[0]);		
+				GTP_DEBUG("Gesture[%dul] right wake up.\n", doze_buf[0]);
 				strcpy(gesture_tmp,"right");
-				agold_tpd_get_gesture(gesture_tmp);			
+				tpd_get_gesture(gesture_tmp);
 				input_report_key(dev, KEY_TV, 1);
 				input_sync(dev);
 				input_report_key(dev, KEY_TV, 0);
 				input_sync(dev);
-				
+
 				doze_buf[0] = 0x00;
 				gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
-				
+
 		}
 		else if (doze_buf[0] == 0xBB)
 		{
-				GTP_DEBUG("Gesture[%dul] left wake up.\n", doze_buf[0]);		
+				GTP_DEBUG("Gesture[%dul] left wake up.\n", doze_buf[0]);
 				strcpy(gesture_tmp,"left");
-				agold_tpd_get_gesture(gesture_tmp);			
+				tpd_get_gesture(gesture_tmp);
 				input_report_key(dev, KEY_TV, 1);
 				input_sync(dev);
 				input_report_key(dev, KEY_TV, 0);
 				input_sync(dev);
-				
+
 				doze_buf[0] = 0x00;
 				gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
-				
+
 		}
 				else if (doze_buf[0] == 0xAB)
 		{
-				GTP_DEBUG("Gesture[%dul] down wake up.\n", doze_buf[0]);		
+				GTP_DEBUG("Gesture[%dul] down wake up.\n", doze_buf[0]);
 				strcpy(gesture_tmp,"down");
-				agold_tpd_get_gesture(gesture_tmp);			
+				tpd_get_gesture(gesture_tmp);
 				input_report_key(dev, KEY_TV, 1);
 				input_sync(dev);
 				input_report_key(dev, KEY_TV, 0);
 				input_sync(dev);
-				
+
 				doze_buf[0] = 0x00;
 				gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
-				
+
 		}
 				else if (doze_buf[0] == 0xBA)
 		{
-				GTP_DEBUG("Gesture[%dul] up wake up.\n", doze_buf[0]);		
+				GTP_DEBUG("Gesture[%dul] up wake up.\n", doze_buf[0]);
 				strcpy(gesture_tmp,"up");
-				agold_tpd_get_gesture(gesture_tmp);			
+				tpd_get_gesture(gesture_tmp);
 				input_report_key(dev, KEY_TV, 1);
 				input_sync(dev);
 				input_report_key(dev, KEY_TV, 0);
 				input_sync(dev);
-				
+
 				doze_buf[0] = 0x00;
 				gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
-				
+
 		}
 		else
-		{	
-			GTP_DEBUG("Gesture[%dul] default.\n", doze_buf[0]);		
+		{
+			GTP_DEBUG("Gesture[%dul] default.\n", doze_buf[0]);
 			strcpy(gesture_tmp,"default");
 			doze_buf[0] = 0x00;
 			gt1x_i2c_write(GTP_REG_WAKEUP_GESTURE, doze_buf, 1);
@@ -478,14 +478,14 @@ s32 gesture_event_handler(struct input_dev * dev)
             GTP_ERROR("Read gesture data failed.");
             return 0;
         }
-        
+
         /* checksum reg for gesture point data */
         ret = gt1x_i2c_read(0x819F, &ges_data[len * 4], 2);
         if (ret < 0) {
             GTP_ERROR("Read gesture data failed.");
             return 0;
         }
-        
+
         if (likely(need_chk)) {
             bool val = calc_checksum(ges_data,
                len * 4 + 2, CHKBITS_16);
@@ -500,10 +500,10 @@ s32 gesture_event_handler(struct input_dev * dev)
                     return 0;
                 }
             }
-            
+
             err_flag2 = 0;
         }
-        
+
         mutex_lock(&gesture_data_mutex);
         memcpy(&gesture_data.data[4], ges_data, len * 4);
         mutex_unlock(&gesture_data_mutex);
@@ -538,7 +538,7 @@ void gesture_clear_wakeup_data(void)
 	mutex_unlock(&gesture_data_mutex);
 }
 
-void gt1x_gesture_debug(int on) 
+void gt1x_gesture_debug(int on)
 {
     if (on) {
         gesture_enabled = 1;
@@ -902,7 +902,7 @@ static long gt1x_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	        _IOC_SIZE(cmd),
 	        (_IOC_DIR(cmd) & _IOC_READ) ? "read" : (_IOC_DIR(cmd) & _IOC_WRITE) ? "write" : "-");
         */
-        
+
 	if (_IOC_DIR(cmd)) {
 		s32 err = -1;
 		s32 data_length = _IOC_SIZE(cmd);
@@ -1078,9 +1078,9 @@ static long gt1x_compat_ioctl(struct file *file, unsigned int cmd, unsigned long
 {
     void __user *arg32 = compat_ptr(arg);
 
-    if (!file->f_op || !file->f_op->unlocked_ioctl) 
+    if (!file->f_op || !file->f_op->unlocked_ioctl)
         return -ENOTTY;
-    
+
     return file->f_op->unlocked_ioctl(file, cmd, (unsigned long)arg32);
 }
 #endif

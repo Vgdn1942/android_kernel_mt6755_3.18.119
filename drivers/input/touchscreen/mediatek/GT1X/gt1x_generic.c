@@ -12,8 +12,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
- * Version: 1.4   
+ *
+ * Version: 1.4
  * Release Date:  2015/07/10
  */
 
@@ -60,7 +60,7 @@ static const u16 gt1x_stylus_key_array[] = GTP_STYLUS_KEY_TAB;
 #endif
 
 #define GOODIX_SYSFS_DIR      "goodix"
-static struct kobject *sysfs_rootdir = NULL; 
+static struct kobject *sysfs_rootdir = NULL;
 
 volatile int gt1x_rawdiff_mode = 0;
 u8 gt1x_wakeup_level = 0;
@@ -481,7 +481,7 @@ s32 gt1x_i2c_read_dbl_check(u16 addr, u8 * buffer, s32 len)
     if (ret < 0) {
         return ret;
     }
-    
+
 	msleep(5);
 	memset(confirm_buf, 0, sizeof(confirm_buf));
 	ret = gt1x_i2c_read(addr, confirm_buf, len);
@@ -498,7 +498,7 @@ s32 gt1x_i2c_read_dbl_check(u16 addr, u8 * buffer, s32 len)
 }
 
 /**
- * gt1x_get_info - Get information from ic, such as resolution and 
+ * gt1x_get_info - Get information from ic, such as resolution and
  * int trigger type
  * Return    <0: i2c failed, 0: i2c ok
  */
@@ -534,7 +534,7 @@ s32 gt1x_get_info(void)
  */
 s32 gt1x_send_cfg(u8 * config, int cfg_len)
 {
-//#if defined(AGOLD_GTP_WRITE_CFG)
+//#if defined(GTP_WRITE_CFG)
     static DEFINE_MUTEX(mutex_cfg);
 	int i;
 	s32 ret = 0;
@@ -545,7 +545,7 @@ s32 gt1x_send_cfg(u8 * config, int cfg_len)
         GTP_DEBUG("Ignore cfg during fw update.");
         return -1;
     }
-    
+
     mutex_lock(&mutex_cfg);
 	GTP_DEBUG("Driver send config, length:%d", cfg_len);
 	for (i = 0; i < cfg_len - 3; i += 2) {
@@ -590,7 +590,7 @@ s32 gt1x_init_panel(void)
 	s32 ret = 0;
 	u8 cfg_len = 0;
 
-//#if defined(AGOLD_GTP_WRITE_CFG)
+//#if defined(GTP_WRITE_CFG)
 	u8 sensor_id = 0;
 
 	const u8 cfg_grp0[] = GTP_CFG_GROUP0;
@@ -611,15 +611,14 @@ s32 gt1x_init_panel(void)
 		CFG_GROUP_LEN(cfg_grp4),
 		CFG_GROUP_LEN(cfg_grp5)
 	};
-    
+
 	GTP_INFO("Config groups length:%d,%d,%d,%d,%d,%d", cfg_lens[0], cfg_lens[1], cfg_lens[2], cfg_lens[3], cfg_lens[4], cfg_lens[5]);
 
-//chenpeng 2016\07\25 可为相同IC不同供应商TP固件通过sensor_id兼容
-#ifdef AGOLD_GTP_WRITE_CFG_FOR_KEWEI_U1
+#ifdef GTP_WRITE_CFG_FOR_KEWEI_U1
 
 	sensor_id = gt1x_version.sensor_id;
 	printk("[chenpeng]sensor_id = %d\n",sensor_id);
-#else	
+#else
 
 	sensor_id = gt1x_version.sensor_id;
 	if (sensor_id >= 6 || cfg_lens[sensor_id] < GTP_CONFIG_MIN_LENGTH || cfg_lens[sensor_id] > GTP_CONFIG_MAX_LENGTH) {
@@ -657,13 +656,13 @@ s32 gt1x_init_panel(void)
 #endif /* END GTP_CUSTOM_CFG */
 
 //#else /* DRIVER NOT SEND CONFIG */
-#if !defined(AGOLD_GTP_WRITE_CFG) && !defined(AGOLD_CTP_FOR_HAND)
+#if !defined(GTP_WRITE_CFG) && !defined(CTP_FOR_HAND)
 	cfg_len = GTP_CONFIG_MAX_LENGTH;
 	ret = gt1x_i2c_read(GTP_REG_CONFIG_DATA, gt1x_config, cfg_len);
 	if (ret < 0) {
 		return ret;
 	}
-#endif /* END AGOLD_GTP_WRITE_CFG */
+#endif /* END GTP_WRITE_CFG */
 
 	GTP_DEBUG_FUNC();
 	/* match resolution when gt1x_abs_x_max & gt1x_abs_y_max have been set already */
@@ -689,15 +688,15 @@ s32 gt1x_init_panel(void)
 	return ret;
 }
 
-#if defined(AGOLD_CTP_FOR_HAND)
+#if defined(CTP_FOR_HAND)
 s32 gt1x_write_hand_cfg(void)
 {
 	static DEFINE_MUTEX(mutex_cfg);
 	int i;
-	
+
 	s32 retry = 0;
 	u16 checksum = 0;
-	
+
 	s32 ret = 0;
 	u8 cfg_len = 0;
 
@@ -721,7 +720,7 @@ s32 gt1x_write_hand_cfg(void)
 		CFG_GROUP_LEN(cfg_grp4),
 		CFG_GROUP_LEN(cfg_grp5)
 	};
-    
+
 	GTP_INFO("Config groups length:%d,%d,%d,%d,%d,%d", cfg_lens[0], cfg_lens[1], cfg_lens[2], cfg_lens[3], cfg_lens[4], cfg_lens[5]);
 
 	sensor_id = gt1x_version.sensor_id;
@@ -750,7 +749,7 @@ s32 gt1x_write_hand_cfg(void)
         GTP_DEBUG("Ignore cfg during fw update.");
         return -1;
     }
-    
+
     mutex_lock(&mutex_cfg);
 	GTP_DEBUG("Driver send config, length:%d", cfg_len);
 	for (i = 0; i < cfg_len - 3; i += 2) {
@@ -798,7 +797,7 @@ static s32 gt1x_set_reset_status(void)
     /* 0x8040 ~ 0x8043 */
 	u8 value[] = {0xAA, 0x00, 0x56, 0xAA};
     int ret;
-    
+
 	GTP_DEBUG("Set reset status.");
     ret = gt1x_i2c_write(GTP_REG_CMD + 1, &value[1], 3);
     if (ret < 0)
@@ -812,7 +811,7 @@ int gt1x_write_and_readback(u16 addr, u8 * buffer, s32 len)
 {
     int ret;
     u8 d[len];
-    
+
     ret = gt1x_i2c_write(addr, buffer, len);
     if (ret < 0)
         return -1;
@@ -839,7 +838,7 @@ int gt1x_incell_reset(void)
         ret = gt1x_i2c_read(0x4220, d, 1);
 
     } while (--retry && ret < 0);
-    
+
     if (ret < 0) {
         return -1;
     }
@@ -851,7 +850,7 @@ int gt1x_incell_reset(void)
         ret = gt1x_write_and_readback(0x4180, d, 1);
 
     } while (--retry && ret < 0);
-    
+
     if (ret < 0) {
         GTP_ERROR("Hold error.");
         return -1;
@@ -864,26 +863,26 @@ int gt1x_incell_reset(void)
         ret = gt1x_write_and_readback(0x4305, d, 1);
         if (ret < 0)
             continue;
-        
+
         d[0] = 0x2B;
         d[1] = 0x24;
         ret = gt1x_write_and_readback(0x42c4, d, 2);
         if (ret < 0)
             continue;
-        
+
         d[0] = 0xE1;
         d[1] = 0xD3;
         ret = gt1x_write_and_readback(0x42e4, d, 2);
         if (ret < 0)
-            continue;   
-        
+            continue;
+
         d[0] = 0x01;
         ret = gt1x_write_and_readback(0x4305, d, 1);
         if (ret < 0)
             continue;
         else
             break;
-    } while (--retry ); 
+    } while (--retry );
 
     if (!retry)
         return -1;
@@ -894,7 +893,7 @@ int gt1x_incell_reset(void)
     do {
         d[0] = 0x00;
         ret = gt1x_write_and_readback(0x4180, d, 1);
-        
+
     } while (--retry && ret < 0);
 
     if (ret < 0)
@@ -915,7 +914,7 @@ s32 gt1x_reset_guitar(void)
     ret = gt1x_incell_reset();
     if (ret < 0)
         return ret;
-#else 
+#else
     gt1x_select_addr();
     msleep(8);     //must >= 6ms
 #endif
@@ -925,7 +924,7 @@ s32 gt1x_reset_guitar(void)
     msleep(50);
     GTP_GPIO_AS_INT(GTP_INT_PORT);
 
-    /* this operation is necessary even when the esd check 
+    /* this operation is necessary even when the esd check
            fucntion dose not turn on */
 	ret = gt1x_set_reset_status();
     return ret;
@@ -998,7 +997,7 @@ s32 gt1x_read_version(struct gt1x_version_info * ver_info)
 
 /**
  * gt1x_get_chip_type - get chip type .
- * 	
+ *
  * different chip synchronize in different way,
  */
 s32 gt1x_get_chip_type(void)
@@ -1037,7 +1036,7 @@ s32 gt1x_get_chip_type(void)
 
 /**
  * gt1x_enter_sleep - Eter sleep function.
- * 
+ *
  * Returns  0--success,non-0--fail.
  */
 static s32 gt1x_enter_sleep(void)
@@ -1069,7 +1068,7 @@ static s32 gt1x_enter_sleep(void)
 
 /**
  * gt1x_wakeup_sleep - wakeup from sleep mode Function.
- * 
+ *
  * Return: 0--success,non-0--fail.
  */
 static s32 gt1x_wakeup_sleep(void)
@@ -1079,7 +1078,7 @@ static s32 gt1x_wakeup_sleep(void)
 	s32 ret = -1;
     int flag = 0;
 #endif
-    
+
 	GTP_DEBUG("Wake up begin.");
 	gt1x_irq_disable();
 
@@ -1116,7 +1115,7 @@ static s32 gt1x_wakeup_sleep(void)
 #endif
             if (!ret)
                 break;
-	
+
 		} /* end int wakeup */
 	}
 
@@ -1167,7 +1166,7 @@ void gt1x_power_reset(void)
 {
     static int rst_flag;
     s32 i = 0;
-    
+
 	if (rst_flag || update_info.status) {
 		return;
 	}
@@ -1240,9 +1239,9 @@ s32 gt1x_request_event_handler(void)
 }
 
 /**
- * gt1x_touch_event_handler - handle touch event 
+ * gt1x_touch_event_handler - handle touch event
  * (pen event, key event, finger touch envent)
- * @data: 
+ * @data:
  * Return    <0: failed, 0: succeed
  */
 s32 gt1x_touch_event_handler(u8 * data, struct input_dev * dev, struct input_dev * pen_dev)
@@ -1274,8 +1273,8 @@ s32 gt1x_touch_event_handler(u8 * data, struct input_dev * dev, struct input_dev
 
 	memcpy(touch_data, data, 11);
 
-	/* read the remaining coor data 
-        * 0x814E(touch status) + 8(every coordinate consist of 8 bytes data) * touch num + 
+	/* read the remaining coor data
+        * 0x814E(touch status) + 8(every coordinate consist of 8 bytes data) * touch num +
         * keycode + checksum
         */
 	if (touch_num > 1) {
@@ -1303,7 +1302,7 @@ s32 gt1x_touch_event_handler(u8 * data, struct input_dev * dev, struct input_dev
             return ERROR_VALUE;
         }
     }
-/* 
+/*
  * cur_event , pre_event bit defination
  * bits:     bit4	bit3		    bit2	 bit1	   bit0
  * event:  hover  stylus_key  stylus    key    touch
@@ -1336,7 +1335,7 @@ s32 gt1x_touch_event_handler(u8 * data, struct input_dev * dev, struct input_dev
 /* start handle current event and pre-event */
 #if GTP_HAVE_STYLUS_KEY
 	if (CHK_BIT(cur_event, BIT_STYLUS_KEY) || CHK_BIT(pre_event, BIT_STYLUS_KEY)) {
-		/* 
+		/*
 		 * 0x10 -- stylus key0 down
 		 * 0x20 -- stylus key1 down
 		 * 0x40 -- stylus key0 & stylus key1 both down
@@ -1395,35 +1394,35 @@ s32 gt1x_touch_event_handler(u8 * data, struct input_dev * dev, struct input_dev
 		}
     }
 #else
-	if (CHK_BIT(cur_event, BIT_TOUCH_KEY)) 
+	if (CHK_BIT(cur_event, BIT_TOUCH_KEY))
 	{
-		if (key_value & 0x01) 
+		if (key_value & 0x01)
 		{
 			key_x=60;
-			key_y=AGOLD_TPD_RES_Y*850/800; 
+			key_y=TPD_RES_Y*850/800;
 		}
-		else if(key_value & 0x02) 
+		else if(key_value & 0x02)
 		{
-		#if defined AGOLD_TOUCH_KEY_FOR_KEWEI_U3
+		#if defined TOUCH_KEY_FOR_KEWEI_U3
 			key_x=180;
 		#else
 			key_x=300;
 		#endif
-			key_y=AGOLD_TPD_RES_Y*850/800;  
+			key_y=TPD_RES_Y*850/800;
 		}
-		else if(key_value & 0x04) 
+		else if(key_value & 0x04)
 		{
-		#if defined AGOLD_TOUCH_KEY_FOR_KEWEI_U3
+		#if defined TOUCH_KEY_FOR_KEWEI_U3
 			key_x=300;
 		#else
 			key_x=180;
 		#endif
-			key_y=AGOLD_TPD_RES_Y*850/800;
+			key_y=TPD_RES_Y*850/800;
 		}
-		else if(key_value & 0x08) 
+		else if(key_value & 0x08)
 		{
 			key_x=420;
-			key_y=AGOLD_TPD_RES_Y*850/800;
+			key_y=TPD_RES_Y*850/800;
 		}
 		gt1x_touch_down(key_x, key_y, 0, 0);
 		GTP_INFO("Key Down.");
@@ -1593,7 +1592,7 @@ void gt1x_pen_up(s32 id)
 #define PS_NEAR                     0
 struct gt1x_ps_device{
     int enabled; // module enabled/disabled
-    int state;   // Faraway or Near 
+    int state;   // Faraway or Near
 #ifdef PLATFORM_MTK
     struct hwmsen_object obj_ps;
 #else
@@ -1604,7 +1603,7 @@ struct gt1x_ps_device{
 static struct gt1x_ps_device *gt1x_ps_dev;
 
 static void gt1x_ps_report(int state)
-{  
+{
 #ifdef PLATFORM_MTK
     s32 ret = -1;
 
@@ -1636,7 +1635,7 @@ static s32 gt1x_ps_enable(s32 enable)
     if (gt1x_chip_type == CHIP_TYPE_GT1X)
 	    ret = gt1x_i2c_write(GTP_REG_PROXIMITY_ENABLE, &state, 1);
     else if (gt1x_chip_type == CHIP_TYPE_GT2X)
-        ret = gt1x_send_cmd(state ? 0x12 : 0x13, 0); 
+        ret = gt1x_send_cmd(state ? 0x12 : 0x13, 0);
 	if (ret) {
 		GTP_ERROR("GTP %s proximity cmd failed.", state ? "enable" : "disable");
 	}
@@ -1654,7 +1653,7 @@ static s32 gt1x_ps_enable(s32 enable)
 int gt1x_prox_event_handler(u8 * data)
 {
 	u8 ps = 0;
-  
+
 	if (gt1x_ps_dev && gt1x_ps_dev->enabled) {
 		ps = (data[0] & 0x60) ? 0 : 1;
 		if (ps != gt1x_ps_dev->state) {
@@ -1662,7 +1661,7 @@ int gt1x_prox_event_handler(u8 * data)
 			gt1x_ps_dev->state = ps;
             GTP_DEBUG("REG INDEX[0x814E]:0x%02X\n", data[0]);
 		}
-        
+
         return (ps == PS_NEAR? 1 : 0);
 	}
 	return -1;
@@ -1730,7 +1729,7 @@ static ssize_t gt1x_ps_enable_show(struct kobject *kobj, struct kobj_attribute *
 	return scnprintf(buf, PAGE_SIZE, "%d", gt1x_ps_dev->enabled);
 }
 
-static ssize_t gt1x_ps_enable_store(struct kobject *kobj, struct kobj_attribute *attr, 
+static ssize_t gt1x_ps_enable_store(struct kobject *kobj, struct kobj_attribute *attr,
 		const char *buf, size_t count) {
 	unsigned int input;
 	if(sscanf(buf, "%u", &input) != 1) {
@@ -1753,7 +1752,7 @@ static ssize_t gt1x_ps_state_show(struct kobject *kobj, struct kobj_attribute *a
 	return scnprintf(buf, PAGE_SIZE, "%d", gt1x_ps_dev->state);
 }
 
-static ssize_t gt1x_ps_state_store(struct kobject *kobj, struct kobj_attribute *attr, 
+static ssize_t gt1x_ps_state_store(struct kobject *kobj, struct kobj_attribute *attr,
 		const char *buf, size_t count) {
 	unsigned int input;
 	if(sscanf(buf, "%u", &input) != 1) {
@@ -1763,7 +1762,7 @@ static ssize_t gt1x_ps_state_store(struct kobject *kobj, struct kobj_attribute *
     if (!gt1x_ps_dev->enabled) {
         return -EINVAL;
     }
-    
+
 	if(input == 1) {
 		gt1x_ps_dev->state = PS_FARAWAY;
 	} else if(input == 0) {
@@ -1793,7 +1792,7 @@ static int gt1x_ps_init(void)
     }
 
     gt1x_ps_dev->state = PS_FARAWAY;
-    
+
 #ifdef PLATFORM_MTK
 	gt1x_ps_dev->obj_ps.polling = 0;	//0--interrupt mode;1--polling mode;
 	gt1x_ps_dev->obj_ps.sensor_operate = gt1x_ps_operate;
@@ -1836,7 +1835,7 @@ static int gt1x_ps_init(void)
             goto err_register_dev;
     	}
     }
-    
+
 	gt1x_ps_dev->kobj = kobject_create_and_add("proximity", sysfs_rootdir);
 	if(!gt1x_ps_dev->kobj){
         GTP_ERROR("Failed to create and add sysfs interface: proximity.");
@@ -1867,7 +1866,7 @@ err_exit:
     return err;
 }
 
-static void gt1x_ps_deinit(void) 
+static void gt1x_ps_deinit(void)
 {
 	if(gt1x_ps_dev) {
 #ifndef PLATFORM_MTK
@@ -1875,7 +1874,7 @@ static void gt1x_ps_deinit(void)
 		for(; i < sizeof(ps_attrs) / sizeof(ps_attrs[0]); i++) {
 			sysfs_remove_file(gt1x_ps_dev->kobj, &ps_attrs[i].attr);
 		}
-		kobject_del(gt1x_ps_dev->kobj); 
+		kobject_del(gt1x_ps_dev->kobj);
 		input_free_device(gt1x_ps_dev->input_dev);
 #endif
         kfree(gt1x_ps_dev);
@@ -1979,15 +1978,15 @@ static void gt1x_esd_check_func(struct work_struct *work)
 struct smart_cover_device{
     int enabled;
     int state; // 0:cover faraway 1:near
-    int suspended;  // suspended or woring 
+    int suspended;  // suspended or woring
     struct kobject *kobj;
     u8 config[GTP_CONFIG_MAX_LENGTH];
     int cfg_len;
 };
 static struct smart_cover_device *gt1x_sc_dev;
 
-/** 
- * gt1x_smart_cover_update_state - update smart cover config 
+/**
+ * gt1x_smart_cover_update_state - update smart cover config
  */
 static int gt1x_smart_cover_update_state(void)
 {
@@ -1997,13 +1996,13 @@ static int gt1x_smart_cover_update_state(void)
     if (!dev) {
         return -ENODEV;
     }
-    
+
 	if(!dev->suspended) {
 		if(dev->state) {  /* near */
 			ret = gt1x_send_cfg(dev->config, dev->cfg_len);
 		} else {
 	    #if GTP_CHARGER_SWITCH
-			gt1x_charger_config(1); // charger detector module check and 
+			gt1x_charger_config(1); // charger detector module check and
 			                        // send a config
 	    #else
 			ret = gt1x_send_cfg(gt1x_config, gt1x_cfg_length);
@@ -2031,35 +2030,35 @@ static ssize_t smart_cover_store(struct kobject *kobj, struct kobj_attribute *at
 {
     struct smart_cover_device *dev = gt1x_sc_dev;
     int s = (buf[0] - '0');
-    
+
     if (!dev || !dev->enabled || s > 1 || s == dev->state) {
         return count;
     }
 
     dev->state = s;
     gt1x_smart_cover_update_state();
-	
+
 	return count;
 }
 
-/** 
+/**
  * gt1x_parse_sc_cfg - parse smart cover config
- *  @sensor_id: sensor id of the hardware      
+ *  @sensor_id: sensor id of the hardware
  */
-int gt1x_parse_sc_cfg(int sensor_id) 
+int gt1x_parse_sc_cfg(int sensor_id)
 {
-#undef _cfg_array_ 
+#undef _cfg_array_
 #define _cfg_array_(n)   GTP_SMART_COVER_CFG_GROUP##n
 
     u8 *cfg;
     int *len;
-    
-    if (!gt1x_sc_dev) 
+
+    if (!gt1x_sc_dev)
         return -ENODEV;
     cfg = gt1x_sc_dev->config;
     len = &gt1x_sc_dev->cfg_len;
 
-#if defined(AGOLD_GTP_WRITE_CFG)
+#if defined(GTP_WRITE_CFG)
     do{
         u8 cfg_grp0[] = _cfg_array_(0);
         u8 cfg_grp1[] = _cfg_array_(1);
@@ -2091,7 +2090,7 @@ int gt1x_parse_sc_cfg(int sensor_id)
         }
 
         memcpy(cfg, cfgs[sensor_id], cfg_lens[sensor_id]);
-        
+
         cfg[0] &= 0x7F;
         set_reg_bit(cfg[TRIGGER_LOC], 0, gt1x_int_type);
     	set_reg_bit(cfg[MODULE_SWITCH3_LOC], 5, !gt1x_wakeup_level);
@@ -2101,7 +2100,7 @@ int gt1x_parse_sc_cfg(int sensor_id)
 }
 
 
-static struct kobj_attribute sc_attr = 
+static struct kobj_attribute sc_attr =
     __ATTR(state, S_IWUGO | S_IRUGO, smart_cover_show, smart_cover_store);
 static int gt1x_smart_cover_init(void)
 {
@@ -2115,14 +2114,14 @@ static int gt1x_smart_cover_init(void)
 
     gt1x_sc_dev->enabled = 1;
     gt1x_parse_sc_cfg(gt1x_version.sensor_id);
-    
+
     if (!sysfs_rootdir) {
         // this kobject is shared between modules, do not free it when error occur
         sysfs_rootdir = kobject_create_and_add(GOODIX_SYSFS_DIR, NULL);
         if (!sysfs_rootdir) {
             err = -2;
             goto exit_free_mem;
-        } 
+        }
     }
 
     if (!gt1x_sc_dev->kobj)
@@ -2131,15 +2130,15 @@ static int gt1x_smart_cover_init(void)
             err = -3;
             goto exit_free_mem;
     }
-    
+
 	if(sysfs_create_file(gt1x_sc_dev->kobj, &sc_attr.attr)) {
 		err = -4;
         goto exit_put_kobj;
 	}
-    
+
     GTP_INFO("SmartCover module init OK.");
     return 0;
-    
+
 exit_put_kobj:
     kobject_put(gt1x_sc_dev->kobj);
 exit_free_mem:
@@ -2172,21 +2171,21 @@ static spinlock_t charger_lock;
 static int charger_running = 0;
 static void gt1x_charger_work_func(struct work_struct *);
 
-/** 
+/**
  * gt1x_parse_chr_cfg - parse  charger config
- *  @sensor_id: sensor id of the hardware   
+ *  @sensor_id: sensor id of the hardware
  * Return:  0: succeed, <0 error
  */
-int gt1x_parse_chr_cfg(int sensor_id) 
+int gt1x_parse_chr_cfg(int sensor_id)
 {
-#undef _cfg_array_ 
+#undef _cfg_array_
 #define _cfg_array_(n)   GTP_CHARGER_CFG_GROUP##n
 
     u8 *cfg;
-    int len;  
+    int len;
     cfg = gt1x_config_charger;
-  
-#if defined(AGOLD_GTP_WRITE_CFG)
+
+#if defined(GTP_WRITE_CFG)
     do{
         u8 cfg_grp0[] = _cfg_array_(0);
         u8 cfg_grp1[] = _cfg_array_(1);
@@ -2216,13 +2215,13 @@ int gt1x_parse_chr_cfg(int sensor_id)
         }
 
         memcpy(cfg, cfgs[sensor_id], cfg_lens[sensor_id]);
-        
+
         cfg[0] &= 0x7F;
     	cfg[RESOLUTION_LOC] = (u8) gt1x_abs_x_max;
     	cfg[RESOLUTION_LOC + 1] = (u8) (gt1x_abs_x_max >> 8);
     	cfg[RESOLUTION_LOC + 2] = (u8) gt1x_abs_y_max;
     	cfg[RESOLUTION_LOC + 3] = (u8) (gt1x_abs_y_max >> 8);
-        
+
         set_reg_bit(cfg[TRIGGER_LOC], 0, gt1x_int_type);
     	set_reg_bit(cfg[MODULE_SWITCH3_LOC], 5, !gt1x_wakeup_level);
     }while(0);
@@ -2243,11 +2242,11 @@ static void gt1x_init_charger(void)
     }
 }
 
-/** 
- * gt1x_charger_switch - switch states of charging work thread  
+/**
+ * gt1x_charger_switch - switch states of charging work thread
  *
  * @on: SWITCH_ON - start work thread, SWITCH_OFF: stop .
- * 	
+ *
  */
 void gt1x_charger_switch(s32 on)
 {
@@ -2273,8 +2272,8 @@ void gt1x_charger_switch(s32 on)
 	}
 }
 
-/** 
- * gt1x_charger_config - check and update charging status configuration 
+/**
+ * gt1x_charger_config - check and update charging status configuration
  * @dir_update
  * 	 0: check before send charging status configuration
  *  	 1: directly send charging status configuration
@@ -2283,9 +2282,9 @@ void gt1x_charger_switch(s32 on)
 void gt1x_charger_config(s32 dir_update)
 {
 	static u8 chr_pluggedin = 0;
-    
+
 #if GTP_SMART_COVER
-    if (gt1x_sc_dev && gt1x_sc_dev->enabled 
+    if (gt1x_sc_dev && gt1x_sc_dev->enabled
         && gt1x_sc_dev->state) {
         return;
     }
@@ -2363,7 +2362,7 @@ int gt1x_suspend(void)
 			return 0;
 		}
 #else
-		ret = gt1x_i2c_read_dbl_check(GTP_REG_HN_PAIRED, buf, sizeof(buf));		
+		ret = gt1x_i2c_read_dbl_check(GTP_REG_HN_PAIRED, buf, sizeof(buf));
 		if ((!ret && buf[0] == 0x55) || hotknot_transfer_mode) {
             GTP_DEBUG("0x81AA: 0x%02X", buf[0]);
 			GTP_INFO("hotknot is paired!");
@@ -2413,7 +2412,7 @@ int gt1x_resume(void)
     if (update_info.status) {
         return 0;
     }
-    
+
 #if GTP_SMART_COVER
     if (gt1x_sc_dev) {
         gt1x_sc_dev->suspended = 0;
@@ -2510,7 +2509,7 @@ s32 gt1x_init(void)
         }
 #endif
         break;
-	} 
+	}
 
 	/* if the initialization fails, set default setting */
 	ret |= gt1x_init_failed;
@@ -2534,9 +2533,9 @@ s32 gt1x_init(void)
         GTP_ERROR("Get verision failed!");
     }
 
-    
+
     /* init and send configs */
-    #if defined(AGOLD_GTP_WRITE_CFG)
+    #if defined(GTP_WRITE_CFG)
     ret = gt1x_init_panel();
     #endif
     if (ret != 0) {

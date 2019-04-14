@@ -37,10 +37,10 @@
 #if GTP_GESTURE_WAKEUP
 extern int g_gesture_support;
 
-extern char *agold_tpd_get_gesture(char *buf_from);
+extern char *tpd_get_gesture(char *buf_from);
 #endif
 extern struct tpd_device *tpd;
-#if defined(AGOLD_CTP_FOR_HAND)
+#if defined(CTP_FOR_HAND)
 extern void gt1x_write_hand_cfg(void);
 #endif
 static spinlock_t irq_lock;
@@ -395,7 +395,7 @@ int gt1x_power_switch(s32 state)
         if (power_state == 0) {
     		GTP_DEBUG("Power switch on!");
 //#ifdef MT6573
-#ifdef AGOLD_CTP_POWER_EN
+#ifdef CTP_POWER_EN
 			GTP_GPIO_OUTPUT(GTP_PWR_PORT, 1);
     		//mt_set_gpio_mode(GPIO_CTP_EN_PIN, GPIO_CTP_EN_PIN_M_GPIO);
     		//mt_set_gpio_dir(GPIO_CTP_EN_PIN, GPIO_DIR_OUT);
@@ -427,7 +427,7 @@ GTP_INFO("[geng_gt1x] use regulator_set_voltage");
 	case SWITCH_OFF:
         if (power_state == 1) {
 		    GTP_DEBUG("Power switch off!");
-#if defined(MT6573) || defined(AGOLD_CTP_POWER_EN)
+#if defined(MT6573) || defined(CTP_POWER_EN)
     		GTP_GPIO_OUTPUT(GTP_PWR_PORT, 0);
     		//mt_set_gpio_mode(GPIO_CTP_EN_PIN, GPIO_CTP_EN_PIN_M_GPIO);
     		//mt_set_gpio_dir(GPIO_CTP_EN_PIN, GPIO_DIR_OUT);
@@ -519,7 +519,7 @@ GTP_INFO("[geng_gt1x] EINTF_TRIGGER_FALLING");
 #endif
 }
 
-#ifdef AGOLD_HARDWARE_INFO
+#ifdef HARDWARE_INFO
 static int gt1x_get_fw_ver(void)
 {
 	u8 ver = 0;
@@ -545,7 +545,7 @@ static int gt1x_get_fw_ver(void)
 }
 #endif
 
-#if defined(AGOLD_CTP_FOR_HAND)
+#if defined(CTP_FOR_HAND)
 static void tpd_handler2(int temp)
 {
 		//int err = 0;
@@ -948,7 +948,6 @@ GTP_INFO("[geng_gt1x] regulator_get");
 	if (tpd_load_status == 0)	// disable auto load touch driver for linux3.0 porting
 	{
 		GTP_ERROR("add error touch panel driver.");
-		//[Agold][Jason][20171031] 释放2.8v
 		gt1x_power_switch(SWITCH_OFF);
 		if(boot_mode != RECOVERY_BOOT)
 		{
@@ -1009,10 +1008,10 @@ static struct tpd_driver_t tpd_device_driver = {
 	.tpd_local_init = tpd_local_init,
 	.suspend = tpd_suspend,
 	.resume = tpd_resume,
-#ifdef AGOLD_HARDWARE_INFO
+#ifdef HARDWARE_INFO
 	.get_tp_fw_ver = gt1x_get_fw_ver,
 #endif
-#if defined(AGOLD_CTP_FOR_HAND)
+#if defined(CTP_FOR_HAND)
 	.tpd_handler = tpd_handler2,
 #endif
 

@@ -62,9 +62,9 @@ struct Upgrade_Info {
 #define TPD_BUTTON_HEIGH 		(100)
 #define TPD_KEY_COUNT 			3
 #define TPD_KEYS 				{KEY_MENU,KEY_BACK,KEY_HOME}
-#define TPD_KEYS_DIM 			{{60,AGOLD_TPD_RES_Y*850/800,120,TPD_BUTTON_HEIGH},\
-								{180,AGOLD_TPD_RES_Y*850/800,120,TPD_BUTTON_HEIGH},\
-								{300,AGOLD_TPD_RES_Y*850/800,120,TPD_BUTTON_HEIGH}}
+#define TPD_KEYS_DIM 			{{60,TPD_RES_Y*850/800,120,TPD_BUTTON_HEIGH},\
+								{180,TPD_RES_Y*850/800,120,TPD_BUTTON_HEIGH},\
+								{300,TPD_RES_Y*850/800,120,TPD_BUTTON_HEIGH}}
 
 #define TPD_NAME    "FT5406_MT"
 
@@ -96,9 +96,9 @@ struct Upgrade_Info {
 
 
 /*register address*/
-#define FT_REG_CHIP_ID				0xA3    //chip ID 
-#define FT_REG_FW_VER				0xA6   //FW  version 
-#define FT_REG_VENDOR_ID			0xA8   // TP vendor ID 
+#define FT_REG_CHIP_ID				0xA3    //chip ID
+#define FT_REG_FW_VER				0xA6   //FW  version
+#define FT_REG_VENDOR_ID			0xA8   // TP vendor ID
 #define GTP_ADDR_LENGTH             1
 #define IIC_MAX_TRANSFER_SIZE         8
 
@@ -112,7 +112,7 @@ struct Upgrade_Info {
 #define FTS_CTL_IIC
 #define FTS_APK_DEBUG
 #ifdef TPD_SYSFS_DEBUG
-//#define AGOLD_TPD_FT_AUTO_UPGRADE				// if need upgrade CTP FW when POWER ON,pls enable this MACRO
+//#define TPD_FT_AUTO_UPGRADE				// if need upgrade CTP FW when POWER ON,pls enable this MACRO
 #endif
 
 #define FTS_DBG
