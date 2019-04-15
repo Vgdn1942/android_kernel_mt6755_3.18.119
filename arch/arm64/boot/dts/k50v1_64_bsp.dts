@@ -566,7 +566,7 @@
 };/* UART GPIO end */
 
 /* IRTX GPIO end */
-&irtx_pwm {
+&apirtx {
 	pinctrl-names = "irtx_gpio_led_default",
 			"irtx_gpio_led_set",
 			"irtx_gpio_en_default",

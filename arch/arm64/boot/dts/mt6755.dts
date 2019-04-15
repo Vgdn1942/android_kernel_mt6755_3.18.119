@@ -30,7 +30,7 @@
 
 	/* chosen */
 	chosen: chosen {
-		bootargs = "console=tty0 console=ttyMT3,921600n1 vmalloc=496M \
+		bootargs = "console=tty0 console=ttyMT0,921600n1 vmalloc=496M \
 slub_max_order=0 slub_debug=OFZPU androidboot.hardware=mt6755 \
 firmware_class.path=/vendor/firmware loop.max_part=7";
 	};
