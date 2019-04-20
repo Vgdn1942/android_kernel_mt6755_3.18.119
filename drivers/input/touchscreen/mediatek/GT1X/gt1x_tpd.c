@@ -583,8 +583,8 @@ static s32 tpd_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
 	s32 idx = 0;
 #endif
 
-    if (RECOVERY_BOOT == get_boot_mode())   // important
-        return 0;
+//    if (RECOVERY_BOOT == get_boot_mode())   // important
+//        return 0;
 	client->addr = 0x5d;
 	gt1x_i2c_client = client;
     spin_lock_init(&irq_lock);
@@ -698,7 +698,7 @@ void gt1x_touch_down(s32 x, s32 y, s32 size, s32 id)
 #endif
 
 #ifdef TPD_HAVE_BUTTON
-	if (FACTORY_BOOT == get_boot_mode() || RECOVERY_BOOT == get_boot_mode()) {
+	if (FACTORY_BOOT == get_boot_mode()/* || RECOVERY_BOOT == get_boot_mode() */) {
 		tpd_button(x, y, 1);
 	}
 #endif
@@ -714,7 +714,7 @@ void gt1x_touch_up(s32 id)
 	input_mt_sync(tpd->dev);
 #endif
 #ifdef TPD_HAVE_BUTTON
-	if (FACTORY_BOOT == get_boot_mode() || RECOVERY_BOOT == get_boot_mode()) {
+	if (FACTORY_BOOT == get_boot_mode()/* || RECOVERY_BOOT == get_boot_mode() */) {
 		tpd_button(0, 0, 0);
 	}
 #endif
@@ -949,10 +949,10 @@ GTP_INFO("[geng_gt1x] regulator_get");
 		GTP_ERROR("add error touch panel driver.");
 		//[Agold][Jason][20171031] 释放2.8v
 		gt1x_power_switch(SWITCH_OFF);
-		if(boot_mode != RECOVERY_BOOT)
-		{
+//		if(boot_mode != RECOVERY_BOOT)
+//		{
 			i2c_del_driver(&tpd_i2c_driver);
-		}
+//		}
 		return -1;
 	}
 	input_set_abs_params(tpd->dev, ABS_MT_TRACKING_ID, 0, (GTP_MAX_TOUCH - 1), 0, 0);

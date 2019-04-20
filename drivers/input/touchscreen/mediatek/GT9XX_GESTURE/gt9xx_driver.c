@@ -1217,7 +1217,7 @@ static void tpd_down(s32 x, s32 y, s32 size, s32 id)
 	#ifdef TPD_HAVE_BUTTON
 	if(0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "270", 3) || 0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "90", 2))
     {
-		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && x>=AGOLD_TPD_RES_Y) 
+		if((boot_mode==FACTORY_BOOT/* || boot_mode==RECOVERY_BOOT */) && x>=AGOLD_TPD_RES_Y) 
 		{ 
 			int temp;
 			temp = y;
@@ -1226,7 +1226,7 @@ static void tpd_down(s32 x, s32 y, s32 size, s32 id)
 			tpd_button(x, y, 1);
 			return;
 		}
-		else if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=AGOLD_TPD_RES_Y)
+		else if((boot_mode==FACTORY_BOOT/* || boot_mode==RECOVERY_BOOT */) && y>=AGOLD_TPD_RES_Y)
 		{
 			tpd_button(x, y, 1);
 			return;		
@@ -1234,7 +1234,7 @@ static void tpd_down(s32 x, s32 y, s32 size, s32 id)
 	}
     else
 	{
-		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=AGOLD_TPD_RES_Y) 
+		if((boot_mode==FACTORY_BOOT/* || boot_mode==RECOVERY_BOOT */) && y>=AGOLD_TPD_RES_Y) 
 		{ 
 			tpd_button(x, y, 1);
 			return;
@@ -1513,7 +1513,7 @@ static int touch_event_handler(void *unused)
 			TPD_DEBUG("[Key][Up]>>>>>>>>>>>>\n");
 			tpd_up(key_x, key_y, 0);
 	
-			if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && tpd->btn_state) { 
+			if((boot_mode==FACTORY_BOOT/* || boot_mode==RECOVERY_BOOT */) && tpd->btn_state) { 
 				tpd_button(key_x, key_y, 0);
 			}
 				//input_report_key(tpd->dev, BTN_TOUCH, last_key);

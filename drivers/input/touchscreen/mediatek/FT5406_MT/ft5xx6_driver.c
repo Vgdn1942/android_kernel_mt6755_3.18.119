@@ -532,8 +532,8 @@ static  void tpd_down(int x, int y, int p, int id)
 #ifdef TPD_HAVE_BUTTON
 	if((0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "270", 3))||(0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "90", 2)))
     {
-		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && x>=AGOLD_TPD_RES_Y) 
-		{ 
+		if((boot_mode==FACTORY_BOOT/* || boot_mode==RECOVERY_BOOT */) && x>=AGOLD_TPD_RES_Y) 
+		{
 			int temp;
 			temp = y;
 			y = x;
@@ -541,7 +541,7 @@ static  void tpd_down(int x, int y, int p, int id)
 			tpd_button(x, y, 1);
 			return;
 		}
-		else if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=AGOLD_TPD_RES_Y)
+		else if((boot_mode==FACTORY_BOOT/* || boot_mode==RECOVERY_BOOT */) && y>=AGOLD_TPD_RES_Y)
 		{
 			tpd_button(x, y, 1);
 			return;		
@@ -549,7 +549,7 @@ static  void tpd_down(int x, int y, int p, int id)
 	}
 	else if((0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "180", 3)))
 	{
-		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=AGOLD_TPD_RES_Y) 
+		if((boot_mode==FACTORY_BOOT/* || boot_mode==RECOVERY_BOOT */) && y>=AGOLD_TPD_RES_Y) 
 		{
 		
 			tpd_button(AGOLD_TPD_RES_X-x, AGOLD_TPD_RES_Y-y, 1);
@@ -559,7 +559,7 @@ static  void tpd_down(int x, int y, int p, int id)
 	}
     else
 	{
-		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=AGOLD_TPD_RES_Y) 
+		if((boot_mode==FACTORY_BOOT/* || boot_mode==RECOVERY_BOOT */) && y>=AGOLD_TPD_RES_Y) 
 		{ 
 			tpd_button(x, y, 1);
 			return;
@@ -607,7 +607,7 @@ static  void tpd_up(int x, int y)
 #ifdef TPD_HAVE_BUTTON
 	if((0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "270", 3))||(0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "90", 2)))
     {
-		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && x>=AGOLD_TPD_RES_Y) 
+		if((boot_mode==FACTORY_BOOT/* || boot_mode==RECOVERY_BOOT */) && x>=AGOLD_TPD_RES_Y) 
 		{ 
 			int temp;
 			temp = y;
@@ -616,7 +616,7 @@ static  void tpd_up(int x, int y)
 			tpd_button(x, y, 0);
 			return;
 		}
-		else if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=AGOLD_TPD_RES_Y)
+		else if((boot_mode==FACTORY_BOOT/* || boot_mode==RECOVERY_BOOT */) && y>=AGOLD_TPD_RES_Y)
 		{
 			tpd_button(x, y, 0);
 			return;		
@@ -624,7 +624,7 @@ static  void tpd_up(int x, int y)
 	}
 	else if((0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "180", 3)))
 	{
-		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=AGOLD_TPD_RES_Y) 
+		if((boot_mode==FACTORY_BOOT/* || boot_mode==RECOVERY_BOOT */) && y>=AGOLD_TPD_RES_Y) 
 		{ 
 			tpd_button(AGOLD_TPD_RES_X-x, AGOLD_TPD_RES_Y-y, 0);
 			return;
@@ -632,7 +632,7 @@ static  void tpd_up(int x, int y)
 	}
     else
 	{
-		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=AGOLD_TPD_RES_Y) 
+		if((boot_mode==FACTORY_BOOT/* || boot_mode==RECOVERY_BOOT */) && y>=AGOLD_TPD_RES_Y) 
 		{ 
 			tpd_button(x, y, 0);
 			return;
