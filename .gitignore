@@ -99,3 +99,6 @@ all.config
 
 # fetched Android config fragments
 android/configs/android-*.cfg
+
+*.log
+!drivers/misc/mediatek/power/mt6755/o2micro_battery/oz8806_bmulib/bmulib.o
