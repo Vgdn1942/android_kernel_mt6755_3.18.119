@@ -67,6 +67,8 @@ KEY_W
 KEY_X
 KEY_Y
 KEY_Z
+KEY_FUNC1
+KEY_FUNC2
 
 [Key_code]
 0
@@ -137,6 +139,8 @@ KEY_Z
 45
 21
 44
+249
+250
 
 [Key_code_linux]
 0
@@ -207,6 +211,8 @@ KEY_Z
 45
 21
 44
+249
+250
 
 [Power_Key_definition]
 KEY_POWER

@@ -271,6 +271,19 @@
 	};
 };
 
+&alsps {
+	pinctrl-names = "pin_default", "pin_cfg";
+	pinctrl-0 = <&alsps_intpin_default>;
+	pinctrl-1 = <&alsps_intpin_cfg>;
+	status = "okay";
+};
+
+&gyroscope {
+	pinctrl-names = "pin_default", "pin_cfg";
+	pinctrl-0 = <&gyro_intpin_default>;
+	pinctrl-1 = <&gyro_intpin_cfg>;
+	status = "okay";
+};
 
 /* DISPSYS GPIO standardization */
 &pio {
@@ -593,7 +606,7 @@
 
 	irtx_gpio_led_set:irtx_gpio_led_set@gpio116 {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO116__FUNC_PWM_C>;
+			pins = <PINMUX_GPIO116__FUNC_IRTX_OUT>;
 			slew-rate = <1>;
 			output-high;
 		};
@@ -1221,5 +1234,6 @@
 	};
 };
 #include <k50v1_64_bsp/cust.dtsi>
+/* #include "cust.dtsi" */
 /*End of this file, DO NOT ADD ANYTHING HERE*/
 
