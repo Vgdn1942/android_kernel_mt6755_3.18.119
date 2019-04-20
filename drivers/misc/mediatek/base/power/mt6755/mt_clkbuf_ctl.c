@@ -232,15 +232,15 @@ static CLK_BUF_SWCTRL_STATUS_T  clk_buf_swctrl[CLKBUF_NUM] = {
 	CLK_BUF_SW_DISABLE
 #else
 	CLK_BUF_SW_ENABLE,
+	CLK_BUF_SW_DISABLE,
 	CLK_BUF_SW_ENABLE,
-	CLK_BUF_SW_ENABLE,
-	CLK_BUF_SW_DISABLE
+	CLK_BUF_SW_ENABLE //agold shipeilong
 #endif
 };
 
 static CLK_BUF_SWCTRL_STATUS_T  clk_buf_swctrl_modem_on[CLKBUF_NUM] = {
 	CLK_BUF_SW_ENABLE,
-	CLK_BUF_SW_ENABLE,
+	CLK_BUF_SW_DISABLE,
 	CLK_BUF_SW_ENABLE,
 	CLK_BUF_SW_ENABLE
 };
@@ -436,6 +436,9 @@ void clk_buf_set_by_flightmode(bool is_flightmode_on)
 
 bool clk_buf_ctrl(enum clk_buf_id id, bool onoff)
 {
+	printk("[1]%s: id=%d, onoff=%d, is_flightmode_on=%d,is_pmic_clkbuf=%d\n", __func__,
+		     id, onoff, g_is_flightmode_on,is_pmic_clkbuf);
+
 	if (is_pmic_clkbuf) {
 		mutex_lock(&clk_buf_ctrl_lock);
 
@@ -462,16 +465,16 @@ bool clk_buf_ctrl(enum clk_buf_id id, bool onoff)
 
 	if ((id == CLK_BUF_NFC) && (CLK_BUF3_STATUS == CLOCK_BUFFER_HW_CONTROL))
 		return false;
-
-	if ((id == CLK_BUF_AUDIO) && (CLK_BUF4_STATUS == CLOCK_BUFFER_HW_CONTROL))
-		return false;
-
+	//agold shipeilong delete start
+	//if ((id == CLK_BUF_AUDIO) && (CLK_BUF4_STATUS == CLOCK_BUFFER_HW_CONTROL))
+	//	return false;
+    //agold end
 #if 0
 	/* for bring-up */
 	clk_buf_warn("clk_buf_ctrl is disabled for bring-up\n");
 	return false;
 #endif
-	clk_buf_dbg("%s: id=%d, onoff=%d, is_flightmode_on=%d\n", __func__,
+	clk_buf_warn("[2]%s: id=%d, onoff=%d, is_flightmode_on=%d\n", __func__,
 		     id, onoff, g_is_flightmode_on);
 
 	mutex_lock(&clk_buf_ctrl_lock);
@@ -615,7 +618,7 @@ static ssize_t clk_buf_ctrl_show(struct kobject *kobj, struct kobj_attribute *at
 			CLK_BUF1_STATUS, clk_buf_swctrl[0],
 			clk_buf_swctrl_modem_on[0]);
 	len += snprintf(buf+len, PAGE_SIZE-len,
-			"CKBUF2_CONN SW(1)/HW(2) CTL: %d, Dis(0)/En(1) of FM=1:%d, FM=0:%d\n",
+			"CKBUF2_NONE SW(1)/HW(2) CTL: %d, Dis(0)/En(1) of FM=1:%d, FM=0:%d\n",
 			CLK_BUF2_STATUS, clk_buf_swctrl[1],
 			clk_buf_swctrl_modem_on[1]);
 	len += snprintf(buf+len, PAGE_SIZE-len,
@@ -972,26 +975,6 @@ static void clk_buf_clear_rf_setting(void)
 #endif
 }
 
-static void clk_buf_init_rf_swctrl(void)
-{
-	if (CLK_BUF1_STATUS == CLOCK_BUFFER_DISABLE) {
-		clk_buf_swctrl[CLK_BUF_BB_MD] = CLK_BUF_SW_DISABLE;
-		clk_buf_swctrl_modem_on[CLK_BUF_BB_MD] = CLK_BUF_SW_DISABLE;
-	}
-	if (CLK_BUF2_STATUS == CLOCK_BUFFER_DISABLE) {
-		clk_buf_swctrl[CLK_BUF_CONN] = CLK_BUF_SW_DISABLE;
-		clk_buf_swctrl_modem_on[CLK_BUF_CONN] = CLK_BUF_SW_DISABLE;
-	}
-	if (CLK_BUF3_STATUS == CLOCK_BUFFER_DISABLE) {
-		clk_buf_swctrl[CLK_BUF_NFC] = CLK_BUF_SW_DISABLE;
-		clk_buf_swctrl_modem_on[CLK_BUF_NFC] = CLK_BUF_SW_DISABLE;
-	}
-	if (CLK_BUF4_STATUS == CLOCK_BUFFER_DISABLE) {
-		clk_buf_swctrl[CLK_BUF_AUDIO] = CLK_BUF_SW_DISABLE;
-		clk_buf_swctrl_modem_on[CLK_BUF_AUDIO] = CLK_BUF_SW_DISABLE;
-	}
-}
-
 bool clk_buf_init(void)
 {
 	struct device_node *node;
@@ -1105,7 +1088,6 @@ bool clk_buf_init(void)
 		clk_buf_pmic_wrap_init();
 		clk_buf_clear_rf_setting();
 	} else { /* VCTCXO @RF */
-		clk_buf_init_rf_swctrl();
 #ifdef CONFIG_MTK_PMIC_CHIP_MT6353 /* only for MT6750 */
 		rf_clk_buf_pmic_wrap_init();
 #endif

@@ -26,7 +26,6 @@
 #include <mt-plat/sync_write.h>
 #include <mt-plat/mt_lpae.h>
 #include "mt_cpufreq_hybrid.h"
-#include "mt_cpufreq.h"		/* for ext-buck API */
 
 
 /**************************************
@@ -387,7 +386,6 @@ struct cpuhvfs_dvfsp {
 	void __iomem *log_repo;
 
 	u32 init_done;		/* for dvfsp and log_repo */
-	u32 use_i2c;
 
 	int (*init_dvfsp)(struct cpuhvfs_dvfsp *dvfsp);
 	int (*kick_dvfsp)(struct cpuhvfs_dvfsp *dvfsp, struct init_sta *sta);
@@ -451,7 +449,7 @@ static struct init_sta suspend_sta = {
  */
 static u32 pause_src_map __nosavedata = PSF_PAUSE_INIT;
 
-static u32 pause_log_en = /*PSF_PAUSE_SUSPEND |*/
+static u32 pause_log_en = PSF_PAUSE_SUSPEND |
 			  /*PSF_PAUSE_IDLE |*/
 			  /*PSF_PAUSE_I2CDRV |*/
 			  PSF_PAUSE_INIT;
@@ -503,10 +501,8 @@ static void cspm_dump_debug_info(struct cpuhvfs_dvfsp *dvfsp, const char *fmt, .
  * [Hybrid DVFS] Declaration
  **************************************/
 static struct cpuhvfs_dvfsp g_dvfsp = {
-	.pcmdesc	= &dvfs_pcm_6311,
+	.pcmdesc	= &dvfs_pcm,
 	.pwrctrl	= &dvfs_ctrl,
-
-	.use_i2c	= 1,
 
 	.init_dvfsp	= cspm_module_init,
 	.kick_dvfsp	= cspm_go_to_dvfs,
@@ -819,8 +815,8 @@ static void __cspm_kick_pcm_to_run(const struct pwr_ctrl *pwrctrl, const struct 
 	/* enable r7 to control power */
 	cspm_write(CSPM_PCM_PWR_IO_EN, pwrctrl->r7_ctrl_en ? PCM_PWRIO_EN_R7 : 0);
 
-	/*cspm_dbgx(KICK, "kick PCM to run, RSV4: 0x%x, RSV5: 0x%x\n",
-			cspm_read(CSPM_SW_RSV4), cspm_read(CSPM_SW_RSV5));*/
+	cspm_dbgx(KICK, "kick PCM to run, RSV4: 0x%x, RSV5: 0x%x\n",
+			cspm_read(CSPM_SW_RSV4), cspm_read(CSPM_SW_RSV5));
 
 	/* kick PCM to run (only toggle PCM_KICK) */
 	con0 = cspm_read(CSPM_PCM_CON0) & ~(CON0_IM_KICK | CON0_PCM_KICK);
@@ -880,7 +876,7 @@ static void cspm_dump_debug_info(struct cpuhvfs_dvfsp *dvfsp, const char *fmt, .
 	va_end(args);
 
 	cspm_err("%s\n", msg);
-	cspm_err("FW_VER: %s (%u)\n", dvfsp->pcmdesc->version, dvfsp->use_i2c);
+	cspm_err("FW_VER: %s\n", dvfsp->pcmdesc->version);
 
 	cspm_err("PCM_TIMER: %08x\n", timer);
 	cspm_err("PCM_REG15: %u, SEMA: 0x(%x %x)\n", reg15, ap_sema, spm_sema);
@@ -914,8 +910,7 @@ static int __cspm_pause_pcm_running(struct cpuhvfs_dvfsp *dvfsp, u32 psf)
 
 		if (r >= 0) {	/* pause done */
 			r = 0;
-			if (dvfsp->use_i2c)
-				clk_disable(i2c_clk);
+			clk_disable(i2c_clk);
 		}
 	}
 
@@ -946,7 +941,7 @@ static void __cspm_unpause_pcm_to_run(struct cpuhvfs_dvfsp *dvfsp, u32 psf)
 		csram_write(OFFS_PAUSE_SRC, pause_src_map);
 
 	if (pause_src_map == 0 && csram_base /* avoid Coverity complaining */) {
-		r = (dvfsp->use_i2c ? clk_enable(i2c_clk) : 0);
+		r = clk_enable(i2c_clk);
 		if (!r) {
 			rsv4 = cspm_read(CSPM_SW_RSV4);
 			csram_write(OFFS_SW_RSV4, rsv4);
@@ -1031,7 +1026,7 @@ static int cspm_get_semaphore(struct cpuhvfs_dvfsp *dvfsp, enum sema_user user)
 	int n = DIV_ROUND_UP(SEMA_GET_TIMEOUT, 10);
 
 	if (user == SEMA_I2C_DRV)	/* workaround */
-		return dvfsp->use_i2c ? cspm_pause_pcm_running(dvfsp, PAUSE_I2CDRV) : 0;
+		return cspm_pause_pcm_running(dvfsp, PAUSE_I2CDRV);
 
 	if (is_dvfsp_uninit(dvfsp))
 		return 0;
@@ -1057,8 +1052,7 @@ static int cspm_get_semaphore(struct cpuhvfs_dvfsp *dvfsp, enum sema_user user)
 static void cspm_release_semaphore(struct cpuhvfs_dvfsp *dvfsp, enum sema_user user)
 {
 	if (user == SEMA_I2C_DRV) {	/* workaround */
-		if (dvfsp->use_i2c)
-			cspm_unpause_pcm_to_run(dvfsp, PAUSE_I2CDRV);
+		cspm_unpause_pcm_to_run(dvfsp, PAUSE_I2CDRV);
 		return;
 	}
 
@@ -1171,7 +1165,7 @@ static void cspm_cluster_notify_on(struct cpuhvfs_dvfsp *dvfsp, unsigned int clu
 
 	switch (cluster) {
 	case CPU_CLUSTER_LL:
-		WARN_ON(!(rsv4 & SW_L_PAUSE));	/* not paused at cluster off */
+		BUG_ON(!(rsv4 & SW_L_PAUSE));	/* not paused at cluster off */
 
 		if (pause_src_map == 0)
 			rsv4 &= ~SW_L_PAUSE;
@@ -1180,7 +1174,7 @@ static void cspm_cluster_notify_on(struct cpuhvfs_dvfsp *dvfsp, unsigned int clu
 		break;
 	case CPU_CLUSTER_L:
 	default:
-		WARN_ON(!(rsv4 & SW_B_PAUSE));	/* not paused at cluster off */
+		BUG_ON(!(rsv4 & SW_B_PAUSE));	/* not paused at cluster off */
 
 		if (pause_src_map == 0)
 			rsv4 &= ~SW_B_PAUSE;
@@ -1215,8 +1209,7 @@ static void cspm_cluster_notify_off(struct cpuhvfs_dvfsp *dvfsp, unsigned int cl
 	/* DFS only to the lowest frequency (no I2C control) */
 	switch (cluster) {
 	case CPU_CLUSTER_LL:
-		if (WARN_ON(!(rsv4 & L_CLUSTER_EN)))	/* already off */
-			goto out;
+		BUG_ON(!(rsv4 & L_CLUSTER_EN));		/* already off */
 
 		cspm_write(CSPM_SW_RSV4, rsv4 & ~(L_CLUSTER_EN | SW_L_PAUSE | SW_L_F_ASSIGN));
 		csram_write(OFFS_SW_RSV4, cspm_read(CSPM_SW_RSV4));
@@ -1228,8 +1221,7 @@ static void cspm_cluster_notify_off(struct cpuhvfs_dvfsp *dvfsp, unsigned int cl
 		break;
 	case CPU_CLUSTER_L:
 	default:
-		if (WARN_ON(!(rsv4 & B_CLUSTER_EN)))	/* already off */
-			goto out;
+		BUG_ON(!(rsv4 & B_CLUSTER_EN));		/* already off */
 
 		cspm_write(CSPM_SW_RSV4, rsv4 & ~(B_CLUSTER_EN | SW_B_PAUSE | SW_B_F_ASSIGN));
 		csram_write(OFFS_SW_RSV4, cspm_read(CSPM_SW_RSV4));
@@ -1246,7 +1238,6 @@ static void cspm_cluster_notify_off(struct cpuhvfs_dvfsp *dvfsp, unsigned int cl
 		BUG();
 	}
 
-out:
 	csram_write(OFFS_FUNC_ENTER, 0);
 	spin_unlock(&dvfs_lock);
 }
@@ -1397,7 +1388,7 @@ static int dvfsp_fw_show(struct seq_file *m, void *v)
 	struct cpuhvfs_dvfsp *dvfsp = m->private;
 	struct pcm_desc *pcmdesc = dvfsp->pcmdesc;
 
-	seq_printf(m, "version = %s (%u)\n", pcmdesc->version, dvfsp->use_i2c);
+	seq_printf(m, "version = %s\n"  , pcmdesc->version);
 	seq_printf(m, "base    = 0x%p -> 0x%x\n", pcmdesc->base, base_va_to_pa(pcmdesc->base));
 	seq_printf(m, "size    = %u\n"  , pcmdesc->size);
 	seq_printf(m, "sess    = %u\n"  , pcmdesc->sess);
@@ -1729,25 +1720,13 @@ int cpuhvfs_module_init(void)
 {
 	int r;
 	struct cpuhvfs_data *cpuhvfs = &g_cpuhvfs;
-	struct cpuhvfs_dvfsp *dvfsp = g_cpuhvfs.dvfsp;
 
 	if (!cpuhvfs->dbg_repo) {
 		cpuhvfs_err("FAILED TO PRE-INIT CPUHVFS\n");
 		return -ENODEV;
 	}
 
-#ifdef CONFIG_MTK_PMIC_CHIP_MT6353
-	if (!is_ext_buck_exist() || !is_ext_buck_sw_ready()) {
-		dvfsp->pcmdesc = &dvfs_pcm;
-		dvfsp->use_i2c = 0;
-	}
-#endif
-
-	cpuhvfs_crit("ext_buck = %d/%d, dvfsp_fw = %s, use_i2c = %u\n",
-		     is_ext_buck_exist(), is_ext_buck_sw_ready(),
-		     dvfsp->pcmdesc->version, dvfsp->use_i2c);
-
-	set_dvfsp_init_done(dvfsp);
+	set_dvfsp_init_done(cpuhvfs->dvfsp);
 
 	r = create_cpuhvfs_debug_fs(cpuhvfs);
 	if (r) {
@@ -1777,4 +1756,4 @@ fs_initcall(cpuhvfs_pre_module_init);
 
 #endif	/* CONFIG_HYBRID_CPU_DVFS */
 
-MODULE_DESCRIPTION("Hybrid CPU DVFS Driver v0.7.1");
+MODULE_DESCRIPTION("Hybrid CPU DVFS Driver v0.5");

@@ -14,10 +14,10 @@
 
 #include "kd_camera_hw.h"
 #include "kd_imgsensor.h"
-#include "kd_imgsensor_define.h"
+#include "kd_imgsensor_define.h" 
 #include "kd_imgsensor_errcode.h"
 
-static kal_uint8 g_imx214mipi_write_id = 0x0;  //i2c address
+static kal_uint8 g_imx214mipi_write_id = 0x0;  //i2c address 
 
 
 // add by Suny , for IMX214  otp
@@ -82,26 +82,37 @@ static kal_bool IMX214MIPI_ReadOtp(int tempbank,kal_uint16 address,kal_uint8* iB
 
 	return KAL_TRUE;
 }
+											//ljj  start
+#if defined(AGOLD_CAMERA_VERSION)
 
+#include "agold_camera_info.h"
+
+#define BG_Ratio_Typical_Value  cur_bg_ratio
+#define RG_Ratio_Typical_Value  cur_rg_ratio
+#else
 #define BG_Ratio_Typical_Value 0x269
 #define RG_Ratio_Typical_Value 0x275
+#endif
 
 static void TestAWBforIMX214(kal_uint16 RoverG_dec,kal_uint16 BoverG_dec,kal_uint16 GboverGr_dec)
 {
-	kal_uint16 RoverG_dec_base,BoverG_dec_base;//GboverGr_dec_base;
+	kal_uint16 RoverG_dec_base,BoverG_dec_base;//GboverGr_dec_base;			
 	kal_uint16 R_test,B_test,G_test;
 	kal_uint16 R_test_H3,R_test_L8,B_test_H3,B_test_L8,G_test_H3,G_test_L8;
 	kal_uint32 G_test_R, G_test_B;
-
-	RoverG_dec_base = RG_Ratio_Typical_Value;//the typcical value
-	BoverG_dec_base = BG_Ratio_Typical_Value;//the typcical value
+#if defined (AGOLD_CAMERA_VERSION)	//Add by Lancelot 2014-06-10
+	BG_Ratio_Typical_Value=agold_get_bg_ratio(g_cur_cam_sensor-1);
+	RG_Ratio_Typical_Value=agold_get_rg_ratio(g_cur_cam_sensor-1);
+#endif		
+	RoverG_dec_base = RG_Ratio_Typical_Value;//the typcical value			
+	BoverG_dec_base = BG_Ratio_Typical_Value;//the typcical value			
 	//GboverGr_dec_base = ;//the typcical value					//ljj end
 	SENSORDB("[ljj] g_cur_cam_sensor = 0x%x\n",g_cur_cam_sensor);
 	SENSORDB("[ljj] RoverG_dec_base = 0x%x\n",RoverG_dec_base);
 	SENSORDB("[ljj] BoverG_dec_base = 0x%x\n",BoverG_dec_base);
-
-
-
+	
+	
+	
 	if(BoverG_dec < BoverG_dec_base)
 	{
 		if (RoverG_dec < RoverG_dec_base)
@@ -161,13 +172,13 @@ static void TestAWBforIMX214(kal_uint16 RoverG_dec,kal_uint16 BoverG_dec,kal_uin
 	B_test_L8 = B_test &0xFF;
 	G_test_H3 = (G_test>>8)&0x0F;
 	G_test_L8 = G_test &0xFF;
-
+	
 	//reset the digital gain
 	IMX214MIPI_write_cmos_sensor(0x020F,G_test_L8);
 	IMX214MIPI_write_cmos_sensor(0x0211,R_test_L8);
 	IMX214MIPI_write_cmos_sensor(0x0213,B_test_L8);
 	IMX214MIPI_write_cmos_sensor(0x0215,G_test_L8);
-
+	
 	SENSORDB("R_test=0x%x,G_test=0x%x,B_test=0x%x",R_test,G_test,B_test);
 }
 
@@ -183,8 +194,8 @@ kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 	kal_uint8 Temp[42]={0};
 	kal_uint16 temp3;
 	int index = -1;
-
-	int tempbank = 0;
+	
+	int tempbank = 0; 
 	g_imx214mipi_write_id = i2c_write_id;
 	printk("[ljj] g_imx214mipi_write_id = 0x%x \n",g_imx214mipi_write_id);
 
@@ -195,7 +206,7 @@ kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 		//select OTP page address for read
 		IMX214MIPI_write_cmos_sensor(0x0A02,awbGroupbank[i]);//select page
 		//turn on OTP read mode
-		IMX214MIPI_write_cmos_sensor(0x0A00,0x01);//read mode:0x0A00 = 0x01
+		IMX214MIPI_write_cmos_sensor(0x0A00,0x01);//read mode:0x0A00 = 0x01 
 		//check status(bit0:0x01 read ready)
 		temp3 = IMX214MIPI_read_cmos_sensor(0x0A01);//Status check : 0x0A01 = 0x01 (bit0 1:read ready)
 		if ((temp3&0x01) ==0x01)
@@ -203,11 +214,11 @@ kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 			printk("read OTP AWB successfully !\n");
 		}
 		else
-		{
+		{	
 			printk("[ljj] temp3 = 0x%x\n",temp3);
 			//return KAL_FALSE;
 		}
-
+		
 		//0x0A04-0x0A43 are the register address area for each page
 		//check program flag by read ox0A04
 		temp3 = IMX214MIPI_read_cmos_sensor(0x0A04);
@@ -226,13 +237,13 @@ kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 	}
 	tempbank = awbGroupbank[index];
 	//2.read data from the valid group
-
+	
 	if(KAL_FALSE == IMX214MIPI_ReadOtp(tempbank,address,Temp,42))
 	{
 		printk("read otp failed! \n");
 		return KAL_FALSE;
 	}
-
+	
 	//3.check sum
 /*	kal_uint16 sum=0;
 	for(i=2;i<42;i++)
@@ -245,11 +256,42 @@ kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 		SENSORDB("OTP AWB DATA ERROR");
 		return KAL_FALSE;
 	}
-*/
+*/	
 	//4.check module information
+	printk("[IMX214][ljj] g_cur_cam_sensor=%d\n", g_cur_cam_sensor);
+	if(g_cur_cam_sensor==1 || g_cur_cam_sensor ==2)
+	{
+		//OTP MAGIC
+		index++;
+		agold_camera_info[g_cur_cam_sensor-1].otp_magic = index;
+		agold_camera_info[g_cur_cam_sensor-1].otp_magic = (agold_camera_info[g_cur_cam_sensor-1].otp_magic << 4) | index;
+
+        #ifdef AGOLD_IMX214_OTPMAP_TYPE1 
+		agold_camera_info[g_cur_cam_sensor-1].mf_id   = Temp[1];	//0x0A05 
+		agold_camera_info[g_cur_cam_sensor-1].lens_id = Temp[2];	//0x0A06
+		agold_camera_info[g_cur_cam_sensor-1].sen_id = Temp[10];	//0x0A0E
+		#elif defined AGOLD_IMX214_OTPMAP_TYPE2
+		agold_camera_info[g_cur_cam_sensor-1].mf_id   = Temp[1];	//0x0A05 
+		agold_camera_info[g_cur_cam_sensor-1].lens_id = Temp[5];	//0x0A09
+		agold_camera_info[g_cur_cam_sensor-1].sen_id = Temp[6];	    //0x0A0A
+		#else
+		//OTP M-ID Lens-ID  Soft-ID  , date: year, month, day	
+		agold_camera_info[g_cur_cam_sensor-1].date[0] = Temp[3];	//0x0A07 
+		agold_camera_info[g_cur_cam_sensor-1].date[1] = Temp[4];	//0x0A08 
+		agold_camera_info[g_cur_cam_sensor-1].date[2] = Temp[5];	//0x0A09 
+		agold_camera_info[g_cur_cam_sensor-1].mf_id   = Temp[6];	//0x0A0A 
+		agold_camera_info[g_cur_cam_sensor-1].lens_id = Temp[7];	//0x0A0B 
+		agold_camera_info[g_cur_cam_sensor-1].sen_id = Temp[9];		//0x0A0D
+        #endif
+		printk("[IMX214][ljj]otp_log read mf_id,id=0x%2x\n", agold_camera_info[g_cur_cam_sensor-1].mf_id);
+		printk("[IMX214][ljj]otp_log read lens_id,id=0x%2x\n", agold_camera_info[g_cur_cam_sensor-1].lens_id);		
+		printk("[dafa]otp_log read sen_id,id=0x%2x\n", agold_camera_info[g_cur_cam_sensor-1].sen_id);
+	
+	}
 
 	return KAL_TRUE;
 }
+
 
 //read module information and awb data
  kal_bool IMX214MIPI_ReadAWBFromOtp(void)
@@ -262,7 +304,7 @@ kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 	kal_uint8 Temp[42]={0};
 	kal_uint16 temp3;
 	int index = -1;
-
+	
 	int tempbank = awbGroupbank[index];
 	//1.check valid group
 	for(i=0;i<3;i++)
@@ -270,7 +312,7 @@ kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 		//select OTP page address for read
 		IMX214MIPI_write_cmos_sensor(0x0A02,awbGroupbank[i]);//select page
 		//turn on OTP read mode
-		IMX214MIPI_write_cmos_sensor(0x0A00,0x01);//read mode:0x0A00 = 0x01
+		IMX214MIPI_write_cmos_sensor(0x0A00,0x01);//read mode:0x0A00 = 0x01 
 		//check status(bit0:0x01 read ready)
 		temp3 = IMX214MIPI_read_cmos_sensor(0x0A01);//Status check : 0x0A01 = 0x01 (bit0 1:read ready)
 		if ((temp3&0x01) ==0x01)
@@ -283,7 +325,7 @@ kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 			SENSORDB("[ljj] temp3 = 0x%x\n",temp3);
 			//return KAL_FALSE;
 		}
-
+		
 		//0x0A04-0x0A43 are the register address area for each page
 		//check program flag by read ox0A04
 		temp3 = IMX214MIPI_read_cmos_sensor(0x0A04);
@@ -299,15 +341,15 @@ kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 		SENSORDB("OTP flag is all 0\n");
 		return KAL_FALSE;
 	}
-
+	
 	//2.read data from the valid group
-
+	
 	if(KAL_FALSE == IMX214MIPI_ReadOtp(tempbank,address,Temp,42))
 	{
 		SENSORDB("read otp failed! \n");
 		return KAL_FALSE;
 	}
-
+	
 	//3.check sum
 /*	kal_uint16 sum=0;
 	for(i=2;i<42;i++)
@@ -319,19 +361,19 @@ kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 		SENSORDB("OTP AWB DATA ERROR");
 		return KAL_FALSE;
 	}
-*/
+*/	
 	//4.check module information
 	printk("[IMX214][ljj] g_cur_cam_sensor=%d\n", g_cur_cam_sensor);
-
+	
 	//4.get awb data
-	#ifdef IMX214_OTPMAP_TYPE1
+	#ifdef AGOLD_IMX214_OTPMAP_TYPE1
 	r = (Temp[3]<<8)|Temp[4];
 	b = (Temp[5]<<8)|Temp[6];
 
-	#elif defined IMX214_OTPMAP_TYPE2
+	#elif defined AGOLD_IMX214_OTPMAP_TYPE2
 	r = (Temp[9]<<8)|Temp[10];
 	b = (Temp[11]<<8)|Temp[12];
-
+	
 	#else
 	r = (Temp[15]<<8)|Temp[16];
 	b = (Temp[17]<<8)|Temp[18];
@@ -339,7 +381,7 @@ kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 	#endif
 	SENSORDB("mid=0x%x",Temp[6]);
 	SENSORDB("r=0x%x,g=0x%x,b=0x%x",r,g,b);
-
+	
 	//5.set new digital gain value
 	TestAWBforIMX214(r,b,g);
 	return KAL_TRUE;
@@ -356,14 +398,14 @@ static kal_bool IMX214MIPI_ReadAFFromOtp()
 	kal_uint8 Temp[32]={0};
 	kal_uint16 temp3,temp4;
 	int index = -1;
-
+	
 	//1.check valid group
 	for(i=0;i<3;i++)
 	{
 		//select OTP page address for read
 		IMX214MIPI_write_cmos_sensor(0x0A02,AFGroupbank[i]);//select page
 		//turn on OTP read mode
-		IMX214MIPI_write_cmos_sensor(0x0A00,0x01);//read mode:0x0A00 = 0x01
+		IMX214MIPI_write_cmos_sensor(0x0A00,0x01);//read mode:0x0A00 = 0x01 
 		//check status(bit0:0x01 read ready)
 		temp3 = IMX214MIPI_read_cmos_sensor(0x0A01);//Status check : 0x0A01 = 0x01 (bit0 1:read ready)
 		if ((temp3&0x01) ==0x01)
@@ -375,7 +417,7 @@ static kal_bool IMX214MIPI_ReadAFFromOtp()
 			SENSORDB("Read OTP AWB error!");
 			return KAL_FALSE;
 		}
-
+		
 		//0x0A04-0x0A43 are the register address area for each page
 		//check program flag by read ox0A04
 		temp3 = IMX214MIPI_read_cmos_sensor(0x0A04);
@@ -392,7 +434,7 @@ static kal_bool IMX214MIPI_ReadAFFromOtp()
 		SENSORDB("not exsit AF data");
 		return KAL_FALSE;
 	}
-
+	
 	//2.read AF  Macro data from the valid group
 	int tempbank = AFGroupbank[index];
 	if(KAL_FALSE == IMX214MIPI_ReadOtp(tempbank,address,Temp,32))
@@ -400,7 +442,7 @@ static kal_bool IMX214MIPI_ReadAFFromOtp()
 		SENSORDB("I2C ERROR when reading Otp");
 		return KAL_FALSE;
 	}
-
+	
 	//3.check sum of Macro
 	kal_uint16 sum=0;
 	for(i=2;i<7;i++)
@@ -412,7 +454,7 @@ static kal_bool IMX214MIPI_ReadAFFromOtp()
 		SENSORDB("AF Macro data error");
 		return KAL_FALSE;
 	}
-
+	
 	//4.check sum of Infinity
 	kal_uint16 sum1=0;
 	for(i=18;i<23;i++)

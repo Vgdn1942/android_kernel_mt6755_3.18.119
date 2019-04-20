@@ -66,6 +66,10 @@ static struct class *g_drvClass;
 static unsigned int g_drvOpened;
 static DEFINE_SPINLOCK(g_spinLock); /*for SMP*/
 
+#ifdef AGOLD_OTP_SENSORCLIENT
+extern struct i2c_client * G_pstI2Cclient_otp;
+#endif
+
 typedef enum {
 	I2C_DEV_1 = 0,
 	I2C_DEV_2,
@@ -171,9 +175,10 @@ static int cam_cal_get_i2c_client(struct i2c_board_info *i2c_info,
 		} else {
 			CAM_CALDB("g_adapt!=NULL, register i2c %d start !\n", g_curBusIdx);
 			*client = i2c_new_probed_device(adapt, i2c_info, addr_list, NULL);
-
+		#ifdef AGOLD_OTP_SENSORCLIENT
+			*client = G_pstI2Cclient_otp;
+		#endif
 			i2c_put_adapter(adapt);
-
 			if (!(*client)) {
 				CAM_CALDB("failed to get client i2c busID=%d\n", g_busNum[g_curBusIdx]);
 				return 0;

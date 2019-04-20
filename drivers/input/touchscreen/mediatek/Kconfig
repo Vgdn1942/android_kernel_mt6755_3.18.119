@@ -22,18 +22,6 @@ config TOUCHSCREEN_MTK
 	  To compile this dirver as a module, choose M here: the
 	  module will be called.
 
-config TOUCHSCREEN_MTK_GT1X
-	bool "GT1X for Mediatek package"
-	default n
-	help
-	  Say Y here if you have GT1X touch panel.
-
-	  If unsure, say N.
-
-	  To compile this dirver as a module, choose M here: the
-	  module will be called.
-
-source "drivers/input/touchscreen/mediatek/GT1X/Kconfig"
 
 config TOUCHSCREEN_MTK_GT1151
 	bool "GT1151 for Mediatek package"
@@ -69,18 +57,6 @@ config TOUCHSCREEN_MTK_GT928
 	  If unsure, say N.
 	  To compile this driver as a module, choose M here.
 
-config TOUCHSCREEN_MTK_GT9XX_GESTURE
-	bool "GT9XX_GESTURE for Mediatek package"
-	default n
-	help
-	  Say Y here if you have GT9XX_GESTURE touch panel.
-
-	  If unsure, say N.
-
-	  To compile this dirver as a module, choose M here: the
-	  module will be called.
-
-source "drivers/input/touchscreen/mediatek/GT9XX_GESTURE/Kconfig"
 
 config TOUCHSCREEN_MTK_GT9XXTB_HN_NEW
 	bool "GT9XXTB hotknot new driver for Mediatek package"
@@ -170,18 +146,6 @@ config TOUCHSCREEN_MTK_FT5X0X
 
 source "drivers/input/touchscreen/mediatek/ft5x0x/Kconfig"
 
-config TOUCHSCREEN_MTK_FT5406_MT
-	bool "FT5406_MT for Mediatek package"
-	default n
-	help
-	  Say Y here if you have FT5406_MT touch panel.
-
-	  If unsure, say N.
-
-	  To compile this dirver as a module, choose M here: the
-	  module will be called.
-
-source "drivers/input/touchscreen/mediatek/FT5406_MT/Kconfig"
 
 config TOUCHSCREEN_MTK_FT6336S
 	bool "FT633S for Mediatek package"
@@ -247,7 +211,57 @@ config TOUCHSCREEN_LGE_FT8707
 	  To compile this dirver as a module, choose M here: the
 	  module will be called.
 
+config TOUCHSCREEN_MTK_GT9XX_GESTURE
+	bool "GT9XX_GESTURE for Mediatek package"
+	default n
+	help
+	  Say Y here if you have GT9XX_GESTURE touch panel.
 
+	  If unsure, say N.
+
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+
+source "drivers/input/touchscreen/mediatek/GT9XX_GESTURE/Kconfig"
+
+config TOUCHSCREEN_MTK_GT1X
+	bool "GT1X for Mediatek package"
+	default n
+	help
+	  Say Y here if you have GT1X touch panel.
+
+	  If unsure, say N.
+
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+
+source "drivers/input/touchscreen/mediatek/GT1X/Kconfig"
+
+config TOUCHSCREEN_MTK_FT5406_MT
+	bool "FT5406_MT for Mediatek package"
+	default n
+	help
+	  Say Y here if you have FT5406_MT touch panel.
+
+	  If unsure, say N.
+
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+
+source "drivers/input/touchscreen/mediatek/FT5406_MT/Kconfig"
+
+config TOUCHSCREEN_MTK_S2202
+	bool "S2202 for Mediatek package"
+	default n
+	help
+	  Say Y here if you have S2202 touch panel.
+
+	  If unsure, say N.
+
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+
+source "drivers/input/touchscreen/mediatek/S2202/Kconfig"
 
 config TOUCHSCREEN_MTK_GT5688
 	bool "GT5688 for Mediatek package"
@@ -274,4 +288,5 @@ config TOUCHSCREEN_MTK_NT36xxx
 	  module will be called.
 
 source "drivers/input/touchscreen/mediatek/NT36xxx/Kconfig"
+
 endif

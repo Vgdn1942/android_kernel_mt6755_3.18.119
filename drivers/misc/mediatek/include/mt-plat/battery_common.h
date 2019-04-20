@@ -251,6 +251,11 @@ struct battery_custom_data {
 	int usb_charger_current;
 	int ac_charger_input_current;
 	int ac_charger_current;
+	//[agold][xfl][20160516][start]
+	int wireless_charger_input_current;
+	int wireless_charger_current;
+	int usb_charger_input_current;
+	//[agold][xfl][20160516][end]
 	int non_std_ac_charger_current;
 	int charging_host_charger_current;
 	int apple_0_5a_charger_current;
@@ -329,7 +334,7 @@ extern kal_bool g_ftm_battery_flag;
 extern int charging_level_data[1];
 extern kal_bool g_call_state;
 extern kal_bool g_charging_full_reset_bat_meter;
-#if defined(CONFIG_MTK_PUMP_EXPRESS_SUPPORT)
+#if defined(CONFIG_MTK_PUMP_EXPRESS_SUPPORT) || defined(CONFIG_MTK_PUMP_EXPRESS_PLUS_SUPPORT)
 extern kal_bool ta_check_chr_type;
 extern kal_bool ta_cable_out_occur;
 extern kal_bool is_ta_connect;

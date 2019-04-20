@@ -368,10 +368,11 @@ static void set_jeita_charging_current(void)
 
 bool get_usb_current_unlimited(void)
 {
-	if (BMT_status.charger_type == STANDARD_HOST || BMT_status.charger_type == CHARGING_HOST)
+	if (BMT_status.charger_type == STANDARD_HOST || BMT_status.charger_type == CHARGING_HOST) {
 		return usb_unlimited;
+	}
 
-	return false;
+		return false;
 }
 
 void set_usb_current_unlimited(bool enable)
@@ -735,6 +736,90 @@ static int mtk_check_aicr_upper_bound(void)
 	return 0;
 }
 
+
+//[agold][xfl][20160113][start]
+#ifdef AGOLD_AUTO_SELECT_CURRENT
+void agold_select_current(void)
+{
+	CHR_CURRENT_ENUM max = CHARGE_CURRENT_1000_00_MA;
+	CHR_CURRENT_ENUM min = CHARGE_CURRENT_450_00_MA;
+	static CHR_CURRENT_ENUM now = CHARGE_CURRENT_450_00_MA;
+	int vol;
+	static int base_vol = 4550;
+
+	if (BMT_status.charger_type == STANDARD_CHARGER)
+	{
+		max = batt_cust_data.ac_charger_current;
+	}
+	else if (BMT_status.charger_type == WIRELESS_CHARGER)
+	{
+		base_vol = 4600;
+		//if(BMT_status.UI_SOC < 15)
+			max = CHARGE_CURRENT_950_00_MA;//batt_cust_data.wireless_charger_current;
+		//else	
+		//	max = CHARGE_CURRENT_800_00_MA;//batt_cust_data.wireless_charger_current;
+	}
+	
+	vol = battery_meter_get_charger_voltage() - base_vol;
+	printk("wangxin now = %d , charger V = %d\n",now,vol);
+	g_temp_CC_value = now;
+	g_temp_input_CC_value = now;
+	if(vol >= 200)
+	{	
+		if (BMT_status.charger_type == WIRELESS_CHARGER)
+		{
+			now += 10000;
+		}
+		else
+		{
+			now += 20000;
+		}
+		if(now >= max) now = max;
+	}
+	else if(vol >= 100)
+	{
+		if (BMT_status.charger_type == WIRELESS_CHARGER)
+		{
+			now += 5000;
+		}
+		else
+		{
+			now += 10000;
+		}
+		if(now >= max) now = max;
+	}
+	else if(vol < -100)
+	{
+		if (BMT_status.charger_type == WIRELESS_CHARGER)
+		{
+			now -= 10000;
+		}
+		else
+		{
+			now -= 20000;
+		}
+		if(now < min) now = min;
+		g_temp_CC_value = now;
+		g_temp_input_CC_value = now;
+	}
+	else if(vol < 0)
+	{
+		if (BMT_status.charger_type == WIRELESS_CHARGER)
+		{
+			now -= 5000;
+		}
+		else
+		{
+			now -= 10000;
+		}
+		if(now < min) now = min;
+		g_temp_CC_value = now;
+		g_temp_input_CC_value = now;
+	}
+}
+#endif
+//[agold][xfl][20160113][end]
+
 void select_charging_current(void)
 {
 	if (g_ftm_battery_flag) {
@@ -772,7 +857,9 @@ void select_charging_current(void)
 			}
 #else
 			{
-				g_temp_input_CC_value = batt_cust_data.usb_charger_current;
+				//[agold][xfl][20160516][start]
+				g_temp_input_CC_value = batt_cust_data.usb_charger_input_current;
+				//[agold][xfl][20160516][end]
 				g_temp_CC_value = batt_cust_data.usb_charger_current;
 			}
 #endif
@@ -787,6 +874,13 @@ void select_charging_current(void)
 				g_temp_input_CC_value = batt_cust_data.ac_charger_current;
 
 			g_temp_CC_value = batt_cust_data.ac_charger_current;
+
+			//[agold][xfl][20160113][start]
+			#ifdef AGOLD_AUTO_SELECT_CURRENT
+			agold_select_current();
+			#endif
+			//[agold][xfl][20160113][end]
+
 			mtk_pep_set_charging_current(&g_temp_CC_value, &g_temp_input_CC_value);
 			mtk_pep20_set_charging_current(&g_temp_CC_value, &g_temp_input_CC_value);
 
@@ -802,7 +896,17 @@ void select_charging_current(void)
 		} else if (BMT_status.charger_type == APPLE_0_5A_CHARGER) {
 			g_temp_input_CC_value = batt_cust_data.apple_0_5a_charger_current;
 			g_temp_CC_value = batt_cust_data.apple_0_5a_charger_current;
-		} else {
+		} 		
+		//[agold][xfl][20160113][start]
+		else if (BMT_status.charger_type == WIRELESS_CHARGER) {
+			g_temp_input_CC_value = batt_cust_data.wireless_charger_input_current;
+			g_temp_CC_value = batt_cust_data.wireless_charger_current;
+			#ifdef AGOLD_AUTO_SELECT_CURRENT
+			agold_select_current();
+			#endif
+		} 
+		//[agold][xfl][20160113][end]
+		else {
 			g_temp_input_CC_value = CHARGE_CURRENT_500_00_MA;
 			g_temp_CC_value = CHARGE_CURRENT_500_00_MA;
 		}
@@ -882,6 +986,9 @@ void select_charging_current_bcct(void)
 	mtk_check_aicr_upper_bound();
 }
 
+//[agold][xfl][20160812]
+extern int mtkts_bts_get_hw_temp(void);
+
 static void mtk_select_ichg_aicr(void)
 {
 	kal_bool enable_charger = KAL_TRUE;
@@ -910,8 +1017,13 @@ static void mtk_select_ichg_aicr(void)
 			"[BATTERY] select_charging_current !\n");
 	}
 #else
+	//[agold][xfl][20160812][注掉下面一句，解决PE+ BCCT下掉电压问题]
+	#if defined(AGOLD_BCCT_T_AP_THRESHOLD__INT)
+	else if ((g_bcct_flag == 1 || g_bcct_input_flag == 1) && (mtkts_bts_get_hw_temp() >= AGOLD_BCCT_T_AP_THRESHOLD__INT)) {
+	#else
 	else if (g_bcct_flag == 1 || g_bcct_input_flag == 1) {
-		select_charging_current();
+	#endif
+		//select_charging_current();
 		select_charging_current_bcct();
 		battery_log(BAT_LOG_FULL,
 			"[BATTERY] select_charging_curret_bcct !\n");

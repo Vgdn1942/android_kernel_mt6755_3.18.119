@@ -1,16 +1,4 @@
 /*
- * Copyright (C) 2015 MediaTek Inc.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- */
-/*
  * Driver for CAM_CAL
  *
  *
@@ -180,7 +168,7 @@ bool selective_read_byte(u32 addr, BYTE *data, u16 i2c_id)
 {
 	CAM_CALDB("selective_read_byte\n");
 
-	u8 page = addr / PAGE_SIZE_; // size of page was 256
+	u8 page = addr / PAGE_SIZE_; // size of page was 256 
 	u8 offset = addr % PAGE_SIZE_;
 
 	kdSetI2CSpeed(EEPROM_I2C_SPEED);
@@ -191,7 +179,7 @@ bool selective_read_byte(u32 addr, BYTE *data, u16 i2c_id)
 		return false;
 	}
 	CAM_CALDB("selective_read_byte addr =0x%x data = 0x%x,page %d, offset 0x%x", addr,
-	*data,page,offset);
+	*data,page,offset); 
 	return true;
 }*/
 
@@ -318,9 +306,9 @@ static long cat24c16_Ioctl_Compat(struct file *filp, unsigned int cmd, unsigned 
     CAM_CALDB("[zbl] cmd case enter\n");
     CAM_CALDB("COMPAT_CAM_CALIOC_G_READ = %x \n",(int)(COMPAT_CAM_CALIOC_G_READ));
 	switch (cmd) {
-
+    
 	case COMPAT_CAM_CALIOC_G_READ: {
-
+	
 	    CAM_CALDB("[zbl] cmd case CAM_CALIOC_G_READ\n");
 		data32 = compat_ptr(arg);
 		data = compat_alloc_user_space(sizeof(*data));
@@ -666,14 +654,14 @@ static int CAM_CAL_probe(struct platform_device *pdev)
 {
     int res;
     CAM_CALERR("[zbl] enter CAM_CAL_probe\n");
-
+    
     res = i2c_add_driver(&CAM_CAL_i2c_driver);
-
+    
     CAM_CALERR("[zblzbl] enter CAM_CAL_probe test\n");
-
+    
     if(!res)
     {
-       CAM_CALERR("i2c add driver error\n");
+       CAM_CALERR("i2c add driver error\n"); 
     }
 	return 0;
 }
@@ -704,7 +692,7 @@ static struct platform_driver g_stCAM_CAL_Driver = {
 	#ifdef CONFIG_OF
 	.driver.of_match_table = camcaldrv_of_match,
 	#endif
-*/
+*/	
 };
 
 
@@ -718,22 +706,22 @@ static struct platform_device g_stCAM_CAL_Device = {
 static int __init CAM_CAL_i2C_init(void)
 {
     CAM_CALERR("enter CAM_CAL_i2c_init\n");
-
+    
    //i2c_register_board_info(CAM_CAL_I2C_BUSNUM, &kd_cam_cal_dev, 1);
-
-
+ 
+    
     if (platform_device_register(&g_stCAM_CAL_Device)) {
 		CAM_CALDB("failed to register S24CAM_CAL driver, 2nd time\n");
 		return -ENODEV;
 	}
-
-
+   
+    
 	if (platform_driver_register(&g_stCAM_CAL_Driver)) {
 		CAM_CALDB("failed to register S24CAM_CAL driver\n");
 		return -ENODEV;
 	}
 
-
+	
 	return 0;
 }
 
@@ -748,4 +736,5 @@ module_exit(CAM_CAL_i2C_exit);
 MODULE_DESCRIPTION("CAM_CAL driver");
 MODULE_AUTHOR("Sean Lin <Sean.Lin@Mediatek.com>");
 MODULE_LICENSE("GPL");
+
 

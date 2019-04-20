@@ -1,16 +1,4 @@
 /*
- * Copyright (C) 2015 MediaTek Inc.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- */
-/*
  * Driver for CAM_CAL
  *
  *
@@ -32,7 +20,9 @@
 #include "cam_cal.h"
 #include "cam_cal_define.h"
 #include "BRCB032GWZ_3.h"
-
+#ifdef AGOLD_OTP_SENSORCLIENT
+extern int S5K3L8_EEPROM_READ_ID;
+#endif
 /*#include <asm/system.h>//for SMP */
 #ifdef CONFIG_COMPAT
 /* 64 bit */
@@ -274,7 +264,9 @@ unsigned int brcb032gwz_selective_read_region(struct i2c_client *client, unsigne
 	unsigned char *data, unsigned int size)
 {
 	g_pstI2Cclient = client;
-
+#ifdef AGOLD_OTP_SENSORCLIENT
+	g_pstI2Cclient -> addr = S5K3L8_EEPROM_READ_ID >> 1;
+#endif
 	printk("caozheng 0x%X\n",g_pstI2Cclient->addr);
 	if (iReadData(addr, size, data) == 0)
 		return size;
@@ -409,7 +401,12 @@ static long CAM_CAL_Ioctl(
 				return -EFAULT;
 			}
 		}
+	} else {
+		CAM_CALDB("[BRCB032GWZ] a_u4Command failed\n");
+		return -EFAULT;
 	}
+
+
 
 	ptempbuf = (stCAM_CAL_INFO_STRUCT *)pBuff;
 	pWorkingBuff = kmalloc(ptempbuf->u4Length, GFP_KERNEL);
@@ -462,10 +459,10 @@ static long CAM_CAL_Ioctl(
         CAM_CALDB("11111111111\n");
 		} else*/ if (ptempbuf->u4Offset == 0x000CB032) {
 			*(u32 *)pWorkingBuff = 0x000CB032;
-		CAM_CALDB("22222222\n");
+		CAM_CALDB("22222222\n");	
 		} else if (ptempbuf->u4Offset == 0x100CB032) {
 			*(u32 *)pWorkingBuff = 0x100CB032;
-		CAM_CALDB("3333333333\n");
+		CAM_CALDB("3333333333\n");	
 		} else if (ptempbuf->u4Offset == 0xFFFFFFFF) {
 			char puSendCmd[1] = {0, };
 
@@ -488,7 +485,7 @@ static long CAM_CAL_Ioctl(
 				ptempbuf->u4Length, pWorkingBuff); */
 			CAM_CALDB("[zbl]ptempbuf->u4Length=0x%x\n",ptempbuf->u4Length);
 			i4RetValue = iReadData((u16)ptempbuf->u4Offset, ptempbuf->u4Length,pWorkingBuff);
-
+			
 #if 0
 				if (0 < test_retry) {
 					CAM_CALDB("[BRCB032GWZ] Test error (%d) Read retry (%d)\n",
@@ -707,7 +704,7 @@ static const struct file_operations g_stCAM_CAL_fops = {
 	/* .ioctl = CAM_CAL_Ioctl */
 	#ifdef CONFIG_COMPAT
 	.compat_ioctl = brcb032gez_Ioctl_Compat,
-    #endif
+    #endif	
 	.unlocked_ioctl = CAM_CAL_Ioctl
 };
 

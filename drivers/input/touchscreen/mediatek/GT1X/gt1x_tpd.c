@@ -12,8 +12,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- *
- * Version: 1.4
+ * 
+ * Version: 1.4   
  * Release Date:  2015/07/10
  */
 
@@ -37,13 +37,13 @@
 #if GTP_GESTURE_WAKEUP
 extern int g_gesture_support;
 
-extern char *tpd_get_gesture(char *buf_from);
+extern char *agold_tpd_get_gesture(char *buf_from);
 #endif
 extern struct tpd_device *tpd;
-#if defined(CTP_FOR_HAND)
+#if defined(AGOLD_CTP_FOR_HAND)
 extern void gt1x_write_hand_cfg(void);
 #endif
-static spinlock_t irq_lock;
+static spinlock_t irq_lock; 
 static int tpd_flag = 0;
 static int tpd_irq_flag;
 static int tpd_eint_mode = 1;
@@ -353,7 +353,7 @@ static int tpd_power_on(void)
 void gt1x_irq_enable(void)
 {
     unsigned long flag;
-
+    
     spin_lock_irqsave(&irq_lock, flag);
     if (!tpd_irq_flag) { // 0-disabled
         tpd_irq_flag = 1;  // 1-enabled
@@ -385,17 +385,17 @@ void gt1x_irq_disable(void)
 int gt1x_power_switch(s32 state)
 {
     static int power_state = 0;
-
+    
 	GTP_GPIO_OUTPUT(GTP_RST_PORT, 0);
 	GTP_GPIO_OUTPUT(GTP_INT_PORT, 0);
 	msleep(10);
 
 	switch (state) {
 	case SWITCH_ON:
-        if (power_state == 0) {
+        if (power_state == 0) {    
     		GTP_DEBUG("Power switch on!");
 //#ifdef MT6573
-#ifdef CTP_POWER_EN
+#ifdef AGOLD_CTP_POWER_EN
 			GTP_GPIO_OUTPUT(GTP_PWR_PORT, 1);
     		//mt_set_gpio_mode(GPIO_CTP_EN_PIN, GPIO_CTP_EN_PIN_M_GPIO);
     		//mt_set_gpio_dir(GPIO_CTP_EN_PIN, GPIO_DIR_OUT);
@@ -405,7 +405,7 @@ int gt1x_power_switch(s32 state)
     #if 1
              // set 2.8v
 GTP_INFO("[geng_gt1x] use regulator_set_voltage");
-            if (regulator_set_voltage(tpd->reg, 2800000, 2800000))
+            if (regulator_set_voltage(tpd->reg, 2800000, 2800000))   
                 GTP_ERROR("regulator_set_voltage() failed!");
             //enable regulator
             if (regulator_enable(tpd->reg))
@@ -427,7 +427,7 @@ GTP_INFO("[geng_gt1x] use regulator_set_voltage");
 	case SWITCH_OFF:
         if (power_state == 1) {
 		    GTP_DEBUG("Power switch off!");
-#if defined(MT6573) || defined(CTP_POWER_EN)
+#if defined(MT6573) || defined(AGOLD_CTP_POWER_EN)
     		GTP_GPIO_OUTPUT(GTP_PWR_PORT, 0);
     		//mt_set_gpio_mode(GPIO_CTP_EN_PIN, GPIO_CTP_EN_PIN_M_GPIO);
     		//mt_set_gpio_dir(GPIO_CTP_EN_PIN, GPIO_DIR_OUT);
@@ -465,7 +465,7 @@ static int tpd_irq_registration(void)
 	int ret = 0;
 	u32 ints[2] = {0,0};
 	GTP_INFO("Device Tree Tpd_irq_registration!");
-node = of_find_matching_node(node, touch_of_match);
+node = of_find_matching_node(node, touch_of_match);	
 	//node = of_find_compatible_node(NULL, NULL, "mediatek, TOUCH_PANEL-eint");
 	if(node){
 		of_property_read_u32_array(node , "debounce", ints, ARRAY_SIZE(ints));
@@ -495,7 +495,7 @@ GTP_INFO("[geng_gt1x] EINTF_TRIGGER_FALLING");
 	}
 	GTP_INFO("irq:%d, debounce:%d-%d:", tpd_touch_irq, ints[0], ints[1]);
 	return ret;
-
+    
 #else
 
     #ifndef MT6589
@@ -519,7 +519,7 @@ GTP_INFO("[geng_gt1x] EINTF_TRIGGER_FALLING");
 #endif
 }
 
-#ifdef HARDWARE_INFO
+#ifdef AGOLD_HARDWARE_INFO
 static int gt1x_get_fw_ver(void)
 {
 	u8 ver = 0;
@@ -539,13 +539,13 @@ static int gt1x_get_fw_ver(void)
 	{
 		printk("%s : get TP config_ver error!\n",__func__);
 		return -1;
-	}
+	}	
 	printk("geng_tp_ver ver = %02x\n",ver);
 	return ver;
-}
+}	
 #endif
 
-#if defined(CTP_FOR_HAND)
+#if defined(AGOLD_CTP_FOR_HAND)
 static void tpd_handler2(int temp)
 {
 		//int err = 0;
@@ -571,7 +571,7 @@ static void tpd_handler2(int temp)
 		}else{
 			printk("[chenpeng]  error!  should not print this ! \n");
 		}
-
+	
 }
 #endif
 
@@ -583,9 +583,8 @@ static s32 tpd_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
 	s32 idx = 0;
 #endif
 
-    if (RECOVERY_BOOT == get_boot_mode()) {   // important
+    if (RECOVERY_BOOT == get_boot_mode())   // important
         return 0;
-	}
 	client->addr = 0x5d;
 	gt1x_i2c_client = client;
     spin_lock_init(&irq_lock);
@@ -646,7 +645,7 @@ static s32 tpd_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
 static irqreturn_t tpd_eint_interrupt_handler(unsigned irq, struct irq_desc *desc)
 {
     TPD_DEBUG_PRINT_INT;
-
+	
 	tpd_flag = 1;
 
 	/* enter EINT handler disable INT, make sure INT is disable when handle touch event including top/bottom half */
@@ -767,7 +766,7 @@ static int tpd_event_handler(void *unused)
             GTP_DEBUG("Ignore interrupts during fw updating.");
             continue;
         }
-
+        
 		mutex_lock(&i2c_access);
 		/* don't reset before "if (gt1x_halt..."  */
 
@@ -948,6 +947,7 @@ GTP_INFO("[geng_gt1x] regulator_get");
 	if (tpd_load_status == 0)	// disable auto load touch driver for linux3.0 porting
 	{
 		GTP_ERROR("add error touch panel driver.");
+		//[Agold][Jason][20171031] 释放2.8v
 		gt1x_power_switch(SWITCH_OFF);
 		if(boot_mode != RECOVERY_BOOT)
 		{
@@ -1008,10 +1008,10 @@ static struct tpd_driver_t tpd_device_driver = {
 	.tpd_local_init = tpd_local_init,
 	.suspend = tpd_suspend,
 	.resume = tpd_resume,
-#ifdef HARDWARE_INFO
+#ifdef AGOLD_HARDWARE_INFO
 	.get_tp_fw_ver = gt1x_get_fw_ver,
 #endif
-#if defined(CTP_FOR_HAND)
+#if defined(AGOLD_CTP_FOR_HAND)
 	.tpd_handler = tpd_handler2,
 #endif
 

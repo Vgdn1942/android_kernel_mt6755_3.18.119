@@ -1,0 +1,4 @@
+config AGOLD_FINGERPRINT_SWTEE
+	tristate "Mediatek Fingerprint"
+	default n
+

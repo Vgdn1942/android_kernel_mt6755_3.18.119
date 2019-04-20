@@ -207,6 +207,16 @@ static void chrlmt_set_limit_handler(struct work_struct *work)
 #ifdef CONFIG_MTK_SWITCH_INPUT_OUTPUT_CURRENT_SUPPORT
 		set_chr_input_current_limit(chrlmt_chr_input_curr_limit);
 #endif
+
+		//[agold][xfl][20161201][start][current set to AGOLD_BCCT_MIN_CURRENT__INT only when T_AP<AGOLD_BCCT_T_AP_THRESHOLD_H__INT]
+		#if defined(AGOLD_BCCT_MIN_CURRENT__INT) && defined(AGOLD_BCCT_T_AP_THRESHOLD_H__INT)
+		if ((chrlmt_bat_chr_curr_limit < AGOLD_BCCT_MIN_CURRENT__INT) && (mtkts_bts_get_hw_temp() < AGOLD_BCCT_T_AP_THRESHOLD_H__INT))
+		{
+			chrlmt_bat_chr_curr_limit = AGOLD_BCCT_MIN_CURRENT__INT;
+		}
+		#endif
+		//[agold][xfl][20160801][end]
+
 		set_bat_charging_current_limit(chrlmt_bat_chr_curr_limit);
 }
 

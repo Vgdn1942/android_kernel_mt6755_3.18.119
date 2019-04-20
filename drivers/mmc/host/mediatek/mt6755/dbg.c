@@ -2570,7 +2570,9 @@ static const struct file_operations msdc_voltage_flag_fops = {
 
 int msdc_debug_proc_init(void)
 {
+#if 0
 	struct proc_dir_entry *prEntry;
+#endif
 	kuid_t uid;
 	kgid_t gid;
 #ifdef MSDC_HQA
@@ -2578,7 +2580,7 @@ int msdc_debug_proc_init(void)
 #endif
 	uid = make_kuid(&init_user_ns, 0);
 	gid = make_kgid(&init_user_ns, 1001);
-
+#if 0
 	prEntry = proc_create("msdc_debug", PROC_PERM, NULL, &msdc_proc_fops);
 
 	if (prEntry) {
@@ -2594,7 +2596,7 @@ int msdc_debug_proc_init(void)
 		pr_err("[%s]: create /proc/msdc_help\n", __func__);
 	else
 		pr_err("[%s]: failed to create /proc/msdc_help\n", __func__);
-
+#endif
 #ifdef MSDC_HQA
 	voltage_flag = proc_create("msdc_voltage_flag", PROC_PERM, NULL,
 		&msdc_voltage_flag_fops);

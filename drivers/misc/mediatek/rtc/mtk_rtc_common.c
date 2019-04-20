@@ -215,8 +215,8 @@ int set_rtc_spare_fg_value(int val)
 	/* RTC_AL_HOU bit8~14 */
 	unsigned long flags;
 
-#if defined(CONFIG_OZ8806_SUPPORT)
-	// store soc+1 in RTC in order to tell if RTC is reset and SOC is 0.
+#if defined(CONFIG_OZ8806_SUPPORT) 
+	    // store soc+1 in RTC in order to tell if RTC is reset and SOC is 0.
 	if (val > 101)
 	    return 1;
 #else

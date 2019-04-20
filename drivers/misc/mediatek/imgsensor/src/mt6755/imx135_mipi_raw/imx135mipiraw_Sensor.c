@@ -268,11 +268,11 @@ static imgsensor_info_struct imgsensor_info = {
     .isp_driving_current = ISP_DRIVING_4MA,
     .sensor_interface_type = SENSOR_INTERFACE_TYPE_MIPI,
     .mipi_sensor_type = MIPI_OPHY_NCSI2, //0,MIPI_OPHY_NCSI2;  1,MIPI_OPHY_CSI2
-	.mipi_settle_delay_mode = MIPI_SETTLEDELAY_MANUAL,
+	.mipi_settle_delay_mode = MIPI_SETTLEDELAY_AUTO,
     .sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_R,
     .mclk = 24,
     .mipi_lane_num = SENSOR_MIPI_4_LANE,
-    .i2c_addr_table = {0x20, 0x40, 0xff},
+    .i2c_addr_table = {0x20, 0x34, 0x40, 0xff},
     .i2c_speed = 200, // i2c read/write speed
 };
 
@@ -1986,18 +1986,18 @@ else {
     write_cmos_sensor(0x4087,0x00);//
     write_cmos_sensor(0x4400,0x00);//
 
-	/* global timing setting */
-	write_cmos_sensor(0x0830, 0x8F);
-	write_cmos_sensor(0x0831, 0x47);
-	write_cmos_sensor(0x0832, 0x7F);
-	write_cmos_sensor(0x0833, 0x4F);
-	write_cmos_sensor(0x0834, 0x47);
-	write_cmos_sensor(0x0835, 0x5F);
-	write_cmos_sensor(0x0836, 0xFF);
-	write_cmos_sensor(0x0837, 0x4F);
-	write_cmos_sensor(0x0839, 0x1F);
-	write_cmos_sensor(0x083A, 0x17);
-	write_cmos_sensor(0x083B, 0x02);
+    //global timing setting
+    write_cmos_sensor(0x0830,0x6F);//
+    write_cmos_sensor(0x0831,0x27);//
+    write_cmos_sensor(0x0832,0x47);//
+    write_cmos_sensor(0x0833,0x27);//
+    write_cmos_sensor(0x0834,0x27);//
+    write_cmos_sensor(0x0835,0x27);//
+    write_cmos_sensor(0x0836,0x8F);//
+    write_cmos_sensor(0x0837,0x37);//
+    write_cmos_sensor(0x0839,0x1F);//
+    write_cmos_sensor(0x083A,0x17);//
+    write_cmos_sensor(0x083B,0x02);//
 
     // integration time setting
     write_cmos_sensor(0x0202,0x03);//

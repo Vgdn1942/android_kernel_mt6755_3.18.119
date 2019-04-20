@@ -39,7 +39,13 @@
 #define PK_DBG_FUNC(fmt, arg...)    pr_debug(PFX fmt, ##arg)
 
 #define DEBUG_CAMERA_HW_K
+
+#ifdef AGOLD_CONTROL_AF_POWER
+#define CONTROL_AF_POWER 1
+#else
 #define CONTROL_AF_POWER 0
+#endif
+
 #ifdef DEBUG_CAMERA_HW_K
 #define PK_DBG PK_DBG_FUNC
 #define PK_ERR(fmt, arg...)         pr_err(fmt, ##arg)
@@ -62,6 +68,9 @@
 #define IDX_PS_CMRST 0
 #define IDX_PS_CMPDN 4
 
+#ifdef AGOLD_CAMERA_VERSION
+int g_cur_cam_sensor = 0;
+#endif
 extern void ISP_MCLK1_EN(BOOL En);
 extern void ISP_MCLK2_EN(BOOL En);
 extern void ISP_MCLK3_EN(BOOL En);
@@ -119,10 +128,11 @@ PowerCust PowerCustList = {
 		{GPIO_UNSUPPORTED, GPIO_MODE_GPIO, Vol_Low},	/* for AFVDD; */
 #ifdef CONFIG_MTK_PMIC_CHIP_MT6353
 		{GPIO_SUPPORTED, GPIO_MODE_GPIO, Vol_High},	/* for SUB_DVDD; */
+		{GPIO_SUPPORTED, GPIO_MODE_GPIO, Vol_High},	/* MAIN2_DVDD; */
 #else
 		{GPIO_UNSUPPORTED, GPIO_MODE_GPIO, Vol_Low},	/* for SUB_DVDD; */
-#endif
 		{GPIO_UNSUPPORTED, GPIO_MODE_GPIO, Vol_Low},	/* MAIN2_DVDD; */
+#endif
 		/*{GPIO_SUPPORTED, GPIO_MODE_GPIO, Vol_Low}, */
 	 }
 };
@@ -170,7 +180,7 @@ PowerUp PowerOnList = {
 	   {RST, Vol_High, 5},
 	   {PDN, Vol_Low, 1},
 	   {PDN, Vol_High, 1},
-
+	   
 	   },
 	  },
 	  {SENSOR_DRVNAME_OV5670_MIPI_RAW,
@@ -198,7 +208,7 @@ PowerUp PowerOnList = {
 	   {PDN, Vol_High, 1},
 	   {RST, Vol_High, 0}
 	   },
-	  },
+	  },	
 	  {SENSOR_DRVNAME_OV13853_MIPI_RAW,
 	  {
 	   {SensorMCLK, Vol_High, 0},
@@ -227,7 +237,7 @@ PowerUp PowerOnList = {
 	  },
 	{SENSOR_DRVNAME_GC2755_MIPI_RAW,
 		  {
-			{DOVDD, Vol_1800, 8},
+			{DOVDD, Vol_1800, 8},	   	
 		   	{DVDD, Vol_1800, 0},
 			{AVDD, Vol_2800, 2},
 		   	{AFVDD, Vol_2800, 8},
@@ -340,7 +350,7 @@ PowerUp PowerOnList = {
 	   {PDN, Vol_High, 0},
 	   {RST, Vol_High, 0}
 	   },
-	  },
+	  }, 
 	 {SENSOR_DRVNAME_OV8858_MIPI_RAW,
 	  {
 	   {SensorMCLK, Vol_High, 0},
@@ -380,7 +390,7 @@ PowerUp PowerOnList = {
 	   {RST, Vol_High, 0}
 	   },
 	  },
-
+	
 		 {SENSOR_DRVNAME_MN34152_MIPI_RAW,
 	  	 {
 	   		{SensorMCLK, Vol_High, 0},
@@ -394,7 +404,7 @@ PowerUp PowerOnList = {
 	   		{RST, Vol_High, 0},
 	   	 },
 	   	 },
-
+	   
 	     {SENSOR_DRVNAME_IMX219_MIPI_RAW,
 	  	 {
 		   {SensorMCLK, Vol_High, 0},
@@ -439,7 +449,7 @@ PowerUp PowerOnList = {
 			{SensorMCLK, Vol_High, 0},
 			{AVDD, Vol_2800, 0},
 			{DVDD, Vol_1200, 1},
-			{DOVDD, Vol_1800, 1},
+			{DOVDD, Vol_1800, 1},	
 			{AFVDD, Vol_2800, 5},
 			{PDN, Vol_High, 0},
 			{PDN, Vol_Low, 0},
@@ -449,7 +459,7 @@ PowerUp PowerOnList = {
 		},
 		{SENSOR_DRVNAME_GC5005_MIPI_RAW,
 		  {
-			{DOVDD, Vol_1800, 5},
+			{DOVDD, Vol_1800, 5},	   	
 		   	{DVDD, Vol_1200, 10},
 			{AVDD, Vol_2800, 5},
 		   	{AFVDD, Vol_2800, 5},
@@ -476,7 +486,7 @@ PowerUp PowerOnList = {
 		},
 		{SENSOR_DRVNAME_GC5024_MIPI_RAW,
 		  {
-			{DOVDD, Vol_1800, 5},
+			{DOVDD, Vol_1800, 5},	   	
 		   	{DVDD, Vol_1500, 10},
 			{AVDD, Vol_2800, 5},
 		   	{AFVDD, Vol_2800, 5},
@@ -489,7 +499,7 @@ PowerUp PowerOnList = {
 	 	 },
 	 	 {SENSOR_DRVNAME_GC5025_MIPI_RAW,
 		  {
-			{DOVDD, Vol_1800, 5},
+			{DOVDD, Vol_1800, 5},	   	
 		   	{DVDD, Vol_1200, 10},
 			{AVDD, Vol_2800, 5},
 		   	{AFVDD, Vol_2800, 5},
@@ -499,10 +509,10 @@ PowerUp PowerOnList = {
 		   	{RST, Vol_Low, 0},
 		   	{RST, Vol_High, 0},
 		   },
-	 	 },
+	 	 }, 	 
 	 	 {SENSOR_DRVNAME_GC8024_MIPI_RAW,
 		  {
-			{DOVDD, Vol_1800, 1},
+			{DOVDD, Vol_1800, 1},	   	
 		   	{DVDD, Vol_1200, 1},
 			{AVDD, Vol_2800, 1},
 		   	{AFVDD, Vol_2800, 1},
@@ -765,7 +775,7 @@ int mtkcam_gpio_init(struct platform_device *pdev)
 		ret = PTR_ERR(cam_ldo_sub_vcama_l);
 		PK_DBG("%s : pinctrl err, cam1_avdd_en_l\n", __func__);
 	}
-
+	
 	return ret;
 }
 
@@ -880,6 +890,21 @@ BOOL hwpoweron(PowerInformation pwInfo, char *mode_name)
 {
 	if (pwInfo.PowerType == AVDD) {
 		if (PowerCustList.PowerCustInfo[CUST_AVDD].Gpio_Pin == GPIO_UNSUPPORTED) {
+			//[zbl][start][20160409]
+			#ifdef AGOLD_SUB_AVDD_GPIO_CTROL
+			if (pinSetIdx == 1)
+			{
+				mtkcam_gpio_set(1, SUB_AVDD, 1);
+				PK_DBG("xfl sub avdd on\n");
+			}
+			else 
+			{
+			    if (TRUE != _hwPowerOn(pwInfo.PowerType, pwInfo.Voltage)) {
+					PK_ERR("[CAMERA SENSOR] Fail to enable analog power\n");
+					return FALSE;
+				}    
+			}
+			#else
 			{
 				if (TRUE != _hwPowerOn(pwInfo.PowerType, pwInfo.Voltage)) {
 					PK_ERR("[CAMERA SENSOR] Fail to enable analog power\n");
@@ -887,6 +912,8 @@ BOOL hwpoweron(PowerInformation pwInfo, char *mode_name)
 				}
 				PK_DBG("xfl main avdd on\n");
 			}
+			#endif
+			////[zbl][end][20160409]
 		} else {
 			if (mtkcam_gpio_set(pinSetIdx, pwInfo.PowerType, PowerCustList.PowerCustInfo[CUST_AVDD].Voltage)) {
 				PK_ERR("[CAMERA CUST_AVDD] set gpio failed!!\n");
@@ -1012,12 +1039,27 @@ BOOL hwpowerdown(PowerInformation pwInfo, char *mode_name)
 {
 	if (pwInfo.PowerType == AVDD) {
 		if (PowerCustList.PowerCustInfo[CUST_AVDD].Gpio_Pin == GPIO_UNSUPPORTED) {
+		    //[zbl][start][20160409]
+		    #ifdef AGOLD_SUB_AVDD_GPIO_CTROL
+			if (pinSetIdx == 1) {
+				mtkcam_gpio_set(1, SUB_AVDD, 0);
+			}
+			else
+			{
+			    if (TRUE != _hwPowerDown(pwInfo.PowerType)) {
+					PK_ERR("[CAMERA SENSOR] Fail to disable analog power\n");
+					return FALSE;
+				}
+			}		
+			#else
 			{
 				if (TRUE != _hwPowerDown(pwInfo.PowerType)) {
 					PK_ERR("[CAMERA SENSOR] Fail to disable analog power\n");
 					return FALSE;
 				}
 			}
+			#endif
+			//[zbl][end][20160409]
 		} else {
 			if (mtkcam_gpio_set(pinSetIdx, AVDD, 1-PowerCustList.PowerCustInfo[CUST_AVDD].Voltage)) {
 					PK_ERR("[CAMERA CUST_AVDD] set gpio failed!!\n");/* 1-voltage for reverse*/
@@ -1145,6 +1187,9 @@ int kdCISModulePowerOn(CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx, char *currSenso
 	int pwListIdx, pwIdx;
 	BOOL sensorInPowerList = KAL_FALSE;
 	//int iridespwListIdex = 0;
+#ifdef AGOLD_CAMERA_VERSION
+	g_cur_cam_sensor = SensorIdx;
+#endif
 
 	if (DUAL_CAMERA_MAIN_SENSOR == SensorIdx) {
 		pinSetIdx = 0;

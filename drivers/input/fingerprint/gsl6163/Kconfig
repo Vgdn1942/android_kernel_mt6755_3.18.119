@@ -1,0 +1,4 @@
+
+config AGOLD_FINGERPRINT_GSL6163
+	tristate "Mediatek Fingerprint"
+	default n

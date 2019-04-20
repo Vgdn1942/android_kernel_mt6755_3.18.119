@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- *
+ * 
  * Version: 1.4
  * Release Date:  2015/07/10
  */
@@ -61,7 +61,7 @@
 /*
  1.  firmware structure
     header: 128b
-
+    
     offset           size          content
     0                 4              firmware length
     4                 2              checksum
@@ -76,13 +76,13 @@
     32               8              subsystem info[1]
     .....
     120             8              subsystem info[11]
-
+    
     body: followed header
-
+    
     128             N0              subsystem[0]
     128+N0       N1              subsystem[1]
     ....
-
+    
  2. subsystem info structure
     offset           size          content
     0                 1              subsystem type
@@ -360,17 +360,17 @@ int gt1x_update_firmware(void *filename)
 		update_info.status = UPDATE_STATUS_IDLE;
 		return ret;
 	}
-
+    
 	ret = gt1x_check_firmware();
 	if (ret) {
         update_info.status = UPDATE_STATUS_ABORT;
 		goto gt1x_update_exit;
 	}
 #if GTP_FW_UPDATE_VERIFY
-    update_info.max_progress =
+    update_info.max_progress = 
         6 + update_info.firmware->subsystem_count;
 #else
-    update_info.max_progress =
+    update_info.max_progress = 
         3 + update_info.firmware->subsystem_count;
 #endif
 	update_info.progress++; // 1
@@ -411,7 +411,7 @@ int gt1x_update_firmware(void *filename)
 		}
         update_info.progress++;
 	}
-
+    
 #if GTP_FW_UPDATE_VERIFY
 	gt1x_reset_guitar();
 
@@ -635,7 +635,7 @@ int gt1x_check_firmware(void)
 }
 
 /**
- * @return: return a pointer pointed at the content of firmware
+ * @return: return a pointer pointed at the content of firmware 
  *          if success, otherwise return NULL.
  */
 u8 *gt1x_get_fw_data(u32 offset, int length)
@@ -688,7 +688,7 @@ int gt1x_update_judge(void)
         }
 
         break;
-_reset:
+_reset:        
         gt1x_reset_guitar();
 	}while (--retry);
 
@@ -741,7 +741,7 @@ int __gt1x_hold_ss51_dsp_20(void)
 	int hold_times = 0;
 
 	while (retry++ < 30) {
-
+        
 		// Hold ss51 & dsp
 		buf[0] = 0x0C;
 		ret = gt1x_i2c_write(_rRW_MISCTL__SWRST_B0_, buf, 1);
@@ -782,12 +782,11 @@ int gt1x_hold_ss51_dsp(void)
     do {
         gt1x_select_addr();
         ret =  gt1x_i2c_read(0x4220, buffer, 1);
-
+        
     } while (retry-- && ret < 0);
 
-    if (ret < 0) {
+    if (ret < 0)
         return ERROR;
-    }
 
 	//hold ss51_dsp
 	ret = __gt1x_hold_ss51_dsp_20();
@@ -984,7 +983,7 @@ int gt1x_burn_subsystem(struct fw_subsystem_info *subsystem)
 		if (fw == NULL) {
 			return ERROR_FW;
 		}
-
+		
 		cur_addr = ((subsystem->address + burn_len) >> 8);
 
 		checksum = 0;
@@ -1035,7 +1034,7 @@ int gt1x_burn_subsystem(struct fw_subsystem_info *subsystem)
 		burn_state = ERROR;
 		wait_time = 200;
         msleep(5);
-
+        
 		while (wait_time-- > 0) {
         	u8 confirm = 0x55;
 
@@ -1212,7 +1211,7 @@ int gt1x_error_erase(void)
     memset(fw, 0xFF, 1024 * 4);
     erase_addr = 0x00;
     block_len = 1024 * 4;
-
+    
 	while (retry-- > 0) {
 
 		checksum = 0;
@@ -1307,7 +1306,7 @@ void gt1x_leave_update_mode(void)
 	GTP_DEBUG("Leave FW update mode.");
     if (update_info.status != UPDATE_STATUS_ABORT)
     	gt1x_reset_guitar();
-
+    
 #if GTP_CHARGER_SWITCH
     gt1x_charger_switch(SWITCH_ON);
 #endif

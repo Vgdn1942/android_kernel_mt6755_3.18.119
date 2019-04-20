@@ -589,7 +589,6 @@ int ts_AP_at_boot_time = 0;
 int mtkts_bts_get_hw_temp(void)
 {
 	int t_ret = 0;
-	int t_ret2 = 0;
 
 	mutex_lock(&BTS_lock);
 
@@ -602,10 +601,7 @@ int mtkts_bts_get_hw_temp(void)
 
 
 	if (tsatm_thermal_get_catm_type() == 2)
-		t_ret2 = wakeup_ta_algo(TA_CATMPLUS_TTJ);
-
-	if (t_ret2)
-		pr_err("wakeup_ta_algo out of memory\n");
+		wakeup_ta_algo(TA_CATMPLUS_TTJ);
 
 	bts_cur_temp = t_ret;
 

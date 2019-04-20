@@ -30,9 +30,10 @@ void mtk_switch2host(void);
 void mtk_switch2device(bool skip);
 #endif
 
-#ifdef CONFIG_MTK_NCP1851_SUPPORT
-extern void ncp1851_set_chg_en(unsigned int val);
-extern void ncp1851_set_otg_en(unsigned int val);
+
+#ifdef CONFIG_MTK_BQ25896_SUPPORT
+extern void bq25890_set_boost_ilim(unsigned int val);
+extern void bq25890_otg_en(unsigned int val);
 #endif
 
 #ifdef CONFIG_MTK_NCP1854_SUPPORT
@@ -40,9 +41,9 @@ extern void ncp1854_set_chg_en(unsigned int val);
 extern void ncp1854_set_otg_en(unsigned int val);
 #endif
 
-#ifdef CONFIG_MTK_BQ25896_SUPPORT
-extern void bq25890_set_boost_ilim(unsigned int val);
-extern void bq25890_otg_en(unsigned int val);
+#ifdef CONFIG_MTK_NCP1851_SUPPORT
+extern void ncp1851_set_chg_en(unsigned int val);
+extern void ncp1851_set_otg_en(unsigned int val);
 #endif
 
 #ifdef CONFIG_MTK_OTG_PMIC_BOOST_5V

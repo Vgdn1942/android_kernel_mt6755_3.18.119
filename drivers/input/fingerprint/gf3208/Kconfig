@@ -1,0 +1,4 @@
+config AGOLD_FINGERPRINT_GF3208
+	tristate "Mediatek Fingerprint"
+	default n
+

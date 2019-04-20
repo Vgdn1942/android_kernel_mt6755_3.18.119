@@ -51,6 +51,12 @@
 #define PFX "IMX214_camera_sensor"
 #define LOG_INF(format, args...)	pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
 
+extern kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id);
+extern kal_bool IMX214MIPI_ReadAWBFromOtp(void);
+#include "agold_camera_info.h"
+
+
+
 static DEFINE_SPINLOCK(imgsensor_drv_lock);
 /*LukeHu--150812
 #define OTP_SIZE 452
@@ -163,11 +169,11 @@ static imgsensor_info_struct imgsensor_info = {
 	.mipi_sensor_type = MIPI_OPHY_NCSI2, //0,MIPI_OPHY_NCSI2;  1,MIPI_OPHY_CSI2
 	.mipi_settle_delay_mode = MIPI_SETTLEDELAY_AUTO, //0,MIPI_SETTLEDELAY_AUTO; 1,MIPI_SETTLEDELAY_MANNUAL
 
-#if defined(IMGSENSOR_IMX214_H_MIRROR)
+#if defined(AGOLD_IMGSENSOR_IMX214_H_MIRROR)
 	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_Gb,
-#elif defined(IMGSENSOR_IMX214_V_MIRROR)
+#elif defined(AGOLD_IMGSENSOR_IMX214_V_MIRROR)
 	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_Gr,
-#elif defined(IMGSENSOR_IMX214_HV_MIRROR)
+#elif defined(AGOLD_IMGSENSOR_IMX214_HV_MIRROR)
 	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_B,
 #else
 	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_R,
@@ -726,14 +732,25 @@ static void set_mirror_flip(kal_uint8 image_mirror)
 	LOG_INF("image_mirror = %d\n", image_mirror);
 	itemp=read_cmos_sensor(0x0101);
 	itemp &= ~0x03;
-	#if defined(IMGSENSOR_IMX214_H_MIRROR)
+	#if defined(AGOLD_IMGSENSOR_IMX214_H_MIRROR)
 		image_mirror^=0x01;
-	#elif defined(IMGSENSOR_IMX214_V_MIRROR)
+	#elif defined(AGOLD_IMGSENSOR_IMX214_V_MIRROR)
 		image_mirror^=0x02;
-	#elif defined(IMGSENSOR_IMX214_HV_MIRROR)
+	#elif defined(AGOLD_IMGSENSOR_IMX214_HV_MIRROR)
 		image_mirror^=0x03;
 	#endif
-
+	
+	#if defined(AGOLD_IMX214_MIRROR_XHGT)
+	if(agold_camera_info[0].mf_id == 0xf0 || agold_camera_info[0].mf_id == 0x00)
+	{
+		image_mirror^=0x03;
+	}
+	
+		if(agold_camera_info[0].mf_id == 0xed && agold_camera_info[0].lens_id ==0x07)
+	{
+		image_mirror^=0x03;
+	}
+	#endif
 	printk("fujia  itemp:0x%x,image_mirror: 0x%x\n ",itemp, image_mirror);
 
 	switch(image_mirror)
@@ -1968,7 +1985,10 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 {
 	kal_uint8 i = 0;
 	kal_uint8 retry = 2;
-
+#ifndef AGOLD_IMX214_OTP_NULL
+	bool read_otp = false;            
+	static kal_uint8 checkVersion =0;
+#endif
 	//sensor have two i2c address 0x6c 0x6d & 0x21 0x20, we should detect the module used i2c address
 	while (imgsensor_info.i2c_addr_table[i] != 0xff) {
 		spin_lock(&imgsensor_drv_lock);
@@ -1978,6 +1998,19 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 			*sensor_id = ((read_cmos_sensor(0x0016) << 8) | read_cmos_sensor(0x0017));
 			if (*sensor_id == imgsensor_info.sensor_id) {
 				LOG_INF("i2c write id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id,*sensor_id);
+#ifndef AGOLD_IMX214_OTP_NULL				
+				if(checkVersion != 1)
+				{
+					read_otp = IMX214MIPI_ReadIDFromOtp(imgsensor.i2c_write_id);
+
+					if(!read_otp)
+					{
+						printk("[ljj][IMX214] Read OTP failed!!---- \n");
+					}else{
+						checkVersion = 1;
+					}
+				}
+#endif
 				return ERROR_NONE;
 			}
 			LOG_INF("Read sensor id fail, write id:0x%x id: 0x%x\n", imgsensor.i2c_write_id,*sensor_id);
@@ -2044,6 +2077,11 @@ static kal_uint32 open(void)
 
 	/* initail sequence write in  */
 	sensor_init();
+#ifndef AGOLD_IMX214_OTP_NULL
+    #ifdef AGOLD_IMX214_OTP
+	IMX214MIPI_ReadAWBFromOtp();
+    #endif
+#endif
 	//set_mirror_flip(imgsensor.mirror);
 
 	spin_lock(&imgsensor_drv_lock);
@@ -2183,8 +2221,8 @@ static kal_uint32 capture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
     if((imgsensor.ihdr_mode == 2) || (imgsensor.ihdr_mode == 9))
         fullsize_setting_HDR(imgsensor.current_fps);
     else
-	    capture_setting(imgsensor.current_fps);
-
+	    capture_setting(imgsensor.current_fps); 
+	
 	set_mirror_flip(imgsensor.mirror);
 	return ERROR_NONE;
 }	/* capture() */
@@ -2299,7 +2337,23 @@ static kal_uint32 get_info(MSDK_SCENARIO_ID_ENUM scenario_id,
 	sensor_info->SensroInterfaceType = imgsensor_info.sensor_interface_type;
 	//sensor_info->MIPIsensorType = imgsensor_info.mipi_sensor_type;
 	//sensor_info->SettleDelayMode = imgsensor_info.mipi_settle_delay_mode;
+	printk("[fj],sensor_info->SensorOutputDataFormat = %d\n",sensor_info->SensorOutputDataFormat);
+	#if defined(AGOLD_IMX214_MIRROR_XHGT)
+	if(agold_camera_info[0].mf_id == 0xf0 || agold_camera_info[0].mf_id ==0x00)
+	{
+		sensor_info->SensorOutputDataFormat = SENSOR_OUTPUT_FORMAT_RAW_B;
+	}
+	else if(agold_camera_info[0].mf_id == 0xed && agold_camera_info[0].lens_id ==0x07)
+	{
+		sensor_info->SensorOutputDataFormat = SENSOR_OUTPUT_FORMAT_RAW_B;
+	}
+	else
+		sensor_info->SensorOutputDataFormat = SENSOR_OUTPUT_FORMAT_RAW_R;
+		printk("[fj],sensor_info->SensorOutputDataFormat = %d\n",sensor_info->SensorOutputDataFormat);
+	#else
 	sensor_info->SensorOutputDataFormat = imgsensor_info.sensor_output_dataformat;
+	#endif
+	printk("[fj],sensor_info->SensorOutputDataFormat = %d\n",sensor_info->SensorOutputDataFormat);
 	sensor_info->CaptureDelayFrame = imgsensor_info.cap_delay_frame;
 	sensor_info->PreviewDelayFrame = imgsensor_info.pre_delay_frame;
 	sensor_info->VideoDelayFrame = imgsensor_info.video_delay_frame;

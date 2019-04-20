@@ -1975,7 +1975,7 @@ static ssize_t enable_store(struct device *pdev, struct device_attribute *attr,
 		cdev->desc.bDeviceProtocol = device_desc.bDeviceProtocol;
 
 		/* special case for meta mode */
-		if (serial_string[0] == 0x20) {
+		if ((serial_string[0] == 0x0) || (serial_string[0] == 0x20)) {
 			cdev->desc.iSerialNumber = 0;
 		} else {
 			cdev->desc.iSerialNumber = device_desc.iSerialNumber;

@@ -592,7 +592,7 @@ static int __init hps_init(void)
 
 	return r;
 }
-late_initcall(hps_init);
+module_init(hps_init);
 
 /*
  * module exit function

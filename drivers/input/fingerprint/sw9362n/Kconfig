@@ -1,0 +1,3 @@
+config AGOLD_FINGERPRINT_SW9362N
+	tristate "Mediatek Fingerprint"
+	default n

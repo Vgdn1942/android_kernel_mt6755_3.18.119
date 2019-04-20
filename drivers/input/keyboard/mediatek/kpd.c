@@ -951,7 +951,11 @@ static int kpd_pdrv_suspend(struct platform_device *pdev, pm_message_t state)
 	if (call_status == 2) {
 		kpd_print("kpd_early_suspend wake up source enable!! (%d)\n", kpd_suspend);
 	} else {
+		#ifdef AGOLD_KEY_RESUME_SYSTEM
+		kpd_wakeup_src_setting(1);
+		#else
 		kpd_wakeup_src_setting(0);
+		#endif
 		kpd_print("kpd_early_suspend wake up source disable!! (%d)\n", kpd_suspend);
 	}
 #endif
@@ -987,6 +991,9 @@ static void kpd_early_suspend(struct early_suspend *h)
 		kpd_print("kpd_early_suspend wake up source enable!! (%d)\n", kpd_suspend);
 	} else {
 		/* kpd_wakeup_src_setting(0); */
+		#ifdef AGOLD_KEY_RESUME_SYSTEM
+		kpd_wakeup_src_setting(1);
+		#endif
 		kpd_print("kpd_early_suspend wake up source disable!! (%d)\n", kpd_suspend);
 	}
 #endif
@@ -1002,6 +1009,9 @@ static void kpd_early_resume(struct early_suspend *h)
 	} else {
 		kpd_print("kpd_early_resume wake up source enable!! (%d)\n", kpd_suspend);
 		/* kpd_wakeup_src_setting(1); */
+		#ifdef AGOLD_KEY_RESUME_SYSTEM
+		kpd_wakeup_src_setting(1);
+		#endif
 	}
 #endif
 	kpd_print("early resume!! (%d)\n", kpd_suspend);

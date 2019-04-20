@@ -4743,6 +4743,11 @@ static int __init pmic_mt_probe(struct platform_device *dev)
 #endif
 #endif
 	/*pwrkey_sw_workaround_init(); */
+	
+#ifdef AGOLD_DISABLE_PMIC_LED
+	pmic_set_register_value(MT6351_PMIC_CHRIND_EN,0);
+#endif
+	
 	return 0;
 }
 

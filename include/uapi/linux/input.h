@@ -480,6 +480,9 @@ struct input_keymap_entry {
 
 #define KEY_MICMUTE		248	/* Mute / unmute the microphone */
 
+#define KEY_FUNC1		249	/* agold add by taoqiong 20160905 */
+#define KEY_FUNC2		250	/* agold add by taoqiong 20160905 */
+
 /* Code 255 is reserved for special needs of AT keyboard driver */
 
 #define BTN_MISC		0x100

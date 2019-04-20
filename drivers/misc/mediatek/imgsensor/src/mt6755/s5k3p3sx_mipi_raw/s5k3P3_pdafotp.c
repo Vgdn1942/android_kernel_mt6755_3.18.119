@@ -29,6 +29,18 @@
 #include "kd_imgsensor.h"
 #include "kd_imgsensor_define.h"
 #include "kd_imgsensor_errcode.h"
+
+
+#if defined(AGOLD_CAMERA_VERSION)
+
+#include "agold_camera_info.h"
+#define BoverGr_dec_base 0x22d  //cur_bg_ratio
+#define RoverGr_dec_base 0x332  //cur_rg_ratio
+
+#endif
+
+
+
 extern int iReadRegI2C(u8 *a_pSendData , u16 a_sizeSendData, u8 * a_pRecvData, u16 a_sizeRecvData, u16 i2cId);
 extern int iWriteRegI2C(u8 *a_pSendData , u16 a_sizeSendData, u16 i2cId);
 extern void kdSetI2CSpeed(u16 i2cSpeed);
@@ -99,6 +111,49 @@ bool read_3P3_eeprom( kal_uint16 addr, BYTE* data, kal_uint32 size){
 
 	memcpy(data, s5k3P3_eeprom_data, size);
     return true;
+}
+
+kal_bool S5K3P3CheckLensVersion(void)
+{
+    kal_uint8 otp_flag = 0;
+    kal_uint8 data[10] = {0};
+
+    _read_3P3_eeprom(0x0000,&otp_flag,1);
+    LOG_INF("[S5K3P3] S5K3P3_EEPROM_READ_ID:0x%x ,otp_flag =0x%2x\n", S5K3P3_EEPROM_WRITE_ID ,otp_flag);
+    if (otp_flag!=0x01)
+    
+	{
+	    LOG_INF("[s5k3p3] Read OTP failed!!---- \n");  
+            return KAL_FALSE;
+	}
+    _read_3P3_eeprom(0x0001,data,10);
+  
+    agold_camera_info[g_cur_cam_sensor-1].mf_id = data[3];
+	agold_camera_info[g_cur_cam_sensor-1].date[0] = data[0];  //year
+	agold_camera_info[g_cur_cam_sensor-1].date[1] = data[1];  //month
+	agold_camera_info[g_cur_cam_sensor-1].date[2] = data[2];  //date	
+	agold_camera_info[g_cur_cam_sensor-1].lens_id = data[4];
+	agold_camera_info[g_cur_cam_sensor-1].sen_id = data[5];	
+	
+
+    _read_3P3_eeprom(0x0011,&otp_flag,1);
+    LOG_INF("s5k3p3 awb/af flag = 0x%x\n",otp_flag);
+    _read_3P3_eeprom(0x001E,data,2);
+    LOG_INF("s5k3p3 lsc size lsb 0x%x\n",data[0]);
+    LOG_INF("s5k3p3 lsc size Msb 0x%x\n",data[1]);
+    
+    _read_3P3_eeprom(0x001A,data,4);
+    LOG_INF("s5k3p3 AF inf lsb 0x%x\n",data[0]);
+    LOG_INF("s5k3p3 AF inf Msb 0x%x\n",data[1]);
+    LOG_INF("s5k3p3 AF mac lsb 0x%x\n",data[2]);
+    LOG_INF("s5k3p3 AF mac Msb 0x%x\n",data[3]);
+
+	LOG_INF("[S5K3p3]otp_log read mf_id,id=0x%2x\n", agold_camera_info[g_cur_cam_sensor-1].mf_id);
+	LOG_INF("[S5K3p3]otp_log read lens_id,id=0x%2x\n", agold_camera_info[g_cur_cam_sensor-1].lens_id);
+	LOG_INF("[S5K3p3]otp_log read soft_id,id=0x%2x\n", agold_camera_info[g_cur_cam_sensor-1].sen_id);
+	LOG_INF("s5k3p3 driver ic id = %d\n",data[6]);
+    return KAL_TRUE;
+
 }
 
 

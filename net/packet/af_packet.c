@@ -1517,6 +1517,7 @@ static void fanout_release(struct sock *sk)
 
 	mutex_lock(&fanout_mutex);
 	f = po->fanout;
+
 	if (f) {
 		po->fanout = NULL;
 

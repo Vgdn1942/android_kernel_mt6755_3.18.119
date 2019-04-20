@@ -598,11 +598,6 @@ static long FDVT_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	int ret = 0;
 
-	if (_IOC_SIZE(cmd) > buf_size) {
-		LOG_DBG("Buffer Size Exceeded!\n");
-		return -EFAULT;
-	}
-
 	if (_IOC_NONE != _IOC_DIR(cmd)) {
 		/* IO write */
 		if (_IOC_WRITE & _IOC_DIR(cmd)) {

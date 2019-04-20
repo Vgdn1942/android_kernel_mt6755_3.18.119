@@ -28,7 +28,7 @@
 #endif
 
 #if defined(SOC_BY_3RD_FG)
-#ifdef CONFIG_OZ8806_SUPPORT
+#ifdef CONFIG_OZ8806_SUPPORT                        
 #include "o2micro_battery/parameter.h"
 #include "o2micro_battery/table.h"
 #endif
@@ -261,7 +261,6 @@ int get_hw_ocv(void)
 #if defined(CONFIG_POWER_EXT)
  /**/
 #else
-
 #ifndef SOC_BY_3RD_FG
 static void dump_nter(void)
 {
@@ -293,7 +292,6 @@ static void dump_car(void)
 	#endif
 }
 #endif
-
 static unsigned int fg_get_data_ready_status(void)
 {
 	unsigned int ret = 0;
@@ -327,11 +325,11 @@ static signed int fgauge_initialization(void *data)
 {
 #if defined(CONFIG_POWER_EXT)
 	/* */
-#elif defined(SOC_BY_3RD_FG)
-#ifdef CONFIG_OZ8806_SUPPORT
-	oz8806_battery_update_data();
-#endif
-	return STATUS_OK;
+#elif defined(SOC_BY_3RD_FG)                  
+#ifdef CONFIG_OZ8806_SUPPORT                
+	oz8806_battery_update_data();           
+#endif                                      
+	return STATUS_OK;   
 #else
 #if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
 #else
@@ -413,21 +411,19 @@ static signed int fgauge_read_current(void *data)
 {
 #if defined(CONFIG_POWER_EXT)
 	*(signed int *) (data) = 0;
-#elif defined(SOC_BY_3RD_FG)
-#ifdef CONFIG_OZ8806_SUPPORT
-	*(kal_int32*)(data) = oz8806_get_battry_current() * 10; //mA * 10
-#endif
-	return STATUS_OK;
+#elif defined(SOC_BY_3RD_FG)                                                   
+#ifdef CONFIG_OZ8806_SUPPORT                                                 
+	*(kal_int32*)(data) = oz8806_get_battry_current() * 10; //mA * 10        
+#endif                                                                       
+	return STATUS_OK;                                                        
 #else
 	unsigned short uvalue16 = 0;
 	signed int dvalue = 0;
 	int m = 0;
 	long long Temp_Value = 0;
 	signed int Current_Compensate_Value = 0;
-#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
-#else
 	unsigned int ret = 0;
-#endif
+
 
 	fgadc_hal_lock();
 	/* HW Init
@@ -656,7 +652,7 @@ signed int fgauge_read_IM_current(void *data)
 static signed int fgauge_read_current_sign(void *data)
 {
 #ifdef CONFIG_OZ8806_SUPPORT
-    *(kal_bool*)(data) = 0;
+	*(kal_bool*)(data) = 0; 
 #else
 	*(kal_bool *) (data) = g_fg_is_charging;
 #endif
@@ -899,7 +895,6 @@ static signed int fgauge_set_columb_interrupt(void *data)
 {
 	return fgauge_set_columb_interrupt_internal(data, 0);
 }
-
 #ifndef SOC_BY_3RD_FG
 static signed int fgauge_read_columb_internal(void *data, int reset, int precise)
 {
@@ -1074,8 +1069,7 @@ static signed int fgauge_read_columb_internal(void *data, int reset, int precise
 
 	return STATUS_OK;
 }
-#endif
-
+#endif 
 static signed int fgauge_read_columb(void *data)
 {
 #if defined(SOC_BY_3RD_FG)
@@ -1090,9 +1084,10 @@ static signed int fgauge_read_columb(void *data)
 
 static signed int fgauge_read_columb_accurate(void *data)
 {
+
 #if defined(SOC_BY_3RD_FG)
 #ifdef CONFIG_OZ8806_SUPPORT
-    *(kal_int32*)(data) = oz8806_get_remaincap();
+	*(kal_int32*)(data) = oz8806_get_remaincap();
 #else
 	*(kal_int32 *)(data) = bq27531_get_remaincap();
 #endif
@@ -1158,7 +1153,6 @@ static kal_int32 fgauge_get_temp(void *data)
 }
 #endif
 #endif
-
 static signed int read_adc_v_bat_sense(void *data)
 {
 #if defined(CONFIG_POWER_EXT)
@@ -1169,7 +1163,7 @@ static signed int read_adc_v_bat_sense(void *data)
 		PMIC_IMM_GetOneChannelValue(PMIC_AUX_ISENSE_AP, *(signed int *) (data), 1);
 #else
 #ifdef CONFIG_OZ8806_SUPPORT
-    *(kal_int32*)(data) = oz8806_get_battery_voltage();
+	*(kal_int32*)(data) = oz8806_get_battery_voltage();
 #else
 	*(signed int *) (data) =
 		PMIC_IMM_GetOneChannelValue(PMIC_AUX_BATSNS_AP, *(signed int *) (data), 1);
@@ -1485,7 +1479,7 @@ signed int bm_ctrl_cmd(BATTERY_METER_CTRL_CMD cmd, void *data)
 		bm_func[BATTERY_METER_CMD_GET_IS_HW_OCV_READY] = read_is_hw_ocv_ready;
 		bm_func[BATTERY_METER_CMD_SET_META_CALI_CURRENT] = fgauge_set_meta_cali_current;
 		bm_func[BATTERY_METER_CMD_META_CALI_CAR_TUNE_VALUE] = fgauge_meta_cali_car_tune_value;
-#ifdef CONFIG_OZ8806_SUPPORT
+#ifdef CONFIG_OZ8806_SUPPORT                        
 		bm_func[BATTERY_METER_CMD_GET_SOC] = fgauge_get_soc;
 		bm_func[BATTERY_METER_CMD_SET_TEMP] = fgauge_set_temp;
 		bm_func[BATTERY_METER_CMD_GET_TEMP] = fgauge_get_temp;

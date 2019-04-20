@@ -4,7 +4,7 @@ subdir-ccflags-y += -I$(MTK_CUSTOM_PATH)/imgsensor/inc \
                     -I$(MTK_CUSTOM_PATH)/imgsensor/src/$(CONFIG_MTK_PLATFORM)/camera_hw \
                     -I$(MTK_CUSTOM_PATH)/cam_cal/inc
 
-LEGACY_PLATFORM = mt6572 mt6580 mt6582 mt6735 mt6752 mt6795 #mt6755
+LEGACY_PLATFORM = mt6572 mt6580 mt6582 mt6735 mt6752 mt6795
 CURRENT_PLATFORM = $(subst ",,$(CONFIG_MTK_PLATFORM))
 
 ifneq (, $(findstring $(CURRENT_PLATFORM), $(LEGACY_PLATFORM)))

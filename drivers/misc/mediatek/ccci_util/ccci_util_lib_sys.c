@@ -365,3 +365,4 @@ int ccci_common_sysfs_init(void)
 	CCCI_UTIL_DBG_MSG("ccci attr cnt %d\n", ccci_sys_info->ccci_attr_count);
 	return ret;
 }
+

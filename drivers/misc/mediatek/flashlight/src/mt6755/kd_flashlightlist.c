@@ -338,13 +338,22 @@ static int setFlashDrv(int sensorDev, int strobeId)
 #else
 		if (strobeId == 1) {
 			if (partId == 1)
+				//agold xfl 20160125
+				#ifdef AGOLD_FLASHLIGHT_SWAP_LED
+				strobeInit_main_sid2_part1(ppF);
+				#else
 				constantFlashlightInit(ppF);
+				#endif
 			else if (partId == 2)
 				strobeInit_main_sid1_part2(ppF);
 		} else if (strobeId == 2) {
 			if (partId == 1)
+				//agold xfl 20160125
+				#ifdef AGOLD_FLASHLIGHT_SWAP_LED
+				constantFlashlightInit(ppF);
+				#else
 				strobeInit_main_sid2_part1(ppF);
-
+				#endif
 			else if (partId == 2)
 				strobeInit_main_sid2_part2(ppF);
 		}

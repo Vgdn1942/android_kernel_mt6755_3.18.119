@@ -256,7 +256,6 @@ void msdc_power_DL_CL_control(struct msdc_host *host, u32 sel);
 #endif
 void msdc_power_calibration_init(struct msdc_host *host);
 void msdc_oc_check(struct msdc_host *host);
-int msdc_io_check(struct msdc_host *host);
 void msdc_emmc_power(struct msdc_host *host, u32 on);
 void msdc_sd_power(struct msdc_host *host, u32 on);
 void msdc_sdio_power(struct msdc_host *host, u32 on);
@@ -634,7 +633,6 @@ void msdc_set_rdsel_by_id(u32 id, u32 flag, u32 value);
 void msdc_get_tdsel_by_id(u32 id, u32 *value);
 void msdc_get_rdsel_by_id(u32 id, u32 *value);
 void msdc_dump_padctl_by_id(u32 id);
-void msdc_set_pin_mode(struct msdc_host *host);
 void msdc_pin_config_by_id(u32 id, u32 mode);
 #endif
 

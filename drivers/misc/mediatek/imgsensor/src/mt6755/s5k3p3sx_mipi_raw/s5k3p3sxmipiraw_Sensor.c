@@ -51,6 +51,10 @@
 #define PFX "S5K3P3SX_camera_sensor"
 #define LOG_INF(format, args...)	pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
 
+extern kal_bool S5K3P3CheckLensVersion(void);
+
+
+
 static DEFINE_SPINLOCK(imgsensor_drv_lock);
 
 
@@ -842,6 +846,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 {
 	kal_uint8 i = 0;
 	kal_uint8 retry = 2;
+	kal_bool read_otp;
 	//sensor have two i2c address 0x6c 0x6d & 0x21 0x20, we should detect the module used i2c address
 	while (imgsensor_info.i2c_addr_table[i] != 0xff) {
 		spin_lock(&imgsensor_drv_lock);
@@ -852,6 +857,10 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 			LOG_INF("read_0x0000=0x%x, 0x0001=0x%x,0x0000_0001=0x%x\n",read_cmos_sensor_8(0x0000),read_cmos_sensor_8(0x0001),read_cmos_sensor(0x0000));
 			if (*sensor_id ==imgsensor_info.sensor_id) {
 				LOG_INF("i2c write id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id,*sensor_id);
+				read_otp = S5K3P3CheckLensVersion();
+				if(!read_otp)
+				LOG_INF("S5K3P3 read otp_id failed!\n");
+				
 				if(is_RWB_sensor()==0x1){
 					imgsensor_info.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_RWB_Wr;
 					LOG_INF("RWB sensor of S5k3p3\n");

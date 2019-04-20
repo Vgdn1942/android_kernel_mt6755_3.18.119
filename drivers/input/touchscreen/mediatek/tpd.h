@@ -137,6 +137,10 @@ struct tpd_driver_t {
 	void (*resume)(struct device *h);
 	int tpd_have_button;
 	struct tpd_attrs attrs;
+	#ifdef AGOLD_HARDWARE_INFO
+	int (*get_tp_fw_ver)(void);
+	#endif
+	void (*tpd_handler)(int tmp);
 };
 
 
@@ -158,6 +162,7 @@ extern struct tpd_device *tpd;
 extern void tpd_get_dts_info(void);
 #define GTP_RST_PORT    0
 #define GTP_INT_PORT    1
+#define GTP_PWR_PORT    2
 extern void tpd_gpio_as_int(int pin);
 extern void tpd_gpio_output(int pin, int level);
 extern struct of_device_id touch_of_match[];

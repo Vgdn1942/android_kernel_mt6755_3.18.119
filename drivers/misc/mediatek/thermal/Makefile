@@ -32,7 +32,7 @@ endif
 obj-$(CONFIG_THERMAL) += mtk_cooler_kshutdown.o
 #obj-$(CONFIG_THERMAL) += mtk_cooler_spkrvol.o
 #obj-$(CONFIG_THERMAL) += mtk_cooler_dropcall.o
-obj-$(CONFIG_THERMAL) += mtk_cooler_cam.o
+#obj-$(CONFIG_THERMAL) += mtk_cooler_cam.o
 obj-$(CONFIG_THERMAL) += mtk_cooler_vrt.o
 
 ifeq (,$(filter $(CONFIG_ARCH_MT8173) $(CONFIG_ARCH_MT8163) $(CONFIG_MACH_MT2701) $(CONFIG_ARCH_MT7623) $(CONFIG_ARCH_MT8127) $(CONFIG_ARCH_MT8167), y))

@@ -158,22 +158,6 @@ static imgsensor_info_struct imgsensor_info = {
 		.mipi_data_lp2hs_settle_dc = 85,//unit , ns
 		.max_framerate = 300,
 	},
-	.normal_video2 = {
-		.pclk = 560000000,
-		.linelength = 12224,
-		.framelength = 3174,
-		.startx = 0,
-		.starty = 0,
-#ifdef FIX_VIEW_ANGLE
-		.grabwindow_width = 5312,
-		.grabwindow_height = 2976,
-#else
-		.grabwindow_width = 5328,/* 5334, */
-		.grabwindow_height = 3000,
-#endif
-		.mipi_data_lp2hs_settle_dc = 85,/* unit , ns */
-		.max_framerate = 150,
-	},
 #ifdef SLOW_MOTION_120FPS
 	.hs_video = {
 		.pclk = 560000000,
@@ -332,7 +316,7 @@ static imgsensor_info_struct imgsensor_info = {
 	.isp_driving_current = ISP_DRIVING_6MA,
 	.sensor_interface_type = SENSOR_INTERFACE_TYPE_MIPI,
 	.mipi_sensor_type = MIPI_OPHY_NCSI2, //0,MIPI_OPHY_NCSI2;  1,MIPI_OPHY_CSI2
-	.mipi_settle_delay_mode = MIPI_SETTLEDELAY_MANUAL,
+	.mipi_settle_delay_mode = MIPI_SETTLEDELAY_AUTO,
 	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_Gr,
 	.mclk = 24,
 	.mipi_lane_num = SENSOR_MIPI_4_LANE,
@@ -359,54 +343,49 @@ static imgsensor_struct imgsensor = {
 
 /* Sensor output window information */
 #ifndef FIX_VIEW_ANGLE
-static SENSOR_WINSIZE_INFO_STRUCT imgsensor_winsize_info[10] = {
-	{5344, 3008, 16, 8, 5328, 3000, 2664, 1500, 0000, 0000, 2664, 1500, 0, 0, 2664, 1500},	/* Preview */
-	{5344, 3008, 16, 8, 5328, 3000, 5328, 3000, 0000, 0000, 5328, 3000, 0, 0, 5328, 3000},	/* capture */
-	{5344, 3008, 16, 8, 5328, 3000, 5328, 3000, 0000, 0000, 5328, 3000, 0, 0, 5328, 3000},	/* video */
-#ifdef SLOW_MOTION_120FPS
-	{5344, 3008, 20, 12, 5312, 2992, 1328, 748, 0000, 0000, 1328, 748, 0, 0, 1328, 748},	/* hight video 120 */
-#else
-	{5344, 3008, 16, 8, 5328, 3000, 2664, 1500, 0000, 0000, 2664, 1500, 0, 0, 2664, 1500},	/* hight speed video */
-#endif
-	{5344, 3008, 20, 12, 5312, 2992, 1328, 748, 0000, 0000, 1328, 748, 0, 0, 1328, 748},	/* slim video */
-	{5344, 3008, 16, 8, 5328, 3000, 2664, 1500, 0000, 0000, 2664, 1500, 0, 0, 2664, 1500},
-	{5344, 3008, 16, 8, 5328, 3000, 2664, 1500, 0000, 0000, 2664, 1500, 0, 0, 2664, 1500},
-	{5344, 3008, 16, 8, 5328, 3000, 2664, 1500, 0000, 0000, 2664, 1500, 0, 0, 2664, 1500},
-	{5344, 3008, 16, 8, 5328, 3000, 2664, 1500, 0000, 0000, 2664, 1500, 0, 0, 2664, 1500},
-	{5344, 3008, 16, 8, 5328, 3000, 2664, 1500, 0000, 0000, 2664, 1500, 0, 0, 2664, 1500}
-};
-#else
-static SENSOR_WINSIZE_INFO_STRUCT imgsensor_winsize_info[10] = {
-	{5344, 3008, 24, 20, 5312, 2976, 2656, 1488, 0000, 0000, 2656, 1488, 0, 0, 2656, 1488},	/* Preview */
-	{5344, 3008, 24, 20, 5312, 2976, 5312, 2976, 0000, 0000, 5312, 2976, 0, 0, 5312, 2976},	/* capture */
-	{5344, 3008, 24, 20, 5312, 2976, 5312, 2976, 0000, 0000, 5312, 2976, 0, 0, 5312, 2976},	/* video */
-#ifdef SLOW_MOTION_120FPS
-	{5344, 3008, 20, 12, 5312, 2992, 1328, 748, 0000, 0000, 1328, 748, 0, 0, 1328, 748},	/* hight video 120 */
-#else
-	{5344, 3008, 24, 20, 5312, 2976, 2656, 1488, 0000, 0000, 2656, 1488, 0, 0, 2656, 1488},	/* hight speed video */
-#endif
-	{5344, 3008, 20, 12, 5312, 2992, 1328, 748, 0000, 0000, 1328, 748, 0, 0, 1328, 748},	/* slim video */
-	{5344, 3008, 24, 20, 5312, 2976, 2656, 1488, 0000, 0000, 2656, 1488, 0, 0, 2656, 1488},
-	{5344, 3008, 24, 20, 5312, 2976, 2656, 1488, 0000, 0000, 2656, 1488, 0, 0, 2656, 1488},
-	{5344, 3008, 24, 20, 5312, 2976, 2656, 1488, 0000, 0000, 2656, 1488, 0, 0, 2656, 1488},
-	{5344, 3008, 24, 20, 5312, 2976, 2656, 1488, 0000, 0000, 2656, 1488, 0, 0, 2656, 1488},
-	{5344, 3008, 24, 20, 5312, 2976, 2656, 1488, 0000, 0000, 2656, 1488, 0, 0, 2656, 1488}
-};
-#endif
-
+static SENSOR_WINSIZE_INFO_STRUCT imgsensor_winsize_info[10] =
+{{ 5343, 3007,	  8,   8, 5343, 3007, 2668,  1500, 0000, 0000, 2668, 1500, 0,	0, 2664,  1500}, // Preview
+ { 5343, 3007,	  8,   8, 5343, 3007, 5336, 3000, 0000, 0000, 5336, 3000,	  0,	0, 5328, 3000}, // capture
+ { 5343, 3007,	  8,   8, 5343, 3007, 5336, 3000, 0000, 0000, 5336, 3000,	  0,	0, 5328, 3000}, // video
+ #ifdef SLOW_MOTION_120FPS
+ { 5343, 3007,	  8,  12, 5319, 3003, 1328,  748, 0000, 0000, 1328,  748,	  0,	0, 1328,  748},// hight video 120
+ #else
+ { 5343, 3007,	  8,   8, 5343, 3007, 2668, 1500, 0000, 0000, 2668, 1500,	  0,	0, 2668, 1500}, //hight speed video
+ #endif
+ { 5343, 3007,	  8,  12, 5319, 3003, 1328,  748, 0000, 0000, 1328,  748,	  0,	0, 1328,  748},// slim video
+ { 5343, 3007,	  8,   8, 5343, 3007, 2668,  1500, 0000, 0000, 2668, 1500, 0,	0, 2664,  1500},
+ { 5343, 3007,	  8,   8, 5343, 3007, 2668,  1500, 0000, 0000, 2668, 1500, 0,	0, 2664,  1500},
+ { 5343, 3007,	  8,   8, 5343, 3007, 2668,  1500, 0000, 0000, 2668, 1500, 0,	0, 2664,  1500},
+ { 5343, 3007,	  8,   8, 5343, 3007, 2668,  1500, 0000, 0000, 2668, 1500, 0,	0, 2664,  1500},
+ { 5343, 3007,	  8,   8, 5343, 3007, 2668,  1500, 0000, 0000, 2668, 1500, 0,	0, 2664,  1500}};
+ #else
+ static SENSOR_WINSIZE_INFO_STRUCT imgsensor_winsize_info[10] =
+{{ 5343, 3007,	  8,   8, 5343, 3007, 2668,  1500, 0000, 0000, 2668, 1500, 0,	0, 2656,  1488}, // Preview
+ { 5343, 3007,	  8,   8, 5343, 3007, 5336, 3000, 0000, 0000, 5336, 3000,	  0,	0, 5312, 2976}, // capture
+ { 5343, 3007,	  8,   8, 5343, 3007, 5336, 3000, 0000, 0000, 5336, 3000,	  0,	0, 5312, 2976}, // video
+ #ifdef SLOW_MOTION_120FPS
+ { 5343, 3007,	  8,  12, 5319, 3003, 1328,  748, 0000, 0000, 1328,  748,	  0,	0, 1328,  748},// hight video 120
+ #else
+ { 5343, 3007,	  8,   8, 5343, 3007, 2668, 1500, 0000, 0000, 2668, 1500,	  0,	0, 2656, 1488}, //hight speed video
+ #endif
+ { 5343, 3007,	  8,  12, 5319, 3003, 1328,  748, 0000, 0000, 1328,  748,	  0,	0, 1328,  748},// slim video
+ { 5343, 3007,	  8,   8, 5343, 3007, 2668,  1500, 0000, 0000, 2668, 1500, 0,	0, 2656,  1488},
+ { 5343, 3007,	  8,   8, 5343, 3007, 2668,  1500, 0000, 0000, 2668, 1500, 0,	0, 2656,  1488},
+ { 5343, 3007,	  8,   8, 5343, 3007, 2668,  1500, 0000, 0000, 2668, 1500, 0,	0, 2656,  1488},
+ { 5343, 3007,	  8,   8, 5343, 3007, 2668,  1500, 0000, 0000, 2668, 1500, 0,	0, 2656,  1488},
+ { 5343, 3007,	  8,   8, 5343, 3007, 2668,  1500, 0000, 0000, 2668, 1500, 0,	0, 2656,  1488}};
+ #endif
 static SET_PD_BLOCK_INFO_T imgsensor_pd_info =
 {
-	.i4OffsetX =  8,
-	.i4OffsetY = 35,
-	.i4PitchX  = 64,
-	.i4PitchY  = 64,
-	.i4PairNum  =16,
-	.i4SubBlkW  =16,
-	.i4SubBlkH  =16,
-	.i4BlockNumX = 83,
-	.i4BlockNumY = 46,
-	.i4PosL = {{8,35},{60,35},{24,39},{44,39},{12,55},{56,55},{28,59},{40,59},{28,67},{40,67},{12,71},{56,71},{24,87},{44,87},{8,91},{60,91}},
-	.i4PosR = {{8,39},{60,39},{24,43},{44,43},{12,51},{56,51},{28,55},{40,55},{28,71},{40,71},{12,75},{56,75},{24,83},{44,83},{8,87},{60,87}},
+    .i4OffsetX =  8,
+    .i4OffsetY = 35,
+    .i4PitchX  = 64,
+    .i4PitchY  = 64,
+    .i4PairNum  =16,
+    .i4SubBlkW  =16,
+    .i4SubBlkH  =16,
+    .i4PosL = {{8,35},{60,35},{24,39},{44,39},{12,55},{56,55},{28,59},{40,59},{28,67},{40,67},{12,71},{56,71},{24,87},{44,87},{8,91},{60,91}},
+    .i4PosR = {{8,39},{60,39},{24,43},{44,43},{12,51},{56,51},{28,55},{40,55},{28,71},{40,71},{12,75},{56,75},{24,83},{44,83},{8,87},{60,87}},
 };
 
 static kal_uint16 read_cmos_sensor(kal_uint32 addr)
@@ -4298,10 +4277,7 @@ static void normal_video_setting(kal_uint16 currefps)
 {
 	LOG_INF("E! currefps:%d\n",currefps);
 
-	if (currefps == 150)
-		pip_capture_15fps_setting();
-	else
-		normal_capture_setting();
+	normal_capture_setting();
 
 }
 static void hs_video_setting(void)
@@ -4929,22 +4905,12 @@ static kal_uint32 normal_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 {
 	spin_lock(&imgsensor_drv_lock);
 	imgsensor.sensor_mode = IMGSENSOR_MODE_VIDEO;
-
-	if (imgsensor.current_fps == imgsensor_info.normal_video2.max_framerate) { /* 15fps */
-		imgsensor.pclk = imgsensor_info.normal_video2.pclk;
-		imgsensor.line_length = imgsensor_info.normal_video2.linelength;
-		imgsensor.frame_length = imgsensor_info.normal_video2.framelength;
-		imgsensor.min_frame_length = imgsensor_info.normal_video2.framelength;
-		imgsensor.autoflicker_en = KAL_FALSE;
-	} else { /* 30fps */
-		imgsensor.pclk = imgsensor_info.normal_video.pclk;
-		imgsensor.line_length = imgsensor_info.normal_video.linelength;
-		imgsensor.frame_length = imgsensor_info.normal_video.framelength;
-		imgsensor.min_frame_length = imgsensor_info.normal_video.framelength;
-		/* imgsensor.current_fps = 300; */
-		imgsensor.autoflicker_en = KAL_FALSE;
-	}
-
+	imgsensor.pclk = imgsensor_info.normal_video.pclk;
+	imgsensor.line_length = imgsensor_info.normal_video.linelength;
+	imgsensor.frame_length = imgsensor_info.normal_video.framelength;
+	imgsensor.min_frame_length = imgsensor_info.normal_video.framelength;
+	//imgsensor.current_fps = 300;
+	imgsensor.autoflicker_en = KAL_FALSE;
 	spin_unlock(&imgsensor_drv_lock);
 	normal_video_setting(imgsensor.current_fps);
 	set_mirror_flip(IMAGE_NORMAL);
@@ -5376,27 +5342,12 @@ static kal_uint32 set_max_framerate_by_scenario(MSDK_SCENARIO_ID_ENUM scenario_i
 		case MSDK_SCENARIO_ID_VIDEO_PREVIEW:
 			if(framerate == 0)
 				return ERROR_NONE;
-
-			if (imgsensor.current_fps == 150) {  /* 15fps */
-				frame_length = imgsensor_info.normal_video2.pclk /
-					imgsensor_info.normal_video2.linelength / framerate * 10;
-				spin_lock(&imgsensor_drv_lock);
-				imgsensor.dummy_line = (frame_length > imgsensor_info.normal_video2.framelength)
-					? (frame_length - imgsensor_info.normal_video2.framelength) : 0;
-				imgsensor.frame_length = imgsensor_info.normal_video2.framelength
-					+ imgsensor.dummy_line;
-				imgsensor.min_frame_length = imgsensor.frame_length;
-				spin_unlock(&imgsensor_drv_lock);
-			} else {
-				frame_length = imgsensor_info.normal_video.pclk /
-					imgsensor_info.normal_video.linelength / framerate * 10;
-				spin_lock(&imgsensor_drv_lock);
-				imgsensor.dummy_line = (frame_length > imgsensor_info.normal_video.framelength)
-					? (frame_length - imgsensor_info.normal_video.framelength) : 0;
-				imgsensor.frame_length = imgsensor_info.normal_video.framelength + imgsensor.dummy_line;
-				imgsensor.min_frame_length = imgsensor.frame_length;
-				spin_unlock(&imgsensor_drv_lock);
-			}
+			frame_length = imgsensor_info.normal_video.pclk / imgsensor_info.normal_video.linelength / framerate * 10;
+			spin_lock(&imgsensor_drv_lock);
+			imgsensor.dummy_line = (frame_length > imgsensor_info.normal_video.framelength) ? (frame_length - imgsensor_info.normal_video.framelength) : 0;
+			imgsensor.frame_length = imgsensor_info.normal_video.framelength + imgsensor.dummy_line;
+			imgsensor.min_frame_length = imgsensor.frame_length;
+			spin_unlock(&imgsensor_drv_lock);
 			set_dummy();
 			break;
 		case MSDK_SCENARIO_ID_CAMERA_CAPTURE_JPEG:

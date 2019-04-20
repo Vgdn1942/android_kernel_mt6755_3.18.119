@@ -10,3 +10,6 @@ ccflags-y += -I$(srctree)/drivers/misc/mediatek/leds/$(CONFIG_MTK_PLATFORM)
 endif
 obj-y += $(subst ",,$(CONFIG_MTK_PLATFORM))/
 
+ifeq ($(strip $(AGOLD_LED_AW2013)),yes)
+obj-y +=aw2013/
+endif

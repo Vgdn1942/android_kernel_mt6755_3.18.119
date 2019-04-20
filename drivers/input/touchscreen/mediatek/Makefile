@@ -9,6 +9,7 @@ obj-y   +=  mtk_tpd.o tpd_button.o tpd_calibrate.o tpd_debug.o \
 endif
 
 obj-$(CONFIG_TOUCHSCREEN_MTK)   += tpd_common_probe.o
+
 obj-$(CONFIG_TOUCHSCREEN_MTK_GT910)	+=  GT910/
 obj-$(CONFIG_TOUCHSCREEN_MTK_GT1151)	+=  GT1151/
 obj-$(CONFIG_TOUCHSCREEN_MTK_GT5688)	+=  GT5688/
@@ -28,4 +29,4 @@ obj-$(CONFIG_TOUCHSCREEN_MTK_NT36xxx)   +=  NT36xxx/
 obj-$(CONFIG_TOUCHSCREEN_MTK_GT9XX_GESTURE)	+=  GT9XX_GESTURE/
 obj-$(CONFIG_TOUCHSCREEN_MTK_FT5406_MT)	+=  FT5406_MT/
 obj-$(CONFIG_TOUCHSCREEN_MTK_GT1X)	+=  GT1X/
-
+obj-$(CONFIG_TOUCHSCREEN_MTK_S2202)	+=  S2202/

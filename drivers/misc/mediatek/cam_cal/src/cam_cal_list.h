@@ -71,7 +71,7 @@ typedef struct {
 unsigned int cam_cal_get_sensor_list(stCAM_CAL_LIST_STRUCT **ppCamcalList);
 unsigned int cam_cal_get_func_list(stCAM_CAL_FUNC_STRUCT **ppCamcalFuncList);
 unsigned int cam_cal_check_mtk_cid(struct i2c_client *client, cam_cal_cmd_func readCamCalData);
-unsigned int cam_cal_uncheck_mtk_id(struct i2c_client *client, cam_cal_cmd_func readCamCalData);
+unsigned int cam_cal_uncheck_mtk_id(struct i2c_client *client, cam_cal_cmd_func readCamCalData); //[agold][zbl][201612080][add]
 unsigned int cam_cal_check_double_eeprom(struct i2c_client *client,
 	cam_cal_cmd_func readCamCalData);
 

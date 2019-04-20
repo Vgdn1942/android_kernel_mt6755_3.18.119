@@ -1,0 +1,8 @@
+
+config CUSTOM_KERNEL_AMBIENT_TEMPURATURE
+	bool "CUSTOM_KERNEL_AMBIENT_TEMPURATURE"
+	help
+		To detect humidity raw data
+
+
+source "drivers/misc/mediatek/temperature/hshcal002/Kconfig"

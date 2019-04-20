@@ -38,9 +38,7 @@ struct mt_idle_buf {
 #define reset_idle_buf(idle) ((idle).p_idx = (idle).buf)
 #define get_idle_buf(idle)   ((idle).buf)
 #define idle_buf_append(idle, fmt, args...) \
-	do { scnprintf((idle).p_idx, (idle).buf + IDLE_LOG_BUF_LEN - 1 - (idle).p_idx, fmt, ##args); \
-	(idle).p_idx += strlen((idle).p_idx); } while (0)
-
+	((idle).p_idx += snprintf((idle).p_idx, IDLE_LOG_BUF_LEN - strlen((idle).buf), fmt, ##args))
 
 extern const char *reason_name[NR_REASONS];
 

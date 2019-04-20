@@ -397,12 +397,12 @@ static void ihdr_write_shutter_gain(kal_uint16 le, kal_uint16 se, kal_uint16 gai
 static void set_mirror_flip(kal_uint8 image_mirror)
 {
     LOG_INF("image_mirror = %d\n", image_mirror);
-
-    #if defined(IMGSENSOR_OV5648_H_MIRROR)
+    
+    #if defined(AGOLD_IMGSENSOR_OV5648_H_MIRROR)
 	image_mirror ^= 0x01;
-	#elif defined(IMGSENSOR_OV5648_V_MIRROR)
+	#elif defined(AGOLD_IMGSENSOR_OV5648_V_MIRROR)
 	image_mirror ^= 0x02;
-	#elif defined(IMGSENSOR_OV5648_HV_MIRROR)
+	#elif defined(AGOLD_IMGSENSOR_OV5648_HV_MIRROR)
 	image_mirror ^= 0x03;
 	#endif
 
@@ -527,7 +527,7 @@ static void sensor_init(void)
 
     write_cmos_sensor(0x3034, 0x1a); // 10-bit mode
     write_cmos_sensor(0x3035, 0x21); // PLL
-	#if defined(FLICKER_XHGT)
+	#if defined(AGOLD_FLICKER_XHGT)
 	write_cmos_sensor(0x3036, 0x6D); // PLL---------0x69
 	#else
     write_cmos_sensor(0x3036, 0x69); // PLL

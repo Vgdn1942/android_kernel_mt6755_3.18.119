@@ -1,0 +1,4 @@
+
+config MTK_FINGERPRINT_ET310
+	tristate "Mediatek Fingerprint"
+	default n

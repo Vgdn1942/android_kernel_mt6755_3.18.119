@@ -1,0 +1,4 @@
+
+config AGOLD_FINGERPRINT_JMT101
+	tristate "Mediatek Fingerprint"
+	default n

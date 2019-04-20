@@ -86,9 +86,6 @@ GTAGS
 *~
 \#*#
 
-# logs files
-*.log
-
 #
 # Leavings from module signing
 #

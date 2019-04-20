@@ -1,14 +1,14 @@
 /*
- * This software is licensed under the terms of the GNU General Public
+ * This software is licensed under the terms of the GNU General Public 
  * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- * This program is distributed in the hope that it will be useful,
+ * may be copied, distributed, and modified under those terms. 
+ * This program is distributed in the hope that it will be useful, 
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+ * GNU General Public License for more details. 
  * * VERSION      	DATE			AUTHOR          Note
  *    1.0		  2013-7-16			Focaltech        initial  based on MTK platform
- *
+ * 
  */
 
 #include "tpd.h"
@@ -31,9 +31,9 @@
 extern unsigned DISP_GetScreenHeight(void);
 extern unsigned DISP_GetScreenWidth(void);
 
-#if defined(TPD_ADD_GESTURE)
+#if defined(AGOLD_TPD_ADD_GESTURE)
 #define FTS_GESTRUE
-extern char *tpd_get_gesture(char *buf_from);
+extern char *agold_tpd_get_gesture(char *buf_from);
 #endif
 
 #ifdef FTS_GESTRUE
@@ -68,7 +68,7 @@ struct Upgrade_Info fts_updateinfo[] =
 	{0x11,"FT5336i",TPD_MAX_POINTS_5,AUTO_CLB_NONEED,30, 30, 0x79, 0x11, 10, 2000},
 	{0x54,"FT5x46",TPD_MAX_POINTS_5,AUTO_CLB_NONEED,2, 2, 0x54, 0x2c, 10, 2000},
 };
-
+				
 struct Upgrade_Info fts_updateinfo_curr;
 
 #ifdef TPD_PROXIMITY
@@ -85,16 +85,16 @@ extern int g_open_handler;
 struct i2c_client *i2c_client = NULL;
 struct task_struct *thread = NULL;
 
-static struct proc_dir_entry *proc=NULL;
-static ssize_t tpd_version_read_proc(struct file *file, char __user *page, size_t size, loff_t *ppos);
+static struct proc_dir_entry *agold_proc=NULL;
+static ssize_t agold_tpd_version_read_proc(struct file *file, char __user *page, size_t size, loff_t *ppos);
 
 static int tpd_halt =0;
 static int boot_mode = 0;
-
+ 
 static DECLARE_WAIT_QUEUE_HEAD(waiter);
 static DEFINE_MUTEX(i2c_access);
-
-
+ 
+ 
 static irqreturn_t tpd_eint_interrupt_handler(int irq, void *dev_id);
 // start:Here maybe need port to different platform,like MT6575/MT6577
 //extern void mt65xx_eint_unmask(unsigned int line);
@@ -103,7 +103,7 @@ static irqreturn_t tpd_eint_interrupt_handler(int irq, void *dev_id);
 //extern unsigned int mt65xx_eint_set_sens(unsigned int eint_num, unsigned int sens);
 //extern void mt65xx_eint_registration(unsigned int eint_num, unsigned int is_deb_en, unsigned int pol, void (EINT_FUNC_PTR)(void), unsigned int is_auto_umask);
 // End:Here maybe need port to different platform,like MT6575/MT6577
-
+ 
 static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id);
 static int tpd_remove(struct i2c_client *client);
 static int touch_event_handler(void *unused);
@@ -143,10 +143,10 @@ static int tpd_calmat_local[8]     = TPD_CALIBRATION_MATRIX;
 static int tpd_def_calmat_local[8] = TPD_CALIBRATION_MATRIX;
 #endif
 
-#if defined(CTP_FOR_HAND)
+#if defined(AGOLD_CTP_FOR_HAND)
 static void tpd_handler2(int temp)
 {
-
+    
 	#if 1
 	int ret = 0;
 	u8 buf[2];
@@ -155,42 +155,42 @@ static void tpd_handler2(int temp)
 	msleep(150);
 	if( 0 > (ret = i2c_master_send(i2c_client, buf, 2)))
 	{
-		printk("[FTS] write reg[0xc0] fail, ret = %d\n",ret);
+		printk("[AGold Bruce] write reg[0xc0] fail, ret = %d\n",ret);
 	}
 	#else
     int rett = 0;
     if( 1==temp)
     {
-
+    
        rett = fts_i2c_Write_byte(i2c_client, 0xc0, 1, &temp);
        if(rett<0)
-		TPD_DEBUG("[qrp] %s i2c write file: %d\n", __func__, rett);
+		TPD_DEBUG("[qrp] %s i2c write file: %d\n", __func__, rett);   
     }
     else
     {
         temp =0;
         fts_i2c_Write_byte(i2c_client, 0xc0, 1, &temp);
-
+		       
     }
-	#endif
+	#endif           
 }
 #endif
-static ssize_t tpd_version_read_proc(struct file *file, char __user *page, size_t size, loff_t *ppos)
+static ssize_t agold_tpd_version_read_proc(struct file *file, char __user *page, size_t size, loff_t *ppos)
 {
 	char *ptr=page;
     char fw_version ;
 	if((i2c_smbus_read_i2c_block_data(i2c_client, 0xA6, 1, &fw_version))< 0)
 	{
-		TPD_DEBUG("[FTS]read tpd firmware version failed\n");
+		TPD_DEBUG("[AGold][Bruce]read tpd firmware version failed\n");
 	}
-	ptr+=sprintf(ptr,"[FTS] fw_version=0x%x!!!\n",fw_version);
+	ptr+=sprintf(ptr,"[AGold] [whl] fw_version=0x%x!!!\n",fw_version);
 	return (ptr-page);
 }
 
-static const struct file_operations ft_tpd_version_fops =
-{
+static const struct file_operations ft_tpd_version_fops = 
+{ 
     .write = NULL,
-    .read = tpd_version_read_proc,
+    .read = agold_tpd_version_read_proc,
 };
 
 #ifdef FTS_GESTRUE
@@ -199,10 +199,10 @@ static void check_gesture(int gesture_id)
 	int flag = 1;
 	char gesture_tmp[16];
 	if(g_gesture_active_flag != true)
-	{
+	{	
 		switch(gesture_id)
     	{
-
+			
 			case 0x20:
 			if(g_single_gesture_flag[3] && g_gesture_flag)
 			{
@@ -216,7 +216,7 @@ static void check_gesture(int gesture_id)
 			    strcpy(gesture_tmp,"default");
 			}
 			break;
-
+			
 			case 0x21:
 			if(g_single_gesture_flag[4] && g_gesture_flag)
 			{
@@ -227,10 +227,10 @@ static void check_gesture(int gesture_id)
 		    else
 		    {
 		    	flag = 0;
-		        strcpy(gesture_tmp,"default");
+		        strcpy(gesture_tmp,"default");    
 		    }
 			break;
-
+			
 			case 0x22:
 			if(g_single_gesture_flag[1] && g_gesture_flag)
 			{
@@ -241,10 +241,10 @@ static void check_gesture(int gesture_id)
 		    else
 		    {
 		    	flag = 0;
-				strcpy(gesture_tmp,"default");
+				strcpy(gesture_tmp,"default");   
 		    }
 			break;
-
+			
 			case 0x23:
 			if(g_single_gesture_flag[2] && g_gesture_flag)
 			{
@@ -255,10 +255,10 @@ static void check_gesture(int gesture_id)
 			else
 			{
 				flag = 0;
-			    strcpy(gesture_tmp,"default");
+			    strcpy(gesture_tmp,"default"); 
 			}
 			break;
-
+			
 			case 0x24:
 			if(g_single_gesture_flag[0] && g_gesture_flag)
 			{
@@ -269,10 +269,10 @@ static void check_gesture(int gesture_id)
 			else
 			{
 				flag = 0;
-			    strcpy(gesture_tmp,"default");
+			    strcpy(gesture_tmp,"default");    
 			}
 			break;
-
+			
 			case 0x30:
 			if(g_single_gesture_flag[9] && g_gesture_flag)
 			{
@@ -283,10 +283,10 @@ static void check_gesture(int gesture_id)
 		    else
 		    {
 		    	flag = 0;
-		        strcpy(gesture_tmp,"default");
+		        strcpy(gesture_tmp,"default"); 
 		    }
 			break;
-
+			
 			case 0x31:
 			if(g_single_gesture_flag[12] && g_gesture_flag)
 			{
@@ -297,10 +297,10 @@ static void check_gesture(int gesture_id)
 			else
 			{
 				flag = 0;
-			    strcpy(gesture_tmp,"default");
+			    strcpy(gesture_tmp,"default");    
 			}
 			break;
-
+			
 			case 0x32:
 			if(g_single_gesture_flag[8] && g_gesture_flag)
 			{
@@ -308,13 +308,13 @@ static void check_gesture(int gesture_id)
 				strcpy(gesture_tmp,"m");
 				TPD_DEBUG("Input Gesture 'm'\n");
 			}
-			else
+			else 
 			{
 				flag = 0;
-			    strcpy(gesture_tmp,"default");
+			    strcpy(gesture_tmp,"default"); 
 			}
 			break;
-
+			
 			case 0x33:
 			if(g_single_gesture_flag[6] && g_gesture_flag)
 			{
@@ -325,10 +325,10 @@ static void check_gesture(int gesture_id)
 			else
 			{
 				flag = 0;
-			    strcpy(gesture_tmp,"default");
+			    strcpy(gesture_tmp,"default");    
 			}
 			break;
-
+			
 			case 0x34:
 			if(g_single_gesture_flag[5] && g_gesture_flag)
 			{
@@ -339,11 +339,11 @@ static void check_gesture(int gesture_id)
 			else
 			{
 				flag = 0;
-			    strcpy(gesture_tmp,"default");
+			    strcpy(gesture_tmp,"default");    
 			}
 			break;
-
-			#ifdef LEMU_ADD_GESTURE_Z
+			
+			#ifdef AGOLD_LEMU_ADD_GESTURE_Z
 			case 0x65:
 			#else
 			case 0x41:
@@ -358,10 +358,10 @@ static void check_gesture(int gesture_id)
 			else
 			{
 				flag = 0;
-			    strcpy(gesture_tmp,"default");
+			    strcpy(gesture_tmp,"default"); 
 			}
 			break;
-
+			
 			case 0x46:
 			if(g_single_gesture_flag[10] && g_gesture_flag)
 			{
@@ -372,7 +372,7 @@ static void check_gesture(int gesture_id)
 			else
 			{
 				flag = 0;
-			    strcpy(gesture_tmp,"default");
+			    strcpy(gesture_tmp,"default");    
 			}
 			break;
 			case 0x54:
@@ -385,33 +385,33 @@ static void check_gesture(int gesture_id)
 			else
 			{
 				flag = 0;
-			    strcpy(gesture_tmp,"default");
+			    strcpy(gesture_tmp,"default");    
 			}
-			break;
+			break;	
 			default:
 				flag = 0;
 				strcpy(gesture_tmp,"default");
 				TPD_DEBUG("There input char is not match\n");
 			break;
-		}
+		}		
 		TPD_DEBUG("Bruce gesture_tmp = %s\n",gesture_tmp);
 		if (flag == 1)
 		{
 			g_gesture_active_flag = true;
-			tpd_get_gesture(gesture_tmp);
+			agold_tpd_get_gesture(gesture_tmp);
 			msleep(10);
-
+		
 			input_report_key(tpd->dev, KEY_TV, 1);
 
 			input_sync(tpd->dev);
 			msleep(10);
 			input_report_key(tpd->dev, KEY_TV, 0);
 			input_sync(tpd->dev);
-
+		
 		}
-	}
+	}   
 }
-#ifdef TP_FT5346_FOR_GESTURE
+#ifdef AGOLD_TP_FT5346_FOR_GESTURE
 #else
 static int fts_i2c_Read_BIGGER_255(struct i2c_client *client, char *writebuf,
 		    int writelen, char *readbuf, int readlen)
@@ -437,40 +437,40 @@ static int fts_i2c_Read_BIGGER_255(struct i2c_client *client, char *writebuf,
 #endif
 static int tpd_gesture_handle2(void)
 {
-	unsigned char buf[FTS_GESTRUE_POINTS * 2] = { 0 };
-	int ret = -1;
-	int gestrue_id = 0;
-	buf[0] = 0xd3;
-
+	unsigned char buf[FTS_GESTRUE_POINTS * 2] = { 0 };   
+	int ret = -1;  
+	int gestrue_id = 0;      
+	buf[0] = 0xd3; 
+	 
 	ret = i2c_smbus_read_i2c_block_data(i2c_client, 0xD3, 8, buf);
-	#ifdef TP_FT5346_FOR_GESTURE
-
-	if (ret < 0)
-	{
-	    TPD_DEBUG("[qrp] line:%d read error\n",__LINE__);
-		return ret;
-	}
+	#ifdef AGOLD_TP_FT5346_FOR_GESTURE
+	
+	if (ret < 0) 
+	{   
+	    TPD_DEBUG("[qrp] line:%d read error\n",__LINE__);        
+		return ret;    
+	} 
 	else
 	{
 		//gestrue_id = 0x24;
 		gestrue_id = buf[0];
-
+		 
 	}
 	TPD_DEBUG("gestrue_id =  %02X \n ",gestrue_id);
     check_gesture(gestrue_id);
  	return 0;
  	#else
-
-	if (ret < 0)
-	{
-	    TPD_DEBUG("[qrp] line:%d read error\n",__LINE__);
-		return ret;
-	}
+	 
+	if (ret < 0) 
+	{   
+	    TPD_DEBUG("[qrp] line:%d read error\n",__LINE__);        
+		return ret;    
+	} 
 	if (0x24 == buf[0])
-	{
+	{        
 		gestrue_id = 0x24;
-		check_gesture(gestrue_id);
-		return -1;
+		check_gesture(gestrue_id);    
+		return -1;   
 	}
 	pointnum = (short)(buf[1]) & 0xff;
 	buf[0] = 0xd3;
@@ -479,13 +479,13 @@ static int tpd_gesture_handle2(void)
 
     ret = fts_i2c_Read_BIGGER_255(i2c_client,buf,1,buf,(pointnum*4+8));
 	TPD_DEBUG("fts_i2c_Read_BIGGER_255  return count is %d\n",ret);
-
-    if (ret < 0)
-	{
-	    TPD_DEBUG("qrp fts_i2c_Read_BIGGER_255 error\n");
-		return ret;
+    
+    if (ret < 0) 
+	{   
+	    TPD_DEBUG("qrp fts_i2c_Read_BIGGER_255 error\n");         
+		return ret;    
 	}
-
+	
 	gestrue_id = fetch_object_sample(buf,pointnum);
 	TPD_DEBUG("gestrue_id =  %02X \n ",gestrue_id);
     check_gesture(gestrue_id);
@@ -493,28 +493,28 @@ static int tpd_gesture_handle2(void)
  	#endif
 }
 #endif
-struct touch_info
+struct touch_info 
 {
     int y[10];
     int x[10];
     int p[10];
     int id[10];
 };
-
+ 
 static const struct i2c_device_id ft5406_tpd_id[] = {{TPD_NAME,0},{}};
 static unsigned short force[] = {0, 0x70, I2C_CLIENT_END, I2C_CLIENT_END};
 static const unsigned short *const forces[] = { force, NULL };
-
-static const struct of_device_id ft5406_dt_match[] =
+ 
+static const struct of_device_id ft5406_dt_match[] = 
 {
 	{.compatible = "mediatek,cap_touch"},
 	{},
 };
 MODULE_DEVICE_TABLE(of, ft5406_dt_match);
 
-static struct i2c_driver tpd_i2c_driver =
+static struct i2c_driver tpd_i2c_driver = 
 {
-	.driver =
+	.driver = 
 	{
 		.of_match_table = ft5406_dt_match,
 		.name = "FT5406_MT",
@@ -527,40 +527,40 @@ static struct i2c_driver tpd_i2c_driver =
 };
 
 
-static  void tpd_down(int x, int y, int p, int id)
+static  void tpd_down(int x, int y, int p, int id) 
 {
 #ifdef TPD_HAVE_BUTTON
 	if((0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "270", 3))||(0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "90", 2)))
     {
-		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && x>=TPD_RES_Y)
-		{
+		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && x>=AGOLD_TPD_RES_Y) 
+		{ 
 			int temp;
 			temp = y;
 			y = x;
-			x = TPD_RES_X-temp;
+			x = AGOLD_TPD_RES_X-temp;
 			tpd_button(x, y, 1);
 			return;
 		}
-		else if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=TPD_RES_Y)
+		else if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=AGOLD_TPD_RES_Y)
 		{
 			tpd_button(x, y, 1);
-			return;
+			return;		
 		}
 	}
 	else if((0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "180", 3)))
 	{
-		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=TPD_RES_Y)
+		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=AGOLD_TPD_RES_Y) 
 		{
-
-			tpd_button(TPD_RES_X-x, TPD_RES_Y-y, 1);
-
+		
+			tpd_button(AGOLD_TPD_RES_X-x, AGOLD_TPD_RES_Y-y, 1);
+		
 			return;
 		}
 	}
     else
 	{
-		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=TPD_RES_Y)
-		{
+		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=AGOLD_TPD_RES_Y) 
+		{ 
 			tpd_button(x, y, 1);
 			return;
 		}
@@ -571,11 +571,11 @@ static  void tpd_down(int x, int y, int p, int id)
 /*
 	if ((!p) && (!id))
 	{
-		//for virtual button
+		//for virtual button 
 		input_report_abs(tpd->dev, ABS_MT_PRESSURE, 100);
 		input_report_abs(tpd->dev, ABS_MT_TOUCH_MAJOR, 100);
-	}
-	else
+	} 
+	else 
 	{
 		input_report_abs(tpd->dev, ABS_MT_PRESSURE, p);
 		input_report_abs(tpd->dev, ABS_MT_TOUCH_MAJOR, p);
@@ -588,13 +588,13 @@ static  void tpd_down(int x, int y, int p, int id)
 	input_report_abs(tpd->dev, ABS_MT_TRACKING_ID, id);
 
     input_report_abs(tpd->dev, ABS_MT_POSITION_X, x);
-	input_report_abs(tpd->dev, ABS_MT_POSITION_Y, y);
-
+	input_report_abs(tpd->dev, ABS_MT_POSITION_Y, y);	
+ 
 	input_mt_sync(tpd->dev);
 	TPD_EM_PRINT(x, y, x, y, p-1, 1);
 }
-
-static  void tpd_up(int x, int y)
+ 
+static  void tpd_up(int x, int y) 
 {
 	//input_report_abs(tpd->dev, ABS_PRESSURE, 0);
 	input_report_key(tpd->dev, BTN_TOUCH, 0);
@@ -607,38 +607,38 @@ static  void tpd_up(int x, int y)
 #ifdef TPD_HAVE_BUTTON
 	if((0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "270", 3))||(0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "90", 2)))
     {
-		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && x>=TPD_RES_Y)
-		{
+		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && x>=AGOLD_TPD_RES_Y) 
+		{ 
 			int temp;
 			temp = y;
 			y = x;
-			x = TPD_RES_X-temp;
+			x = AGOLD_TPD_RES_X-temp;
 			tpd_button(x, y, 0);
 			return;
 		}
-		else if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=TPD_RES_Y)
+		else if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=AGOLD_TPD_RES_Y)
 		{
 			tpd_button(x, y, 0);
-			return;
+			return;		
 		}
 	}
 	else if((0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "180", 3)))
 	{
-		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=TPD_RES_Y)
-		{
-			tpd_button(TPD_RES_X-x, TPD_RES_Y-y, 0);
+		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=AGOLD_TPD_RES_Y) 
+		{ 
+			tpd_button(AGOLD_TPD_RES_X-x, AGOLD_TPD_RES_Y-y, 0);
 			return;
 		}
 	}
     else
 	{
-		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=TPD_RES_Y)
-		{
+		if((boot_mode==FACTORY_BOOT || boot_mode==RECOVERY_BOOT) && y>=AGOLD_TPD_RES_Y) 
+		{ 
 			tpd_button(x, y, 0);
 			return;
 		}
 	}
-#endif
+#endif   
 }
 
 static int tpd_touchinfo(struct touch_info *cinfo, struct touch_info *pinfo)
@@ -648,10 +648,10 @@ static int tpd_touchinfo(struct touch_info *cinfo, struct touch_info *pinfo)
 	//	char data[35] = {0};
 	//#else
 	//	char data[16] = {0};
-	//#endif
+	//#endif	
 	char data[128] = {0};
     u16 high_byte,low_byte;
-
+	
 	char reg = 0x0;
 	p_point_num = point_num;
 	if (tpd_halt)
@@ -672,15 +672,15 @@ static int tpd_touchinfo(struct touch_info *cinfo, struct touch_info *pinfo)
 	//TPD_DEBUG("[data[0]=%x,data[1]= %x ,data[2]=%x ,data[3]=%x ,data[4]=%x ,data[5]=%x]\n",data[0],data[1],data[2],data[3],data[4],data[5]);
 	//TPD_DEBUG("[data[9]=%x,data[10]= %x ,data[11]=%x ,data[12]=%x]\n",data[9],data[10],data[11],data[12]);
 	//TPD_DEBUG("[data[15]=%x,data[16]= %x ,data[17]=%x ,data[18]=%x]\n",data[15],data[16],data[17],data[18]);
-
+   
 	/*get the number of the touch points*/
 	point_num= data[2] & 0x0f;
-
+	
 	//TPD_DEBUG("point_num =%d\n",point_num);
-
-	for(i = 0; i < point_num; i++)
+		
+	for(i = 0; i < point_num; i++)  
 	{
-		cinfo->p[i] = data[3+6*i] >> 6; //event flag
+		cinfo->p[i] = data[3+6*i] >> 6; //event flag 
      	cinfo->id[i] = data[3+6*i+2]>>4; //touch id
 	   	/*get the X coordinate, 2 bytes*/
 		high_byte = data[3+6*i];
@@ -690,27 +690,27 @@ static int tpd_touchinfo(struct touch_info *cinfo, struct touch_info *pinfo)
 		cinfo->x[i] = high_byte |low_byte;
 
 		//cinfo->x[i] =  cinfo->x[i] * 480 >> 11; //calibra
-
+	
 		/*get the Y coordinate, 2 bytes*/
-
+		
 		high_byte = data[3+6*i+2];
 		high_byte <<= 8;
 		high_byte &= 0x0f00;
 		low_byte = data[3+6*i+3];
 		cinfo->y[i] = high_byte |low_byte;
-
-		#if defined(TPD_COMPAT_LCM_RESOLUTION)
-		cinfo->x[i] = cinfo->x[i]*DISP_GetScreenWidth()/TPD_RES_X;
-		cinfo->y[i] = cinfo->y[i]*DISP_GetScreenHeight()/TPD_RES_Y;
+		
+		#if defined(AGOLD_TPD_COMPAT_LCM_RESOLUTION)
+		cinfo->x[i] = cinfo->x[i]*DISP_GetScreenWidth()/AGOLD_TPD_RES_X;
+		cinfo->y[i] = cinfo->y[i]*DISP_GetScreenHeight()/AGOLD_TPD_RES_Y;
 		#endif
 
 
 		 //cinfo->y[i]=  cinfo->y[i] * 800 >> 11;
 	}
-	//TPD_DEBUG(" cinfo->x[0] = %d, cinfo->y[0] = %d, cinfo->p[0] = %d\n", cinfo->x[0], cinfo->y[0], cinfo->p[0]);
-	//TPD_DEBUG(" cinfo->x[1] = %d, cinfo->y[1] = %d, cinfo->p[1] = %d\n", cinfo->x[1], cinfo->y[1], cinfo->p[1]);
-	//TPD_DEBUG(" cinfo->x[2]= %d, cinfo->y[2]= %d, cinfo->p[2] = %d\n", cinfo->x[2], cinfo->y[2], cinfo->p[2]);
-
+	//TPD_DEBUG(" cinfo->x[0] = %d, cinfo->y[0] = %d, cinfo->p[0] = %d\n", cinfo->x[0], cinfo->y[0], cinfo->p[0]);	
+	//TPD_DEBUG(" cinfo->x[1] = %d, cinfo->y[1] = %d, cinfo->p[1] = %d\n", cinfo->x[1], cinfo->y[1], cinfo->p[1]);		
+	//TPD_DEBUG(" cinfo->x[2]= %d, cinfo->y[2]= %d, cinfo->p[2] = %d\n", cinfo->x[2], cinfo->y[2], cinfo->p[2]);	
+		  
 	return true;
 };
 
@@ -718,7 +718,7 @@ static int tpd_touchinfo(struct touch_info *cinfo, struct touch_info *pinfo)
 int tpd_read_ps(void)
 {
 	tpd_proximity_detect;
-	return 0;
+	return 0;    
 }
 
 static int tpd_get_ps_value(void)
@@ -737,11 +737,11 @@ static int tpd_enable_ps(int enable)
 	{
 		state |= 0x01;
 		tpd_proximity_flag = 1;
-		TPD_PROXIMITY_DEBUG("[proxi_5206]ps function is on\n");
+		TPD_PROXIMITY_DEBUG("[proxi_5206]ps function is on\n");	
 	}
 	else
 	{
-		state &= 0x00;
+		state &= 0x00;	
 		tpd_proximity_flag = 0;
 		TPD_PROXIMITY_DEBUG("[proxi_5206]ps function is off\n");
 	}
@@ -756,9 +756,9 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
 {
 	int err = 0;
 	int value;
-
+	
 	hwm_sensor_data *sensor_data;
-	TPD_DEBUG("[proxi_5206]command = 0x%02X\n", command);
+	TPD_DEBUG("[proxi_5206]command = 0x%02X\n", command);		
 	switch (command)
 	{
 		case SENSOR_DELAY:
@@ -777,13 +777,13 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
 				err = -EINVAL;
 			}
 			else
-			{
+			{				
 				value = *(int *)buff_in;
 				if(value)
-				{
+				{		
 					if((tpd_enable_ps(1) != 0))
 					{
-						APS_ERR("enable ps fail: %d\n", err);
+						APS_ERR("enable ps fail: %d\n", err); 
 						return -1;
 					}
 				}
@@ -791,7 +791,7 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
 				{
 					if((tpd_enable_ps(0) != 0))
 					{
-						APS_ERR("disable ps fail: %d\n", err);
+						APS_ERR("disable ps fail: %d\n", err); 
 						return -1;
 					}
 				}
@@ -806,9 +806,9 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
 			}
 			else
 			{
-
-				sensor_data = (hwm_sensor_data *)buff_out;
-
+				
+				sensor_data = (hwm_sensor_data *)buff_out;				
+				
 				if((err = tpd_read_ps()))
 				{
 					err = -1;;
@@ -819,8 +819,8 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
 					TPD_PROXIMITY_DEBUG("huang sensor_data->values[0] 1082 = %d\n", sensor_data->values[0]);
 					sensor_data->value_divide = 1;
 					sensor_data->status = SENSOR_STATUS_ACCURACY_MEDIUM;
-				}
-
+				}	
+				
 			}
 			break;
 		default:
@@ -828,14 +828,14 @@ int tpd_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
 			err = -1;
 			break;
 	}
-
-	return err;
+	
+	return err;	
 }
 #endif
 
 static int touch_event_handler(void *unused)
-{
-
+{ 
+	
    	struct touch_info cinfo, pinfo;
 	int i=0;
 
@@ -847,15 +847,15 @@ static int touch_event_handler(void *unused)
 	u8 proximity_status;
 	u8 state;
 #endif
-
+ 
 	do
 	{
-		enable_irq(ft_irq);
-		set_current_state(TASK_INTERRUPTIBLE);
+		enable_irq(ft_irq); 
+		set_current_state(TASK_INTERRUPTIBLE); 
 		wait_event_interruptible(waiter,tpd_flag!=0);
-
+						 
 		tpd_flag = 0;
-
+			 
 		set_current_state(TASK_RUNNING);
     #ifdef FTS_GESTRUE
 		if( g_gesture_flag && (tpd_halt==1))
@@ -874,10 +874,10 @@ static int touch_event_handler(void *unused)
 
 			i2c_smbus_read_i2c_block_data(i2c_client, 0x01, 1, &proximity_status);
 			TPD_PROXIMITY_DEBUG("proxi_5206 0x01 value is 1139 0x%02X\n", proximity_status);
-
+			
 			if (proximity_status == 0xC0)
 			{
-				tpd_proximity_detect = 0;
+				tpd_proximity_detect = 0;	
 			}
 			else if(proximity_status == 0xE0)
 			{
@@ -888,23 +888,23 @@ static int touch_event_handler(void *unused)
 
 			if ((err = tpd_read_ps()))
 			{
-				TPD_PROXIMITY_DMESG("proxi_5206 read ps data 1156: %d\n", err);
+				TPD_PROXIMITY_DMESG("proxi_5206 read ps data 1156: %d\n", err);	
 			}
 			sensor_data.values[0] = tpd_get_ps_value();
 			sensor_data.value_divide = 1;
 			sensor_data.status = SENSOR_STATUS_ACCURACY_MEDIUM;
 			if ((err = hwmsen_get_interrupt_data(ID_PROXIMITY, &sensor_data)))
 			{
-				TPD_PROXIMITY_DMESG(" proxi_5206 call hwmsen_get_interrupt_data failed= %d\n", err);
+				TPD_PROXIMITY_DMESG(" proxi_5206 call hwmsen_get_interrupt_data failed= %d\n", err);	
 			}
-		}
+		}  
 #endif
-
-		if (tpd_touchinfo(&cinfo, &pinfo))
+		 
+		if (tpd_touchinfo(&cinfo, &pinfo)) 
 		{
 		    //TPD_DEBUG("point_num = %d\n",point_num);
 			TPD_DEBUG_SET_TIME;
-			if(point_num >0)
+			if(point_num >0) 
 			{
 			    for(i =0; i<point_num; i++)//only support 3 point
 			    {
@@ -914,19 +914,19 @@ static int touch_event_handler(void *unused)
 			    }
 			    input_sync(tpd->dev);
 			}
-			else
+			else  
     		{
 			    tpd_up(cinfo.x[0], cinfo.y[0]);
-        	    //TPD_DEBUG("release --->\n");
+        	    //TPD_DEBUG("release --->\n"); 
         	    //input_mt_sync(tpd->dev);
         	    input_sync(tpd->dev);
         	}
         }
  	}while(!kthread_should_stop());
-
+ 
 	return 0;
 }
-
+ 
 static int tpd_i2c_detect(struct i2c_client *client, struct i2c_board_info *info)
 {
 	strcpy(info->type, TPD_DEVICE);
@@ -941,7 +941,7 @@ static irqreturn_t tpd_eint_interrupt_handler(int irq, void *dev_id)
 	wake_up_interruptible(&waiter);
 	return IRQ_HANDLED;
 }
-
+ 
 static int tpd_irq_registration(void)
 {
 	struct device_node *node = NULL;
@@ -951,18 +951,18 @@ static int tpd_irq_registration(void)
 	TPD_DEBUG("Device Tree Tpd_irq_registration!");
 
 	node = of_find_matching_node(node, touch_of_match);
-	if (node)
+	if (node) 
 	{
 		of_property_read_u32_array(node, "debounce", ints, ARRAY_SIZE(ints));
 		gpio_set_debounce(ints[0], ints[1]);
 		ft_irq = irq_of_parse_and_map(node, 0);
 		ret = request_irq(ft_irq, (irq_handler_t) tpd_eint_interrupt_handler, IRQF_TRIGGER_FALLING, "TOUCH_PANEL-eint", NULL);
-		if (ret > 0)
+		if (ret > 0) 
 		{
 			ret = -1;
 		}
-	}
-	else
+	} 
+	else 
 	{
 		TPD_DEBUG("tpd request_irq can not find touch eint device node!.");
 		ret = -1;
@@ -980,7 +980,7 @@ void focaltech_get_upgrade_array(void)
 
 	TPD_DEBUG("%s chip_id = %x\n", __func__, chip_id);
     //TPD_DEBUG("[Bruce trace]%s force chip_id = %x\n", __func__, chip_id);
-    #if defined(DFL_C221_FOR_TRULY)
+    #if defined(AGOLD_DFL_C221_FOR_TRULY)
     chip_id = 0x12;
     #endif
 	for(i=0;i<sizeof(fts_updateinfo)/sizeof(struct Upgrade_Info);i++)
@@ -1000,35 +1000,35 @@ void focaltech_get_upgrade_array(void)
 
 static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
-
+				 
 	int retval = TPD_OK;
 	char data,fw_version;
 	//int reset_count = 0;
  	client->addr = 0x38;
-//reset_proc:
+//reset_proc:   
 	i2c_client = client;
 	//power on
-
-	retval = regulator_enable(tpd->reg);
+	
+	retval = regulator_enable(tpd->reg); 
 	msleep(100);
-/*
+/*	
 	retval = gpio_request_one(tpd_rst_gpio_number, GPIOF_OUT_INIT_LOW,"touchp_reset");
-	if (retval < 0)
+	if (retval < 0) 
 	{
 		printk("[psw]Unable to request gpio reset_pin\n");
 		return -1;
-	}
+	}  
 */
 	tpd_gpio_output(GPIO_CTP_RST_PIN, 1);
 	mdelay(2);
-	tpd_gpio_output(GPIO_CTP_RST_PIN, 0);
+	tpd_gpio_output(GPIO_CTP_RST_PIN, 0);  
 	mdelay(2);
 	tpd_gpio_output(GPIO_CTP_RST_PIN, 1);
 	mdelay(2);
 
-
+	
 /*	retval = gpio_request_one(tpd_int_gpio_number, GPIOF_IN,"tpd_int");
-	if (retval < 0)
+	if (retval < 0) 
 	{
 		TPD_DMESG("Unable to request gpio int_pin\n");
 		gpio_free(tpd_rst_gpio_number);
@@ -1044,6 +1044,7 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	if((i2c_smbus_read_i2c_block_data(i2c_client, 0x00, 1, &data))< 0)
 	{
 		TPD_DEBUG("[psw]I2C transfer error, line: %d\n", __LINE__);
+//[AGOLD][20151104][chenpeng][start]去除循环解决55n编译多个TP时关机冲不了电
 /*
 #ifdef TPD_RESET_ISSUE_WORKAROUND
         if ( reset_count < TPD_MAX_RESET_COUNT )
@@ -1054,22 +1055,24 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
         }
 #endif
 */
+//[AGOLD][20151104][chenpeng][start]去除循环解决55n编译多个TP时关机冲不了电
 		tpd_load_status = -1;
-		return -1;
+		return -1; 
 	}
 
+	//[agold][xfl][20160505][enable irq must after tp driver matched ok]
 	tpd_irq_registration();
 	enable_irq(ft_irq);
 
 	if((i2c_smbus_read_i2c_block_data(i2c_client, 0xA6, 1, &fw_version))>= 0)
 	{
-		TPD_DEBUG("[FTS]fw_version = 0x%x\n",fw_version);
+		TPD_DEBUG("[AGold][Bruce]fw_version = 0x%x\n",fw_version);
 	}
-	#if defined(CTP_FOR_HAND)
+	#if defined(AGOLD_CTP_FOR_HAND)
 	tpd_handler2(g_open_handler);
 	#endif
-
-	tpd_load_status = 1;
+	
+	tpd_load_status = 1;	
 
 	focaltech_get_upgrade_array();
 
@@ -1082,34 +1085,34 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	#ifdef FTS_GESTRUE
 
     if(!ft_gpDMABuf_va)
-	{
-		TPD_DMESG("dme malloc error\n");
+	{	
+		TPD_DMESG("dme malloc error\n");  
 
 	    data = 0x01;
 		retval = fts_i2c_Write_byte(i2c_client, 0xd0, 1, &data);
-		printk(" %s, wrinte i2c reg0xd0 ,data=%d, retval=%d\n", __FUNCTION__,data,retval);
+		printk(" %s, wrinte i2c reg0xd0 ,data=%d, retval=%d\n", __FUNCTION__,data,retval);  
 
 		/*All gesture on*/
 		data = 0xff;
 		retval = fts_i2c_Write_byte(i2c_client, 0xd1, 1, &data);
-		printk(" %s, wrinte i2c reg0xd0 ,data=%d, retval=%d\n", __FUNCTION__,data,retval);
+		printk(" %s, wrinte i2c reg0xd0 ,data=%d, retval=%d\n", __FUNCTION__,data,retval);  
 
 		data = 0x1f;
 		retval = fts_i2c_Write_byte(i2c_client, 0xd2, 1, &data);
-		printk(" %s, wrinte i2c reg0xd0 ,data=%d, retval=%d\n", __FUNCTION__,data,retval);
-
+		printk(" %s, wrinte i2c reg0xd0 ,data=%d, retval=%d\n", __FUNCTION__,data,retval);  
+	  
 	    data = 0xff;
 		retval = fts_i2c_Write_byte(i2c_client, 0xd5, 1, &data);
-		printk(" %s, wrinte i2c reg0xd0 ,data=%d, retval=%d\n", __FUNCTION__,data,retval);
-
+		printk(" %s, wrinte i2c reg0xd0 ,data=%d, retval=%d\n", __FUNCTION__,data,retval);  
+		
 		data = 0xff;
 		retval = fts_i2c_Write_byte(i2c_client, 0xd6, 1, &data);
-		printk(" %s, wrinte i2c reg0xd0 ,data=%d, retval=%d\n", __FUNCTION__,data,retval);
-
+		printk(" %s, wrinte i2c reg0xd0 ,data=%d, retval=%d\n", __FUNCTION__,data,retval);  
+		
 		data = 0xff;
 		retval = fts_i2c_Write_byte(i2c_client, 0xd7, 1, &data);
-		printk(" %s, wrinte i2c reg0xd0 ,data=%d, retval=%d\n", __FUNCTION__,data,retval);
-
+		printk(" %s, wrinte i2c reg0xd0 ,data=%d, retval=%d\n", __FUNCTION__,data,retval);  
+		
 		dev_dbg(&client->dev,"%s Allocate DMA I2C Buffer failed!\n",__func__);
 		return -EIO;
 	}
@@ -1129,32 +1132,32 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	if((retval = misc_register(&tpd_misc_device)))
 	{
 		TPD_DEBUG("mtk_tpd: tpd_misc_device register failed\n");
-
+		
 	}
 	#endif
 
-	#ifdef TPD_FT_AUTO_UPGRADE
+	#ifdef AGOLD_TPD_FT_AUTO_UPGRADE
 	TPD_DEBUG("********************Enter CTP Auto Upgrade********************\n");
 	fts_ctpm_auto_upgrade(i2c_client);
 	#endif
 
 	thread = kthread_run(touch_event_handler, 0, TPD_DEVICE);
 	if (IS_ERR(thread))
-	{
+	{ 
 		retval = PTR_ERR(thread);
 		TPD_DMESG(TPD_DEVICE " failed to create kernel thread: %d\n", retval);
 	}
 
 	TPD_DMESG("FTS Touch Panel Device Probe %s\n", (retval < TPD_OK) ? "FAIL" : "PASS");
-
-	if((proc=proc_create("tpd_version",0664,NULL,&ft_tpd_version_fops))==NULL)
+		
+	if((agold_proc=proc_create("agold_tpd_version",0664,NULL,&ft_tpd_version_fops))==NULL)
 	{
-		TPD_DEBUG("tpd_version proc_create error\n");
+		TPD_DEBUG("agold_tpd_version proc_create error\n"); 
 	}
 
 #ifdef TPD_PROXIMITY
 	struct hwmsen_object obj_ps;
-
+	
 	obj_ps.polling = 0;//interrupt mode
 	obj_ps.sensor_operate = tpd_ps_operate;
 	if((retval = hwmsen_attach(ID_PROXIMITY, &obj_ps)))
@@ -1164,10 +1167,10 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	else
 	{
 		APS_ERR("proxi_fts attach ok = %d\n", retval);
-	}
+	}		
 #endif
    return 0;
-
+   
  }
 
 static int tpd_remove(struct i2c_client *client)
@@ -1183,18 +1186,19 @@ static int tpd_remove(struct i2c_client *client)
 	#ifdef FTS_CTL_IIC
 	ft_rw_iic_drv_exit();
 	#endif
-
+	
 	TPD_DEBUG("TPD removed\n");
-
+ 
    	return 0;
 }
 
+//agold shipeilong add start
 static int tpd_power_enable(int enable)
 {
 	int ret = 0;
 	TPD_DEBUG("Device Tree get regulator!");
 #if !defined CONFIG_MTK_LEGACY
-
+	
 	//tpd->reg = regulator_get(tpd->tpd_dev, "vtouch");
 	ret = regulator_set_voltage(tpd->reg, 2800000, 2800000);	/*set 2.8v*/
 	if (ret) {
@@ -1220,18 +1224,21 @@ static int tpd_power_enable(int enable)
 #endif
 	return ret;
 }
+//agold shipeilong end
 
 static int tpd_local_init(void)
-{
+{	
 	int retval;
 
 	tpd->reg = regulator_get(tpd->tpd_dev, "vtouch");
+	//[AGOLD][20151104][chenpeng][start]
     if (IS_ERR(tpd->reg)) {
         TPD_DEBUG("regulator_get() failed.");
         return 0;
     }
+    //[AGOLD][20151104][chenpeng][start]
 	retval = regulator_set_voltage(tpd->reg, 2800000, 2800000);
-	if (retval != 0)
+	if (retval != 0) 
 	{
 		TPD_DEBUG("Failed to set reg-vgp6 voltage: %d\n", retval);
 		return -1;
@@ -1241,36 +1248,37 @@ static int tpd_local_init(void)
   		TPD_DEBUG("FTS unable to add i2c driver.\n");
       	return -1;
     }
-    if(tpd_load_status == -1)
+    if(tpd_load_status == -1) 
     {
     	TPD_DEBUG("FTS add error touch panel driver.\n");
+    	//[Agold][Jason][20171031] 释放2.8v
     	tpd_power_enable(0);
     	i2c_del_driver(&tpd_i2c_driver);
     	return -1;
     }
 
-#ifdef TPD_HAVE_BUTTON
-	if (tpd_dts_data.use_tpd_button)
+#ifdef TPD_HAVE_BUTTON	
+	if (tpd_dts_data.use_tpd_button) 
 	{
 		/*initialize tpd button data*/
 		tpd_button_setting(tpd_dts_data.tpd_key_num, tpd_dts_data.tpd_key_local,
 		tpd_dts_data.tpd_key_dim_local);
-	}
+	}  
 #endif
-
-#if (defined(TPD_WARP_START) && defined(TPD_WARP_END))
+  
+#if (defined(TPD_WARP_START) && defined(TPD_WARP_END))    
     TPD_DO_WARP = 1;
     memcpy(tpd_wb_start, tpd_wb_start_local, TPD_WARP_CNT*4);
     memcpy(tpd_wb_end, tpd_wb_start_local, TPD_WARP_CNT*4);
-#endif
+#endif 
 
 #if (defined(TPD_HAVE_CALIBRATION) && !defined(TPD_CUSTOM_CALIBRATION))
     memcpy(tpd_calmat, tpd_def_calmat_local, 8*4);
-    memcpy(tpd_def_calmat, tpd_def_calmat_local, 8*4);
-#endif
-    TPD_DMESG("end %s, %d\n", __FUNCTION__, __LINE__);
+    memcpy(tpd_def_calmat, tpd_def_calmat_local, 8*4);	
+#endif  
+    TPD_DMESG("end %s, %d\n", __FUNCTION__, __LINE__);  
     tpd_type_cap = 1;
-    return 0;
+    return 0; 
 }
 
 static void tpd_resume( struct device *h )
@@ -1279,13 +1287,13 @@ static void tpd_resume( struct device *h )
 	char data;
 	tpd_halt = 0;
 
-#ifdef TPD_PROXIMITY
+#ifdef TPD_PROXIMITY	
 	if (tpd_proximity_flag == 1)
 	{
 		if(tpd_proximity_flag_one == 1)
 		{
-			tpd_proximity_flag_one = 0;
-			TPD_DMESG(TPD_DEVICE " tpd_proximity_flag_one \n");
+			tpd_proximity_flag_one = 0;	
+			TPD_DMESG(TPD_DEVICE " tpd_proximity_flag_one \n"); 
 			return;
 		}
 
@@ -1296,15 +1304,15 @@ static void tpd_resume( struct device *h )
     if(ret!=0)
     {
         TPD_DMESG(" %s, wrinte i2c reg0xd0 ,data=%d, ret=%d\n", __FUNCTION__,data,ret);
-    }
-
+    } 	
+ 
    	TPD_DMESG("TPD wake up\n");
-
-    tpd_gpio_output(GPIO_CTP_RST_PIN, 0);
-    msleep(2);
+   	
+    tpd_gpio_output(GPIO_CTP_RST_PIN, 0);  
+    msleep(2);  
     tpd_gpio_output(GPIO_CTP_RST_PIN, 1);
 
-	enable_irq(ft_irq);
+	enable_irq(ft_irq);  
 	msleep(30);
 	/* for resume debug
 	if((i2c_smbus_read_i2c_block_data(i2c_client, 0x00, 1, &data))< 0)
@@ -1315,32 +1323,32 @@ static void tpd_resume( struct device *h )
 	tpd_up(0,0);
 	input_sync(tpd->dev);
 	TPD_DMESG("TPD wake up done\n");
-#if defined(CTP_FOR_HAND)
+#if defined(AGOLD_CTP_FOR_HAND)
 	tpd_handler2(g_open_handler);
 #endif
-#if defined(CTP_HALL_SENSITIVITY)
+#if defined(AGOLD_CTP_HALL_SENSITIVITY)
 	int state = 0;
 	int state_compare = 0;
 	int i = 0;
-	if(1 == sensitivity_state)//hall close
+	if(1 == sensitivity_state)//hall close 
 	{
-		#if defined(CTP_SET_PANDA_SENSITIVTY)
+		#if defined(AGOLD_CTP_SET_PANDA_SENSITIVTY)
 		state = 0xB0;
-		#elif defined(CTP_SET_FOCALTECH_SENSITIVTY)
+		#elif defined(AGOLD_CTP_SET_FOCALTECH_SENSITIVTY)
 		state = 1;
 		#endif
 	}else if(0 == sensitivity_state)//hall far
 	{
-		#if defined(CTP_SET_PANDA_SENSITIVTY)
+		#if defined(AGOLD_CTP_SET_PANDA_SENSITIVTY)
 		state = 0xB1;
-		#elif defined(CTP_SET_FOCALTECH_SENSITIVTY)
+		#elif defined(AGOLD_CTP_SET_FOCALTECH_SENSITIVTY)
 		state = 0;
 		#endif
-
+		
 	}
-	disable_irq(ft_irq);
-	#if defined(CTP_SET_PANDA_SENSITIVTY)
-	struct i2c_msg msg[] =
+	disable_irq(ft_irq); 
+	#if defined(AGOLD_CTP_SET_PANDA_SENSITIVTY)
+	struct i2c_msg msg[] = 
 	{
 		{
 			.addr	= i2c_client->addr,
@@ -1356,8 +1364,8 @@ static void tpd_resume( struct device *h )
 	msleep(50);
 	i2c_transfer(i2c_client->adapter, msg, 1);
 	msleep(50);
-
-	#elif defined(CTP_SET_FOCALTECH_SENSITIVTY)
+	
+	#elif defined(AGOLD_CTP_SET_FOCALTECH_SENSITIVTY)
 	if ((ret = fts_i2c_Write_byte(i2c_client, 0xc1, 1, &state)) < 0)
 		TPD_DEBUG("%s i2c write error: %d\n", __func__, ret);
 	msleep(100);
@@ -1379,7 +1387,7 @@ static void tpd_resume( struct device *h )
 	msleep(100);
 	#endif
 	//#endif
-	enable_irq(ft_irq);
+	enable_irq(ft_irq);  
 #endif
 
 }
@@ -1393,58 +1401,60 @@ static void tpd_suspend( struct device *h )
 #ifdef TPD_PROXIMITY
 	if (tpd_proximity_flag == 1)
 	{
-		tpd_proximity_flag_one = 1;
+		tpd_proximity_flag_one = 1;	
 	}
 #endif
 
+	//agold shipeilong add start
 	tpd_power_enable(0);
 	msleep(10);
 	tpd_power_enable(1);
 	msleep(100);
-#if defined(CTP_FOR_HAND)
+#if defined(AGOLD_CTP_FOR_HAND)
 	tpd_handler2(g_open_handler);
 
 #endif
 
 	tpd_gpio_output(GPIO_CTP_RST_PIN, 1);
 	mdelay(2);
-	tpd_gpio_output(GPIO_CTP_RST_PIN, 0);
+	tpd_gpio_output(GPIO_CTP_RST_PIN, 0);  
 	mdelay(2);
 	tpd_gpio_output(GPIO_CTP_RST_PIN, 1);
 	mdelay(300);
+    //agold shipeilong end
 
 TPD_DMESG("TPD enter sleep\n");
 
-#ifdef FTS_GESTRUE
+#ifdef FTS_GESTRUE 
 	g_gesture_active_flag = false;
 
 	if(g_gesture_flag)
-	{
+	{	
 		//init_para(540,960,100,0,0);
 		data = 0x01;
 		ret = fts_i2c_Write_byte(i2c_client, 0xd0, 1, &data);
-		printk(" %s, wrinte i2c reg0xd0 ,data=%d, ret=%d\n", __FUNCTION__,data,ret);
+		printk(" %s, wrinte i2c reg0xd0 ,data=%d, ret=%d\n", __FUNCTION__,data,ret);  
 
 		/*All gesture on*/
 		data = 0xff;
 		ret = fts_i2c_Write_byte(i2c_client, 0xd1, 1, &data);
-		printk(" %s, wrinte i2c reg0xd1 ,data=%d, ret=%d\n", __FUNCTION__,data,ret);
+		printk(" %s, wrinte i2c reg0xd1 ,data=%d, ret=%d\n", __FUNCTION__,data,ret);  
 
 		data = 0x1f;
 		ret = fts_i2c_Write_byte(i2c_client, 0xd2, 1, &data);
-		printk(" %s, wrinte i2c reg0xd2 ,data=%d, ret=%d\n", __FUNCTION__,data,ret);
-
+		printk(" %s, wrinte i2c reg0xd2 ,data=%d, ret=%d\n", __FUNCTION__,data,ret); 
+		
 		data = 0xff;
 		ret = fts_i2c_Write_byte(i2c_client, 0xd5, 1, &data);
-		printk(" %s, wrinte i2c reg0xd5 ,data=%d, retval=%d\n", __FUNCTION__,data,ret);
-
+		printk(" %s, wrinte i2c reg0xd5 ,data=%d, retval=%d\n", __FUNCTION__,data,ret);  
+		
 		data = 0xff;
 		ret = fts_i2c_Write_byte(i2c_client, 0xd6, 1, &data);
-		printk(" %s, wrinte i2c reg0xd6 ,data=%d, retval=%d\n", __FUNCTION__,data,ret);
-
+		printk(" %s, wrinte i2c reg0xd6 ,data=%d, retval=%d\n", __FUNCTION__,data,ret);   
+		
 		data = 0xff;
 		ret = fts_i2c_Write_byte(i2c_client, 0xd7, 1, &data);
-		printk(" %s, wrinte i2c reg0xd6 ,data=%d, retval=%d\n", __FUNCTION__,data,ret);
+		printk(" %s, wrinte i2c reg0xd6 ,data=%d, retval=%d\n", __FUNCTION__,data,ret);   
 	}
 	else
 	{
@@ -1453,7 +1463,8 @@ TPD_DMESG("TPD enter sleep\n");
 	ret = fts_i2c_Write_byte(i2c_client, 0xA5, 1, &data);  //TP enter sleep mode
 	mutex_unlock(&i2c_access);
 
-	disable_irq(ft_irq);
+	/**[AGold][Bruce]no tpd gesture, mask eint**/
+	disable_irq(ft_irq);	
 	}
 #else
 
@@ -1461,13 +1472,14 @@ TPD_DMESG("TPD enter sleep\n");
 	ret = fts_i2c_Write_byte(i2c_client, 0xA5, 1, &data);  //TP enter sleep mode
 	mutex_unlock(&i2c_access);
 
+	/**[AGold][Bruce]no tpd gesture, mask eint**/
 	disable_irq(ft_irq);
 #endif
 	TPD_DMESG("TPD enter sleep done\n");
-}
+} 
 //qrp
-#if defined(CTP_HALL_SENSITIVITY)
-int tpd_set_sensitivity(unsigned long arg)
+#if defined(AGOLD_CTP_HALL_SENSITIVITY)
+int agold_tpd_set_sensitivity(unsigned long arg)
 {
 	int ret = 0;
 	int state = 0;
@@ -1477,26 +1489,26 @@ int tpd_set_sensitivity(unsigned long arg)
 	if(arg)
 	{
 		sensitivity_state = 1;
-		#if defined(CTP_SET_PANDA_SENSITIVTY)
+		#if defined(AGOLD_CTP_SET_PANDA_SENSITIVTY)
 		state = 0xB0;
-		#elif defined(CTP_SET_FOCALTECH_SENSITIVTY)
+		#elif defined(AGOLD_CTP_SET_FOCALTECH_SENSITIVTY)
 		state = 1;
 		#endif
 	}
 	else
 	{
 		sensitivity_state = 0;
-		#if defined(CTP_SET_PANDA_SENSITIVTY)
+		#if defined(AGOLD_CTP_SET_PANDA_SENSITIVTY)
 		state = 0xB1;
-		#elif defined(CTP_SET_FOCALTECH_SENSITIVTY)
+		#elif defined(AGOLD_CTP_SET_FOCALTECH_SENSITIVTY)
 		state = 0;
 		#endif
-
+	
 	}
 	TPD_DEBUG("[mu] arg = %d, state = %d\n", arg, state);
-	disable_irq(ft_irq);
-	#if defined(CTP_SET_PANDA_SENSITIVTY)
-	struct i2c_msg msg[] =
+	disable_irq(ft_irq); 
+	#if defined(AGOLD_CTP_SET_PANDA_SENSITIVTY)
+	struct i2c_msg msg[] = 
 	{
 		{
 			.addr	= i2c_client->addr,
@@ -1512,7 +1524,7 @@ int tpd_set_sensitivity(unsigned long arg)
 	msleep(50);
 	i2c_transfer(i2c_client->adapter, msg, 1);
 	msleep(50);
-	#elif defined(CTP_SET_FOCALTECH_SENSITIVTY)
+	#elif defined(AGOLD_CTP_SET_FOCALTECH_SENSITIVTY)
 	if ((ret = fts_i2c_Write_byte(i2c_client, 0xc1, 1, &state)) < 0)
 		TPD_DEBUG("%s i2c write error: %d\n", __func__, ret);
 	msleep(100);
@@ -1538,7 +1550,7 @@ int tpd_set_sensitivity(unsigned long arg)
 	return 0;
 }
 #endif
-#ifdef HARDWARE_INFO
+#ifdef AGOLD_HARDWARE_INFO
 static int ft_get_fw_ver(void)
 {
 	u8 ver = 0;
@@ -1554,11 +1566,11 @@ static int ft_get_fw_ver(void)
 			break;
 		i++;
 	}
-
+		
 	return ver;
-}
+}	
 #endif
- static struct tpd_driver_t tpd_device_driver =
+ static struct tpd_driver_t tpd_device_driver = 
 {
 	.tpd_device_name = TPD_NAME,
 	.tpd_local_init = tpd_local_init,
@@ -1569,28 +1581,28 @@ static int ft_get_fw_ver(void)
 #else
 	.tpd_have_button = 0,
 #endif
-#ifdef HARDWARE_INFO
+#ifdef AGOLD_HARDWARE_INFO
 	.get_tp_fw_ver = ft_get_fw_ver,
 #endif
-#if defined(CTP_FOR_HAND)
+#if defined(AGOLD_CTP_FOR_HAND)
 	.tpd_handler = tpd_handler2,
 #endif
 };
  /* called when loaded into kernel */
-static int __init tpd_driver_init(void)
+static int __init tpd_driver_init(void) 
 {
 	tpd_get_dts_info();
 	if(tpd_driver_add(&tpd_device_driver) < 0)
 		TPD_DMESG("add FTS driver failed\n");
 	 return 0;
 }
-
+ 
  /* should never be called */
-static void __exit tpd_driver_exit(void)
+static void __exit tpd_driver_exit(void) 
 {
 	tpd_driver_remove(&tpd_device_driver);
 }
-
+ 
 module_init(tpd_driver_init);
 module_exit(tpd_driver_exit);
 

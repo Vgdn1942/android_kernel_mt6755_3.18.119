@@ -2374,27 +2374,29 @@ signed int battery_meter_get_battery_percentage(void)
 {
 #if defined(CONFIG_OZ8806_SUPPORT)
 	kal_int32 val;
-//	static kal_int32 rtc_soc = -1;
+/*	static kal_int32 rtc_soc = -1; */
 	battery_meter_ctrl(BATTERY_METER_CMD_GET_SOC, &val);
 	return val;
 #endif
 #if defined(CONFIG_POWER_EXT)
 	return 50;
-
 #else
 #if defined(SOC_BY_HW_FG)
 	return gFG_capacity_by_c;	/* hw fg, //return gfg_percent_check_point; // voltage mode */
 #else
 	return gFG_capacity_by_c;
 #endif
-
 #endif
 }
 
 
 signed int battery_meter_initial(void)
 {
-#if defined(CONFIG_POWER_EXT)
+#if defined(CONFIG_OZ8806_SUPPORT)
+	bm_print(BM_LOG_CRTI, "[battery_meter_initial] update oz8806\n");
+	battery_meter_ctrl(BATTERY_METER_CMD_HW_FG_INIT, NULL);
+	return 0;
+#elif defined(CONFIG_POWER_EXT)
 	return 0;
 #else
 	static kal_bool meter_initilized = KAL_FALSE;
@@ -5536,11 +5538,13 @@ void bmd_ctrl_cmd_from_user(void *nl_data, struct fgd_nl_msg_t *ret_msg)
 
 	case FG_DAEMON_CMD_SET_RTC:
 		{
+			#ifndef CONFIG_OZ8806_SUPPORT    //agold qnmd add
 			signed int rtcvalue;
 
 			memcpy(&rtcvalue, &msg->fgd_data[0], sizeof(rtcvalue));
 			set_rtc_spare_fg_value(rtcvalue);
 			bm_notice("[fg_res] set rtc = %d\n", rtcvalue);
+			#endif
 		}
 		break;
 

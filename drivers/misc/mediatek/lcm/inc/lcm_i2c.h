@@ -17,6 +17,13 @@
 #include "lcm_drv.h"
 #include "lcm_common.h"
 
+//[agold][xfl][20160311][start]
+#define  VOP_ADDRESS   0x00  //Positive Terminal Output
+#define  VON_ADDRESS   0x01  //Negative Terminal Output
+#define  DISPN_ADDRESS 0x03  
+#define  VOL_H	6000
+#define  VOL_L	4000
+//[agold][xfl][20160311][end]
 
 #if defined(MTK_LCM_DEVICE_TREE_SUPPORT)
 LCM_STATUS lcm_i2c_set_data(char type, const LCM_DATA_T2 *t2);

@@ -25,7 +25,7 @@
 #include <linux/of.h>
 #include <linux/of_irq.h>
 #include <linux/platform_device.h>
-
+#include <linux/proc_fs.h>
 #include <linux/gpio.h>
 
 #include "fusb302.h"
@@ -104,6 +104,11 @@ static CCTermType CC1TermDeb;	/* Debounced CC1 termination value */
 static CCTermType CC2TermDeb;	/* Debounced CC2 termination value */
 static USBTypeCCurrent SinkCurrent;	/* Variable to indicate the current capability we have received */
 static USBTypeCCurrent SourceCurrent;	/* Variable to indicate the current capability we are broadcasting */
+
+//[xfl][agold][20160301][start]
+static int smt_blnCCPinIsCC1;
+static int smt_blnCCPinIsCC2;
+//[xfl][agold][20160301][end]
 
 /*******************************************************************************
  * Function:        InitializeFUSB300Variables
@@ -222,7 +227,7 @@ void StateMachineFUSB300(struct usbtypc *typec)
 	if (!blnSMEnabled)
 		return;
 
-	fusb_printk(K_DEBUG, "StateMachineFUSB300+ ConnState=%s\n",
+	fusb_printk(K_INFO, "StateMachineFUSB300+ ConnState=%s\n",
 		    string_conection_state[ConnState]);
 
 
@@ -711,6 +716,11 @@ void StateMachineAttachedSource(void)
 			}
 		}
 	}
+
+	//[agold][xfl][20160301][start]
+	smt_blnCCPinIsCC1 = blnCCPinIsCC1;
+	smt_blnCCPinIsCC2 = blnCCPinIsCC2;
+	//[agold][xfl][20160301][end]
 }
 
 void StateMachineTryWaitSnk(void)
@@ -2000,7 +2010,7 @@ static irqreturn_t fusb300_eint_isr(int irqnum, void *data)
 int usb3_switch_init(struct usbtypc *typec)
 {
 	int retval = 0;
-
+	#if 0
 	typec->u3_sw = kzalloc(sizeof(struct usb3_switch), GFP_KERNEL);
 
 	typec->u3_sw->en_gpio = 251;
@@ -2020,13 +2030,14 @@ int usb3_switch_init(struct usbtypc *typec)
 	/*fusb_printk(K_DEBUG, "sel_gpio=0x%X, out=%d\n", typec->u3_sw->sel_gpio,
 		    gpio_get_value(typec->u3_sw->sel_gpio));*/
 
-
+	#endif
 	return retval;
 }
 
 int usb_redriver_init(struct usbtypc *typec)
 {
 	int retval = 0;
+	#if 0
 	int u3_eq_c1 = 197;
 	int u3_eq_c2 = 196;
 
@@ -2045,7 +2056,7 @@ int usb_redriver_init(struct usbtypc *typec)
 
 	/*fusb_printk(K_DEBUG, "c2_gpio=0x%X, out=%d\n", typec->u_rd->c2_gpio,
 		    gpio_get_value(typec->u_rd->c2_gpio));*/
-
+	#endif
 	return retval;
 }
 
@@ -2151,7 +2162,7 @@ int fusb300_eint_init(struct usbtypc *typec)
 	struct device_node *node;
 	unsigned int debounce, gpiopin;
 
-	node = of_find_compatible_node(NULL, NULL, "mediatek,fusb300-eint");
+	node = of_find_compatible_node(NULL, NULL, "mediatek, USB_TYPEC-eint");
 	if (node) {
 		of_property_read_u32_array(node, "debounce", ints, ARRAY_SIZE(ints));
 		debounce = ints[1];
@@ -2166,11 +2177,12 @@ int fusb300_eint_init(struct usbtypc *typec)
 	fusb_printk(K_INFO, "request_irq irqnum=0x%x\n", typec->irqnum);
 
 	retval =
-	    request_irq(typec->irqnum, fusb300_eint_isr, IRQF_TRIGGER_NONE, "fusb300_eint", typec);
+	    request_irq(typec->irqnum, fusb300_eint_isr, IRQF_TRIGGER_LOW, "TYPEC-eint", typec);
 	if (retval != 0) {
 		fusb_printk(K_ERR, "request_irq fail, ret %d, irqnum %d!!!\n", retval,
 			    typec->irqnum);
 	}
+	enable_irq(typec->irqnum);
 	return retval;
 }
 
@@ -2624,6 +2636,99 @@ static struct platform_driver usbc_pinctrl_driver = {
 	},
 };
 
+static int fusb300_i2c_suspend(struct i2c_client *client, pm_message_t msg)
+{
+/*
+	int irqnum = 0;
+	struct device_node *node;
+	u32 ints[2] = { 0, 0 };
+	unsigned int debounce, gpiopin;
+
+	fusb_printk(K_INFO, "fusb300_i2c_suspend enter\n");
+	node = of_find_compatible_node(NULL, NULL, "mediatek, USB_TYPEC-eint");
+	if (node) {
+		of_property_read_u32_array(node, "debounce", ints, ARRAY_SIZE(ints));
+		debounce = ints[1];
+		gpiopin = ints[0];
+
+		gpio_set_debounce(gpiopin, debounce);
+	}
+
+	irqnum = irq_of_parse_and_map(node, 0);
+	DisableFUSB300StateMachine();
+	disable_irq_nosync(irqnum);
+*/    
+	return 0;
+}
+
+static int fusb300_i2c_resume(struct i2c_client *client)
+{
+/*
+	int irqnum = 0;
+	struct device_node *node;
+	u32 ints[2] = { 0, 0 };
+	unsigned int debounce, gpiopin;
+
+	fusb_printk(K_INFO, "fusb300_i2c_resume enter\n");
+	node = of_find_compatible_node(NULL, NULL, "mediatek, USB_TYPEC-eint");
+	if (node) {
+		of_property_read_u32_array(node, "debounce", ints, ARRAY_SIZE(ints));
+		debounce = ints[1];
+		gpiopin = ints[0];
+
+		gpio_set_debounce(gpiopin, debounce);
+	}
+
+	irqnum = irq_of_parse_and_map(node, 0);
+	EnableFUSB300StateMachine();
+	enable_irq(irqnum);
+*/
+	return 0;
+}
+
+//[agold][xfl][20160229][start]
+ssize_t typec_smt_read(struct file *file, char __user *buffer, size_t count, loff_t *ppos)
+{
+	int val = 0;
+    int len = 0;
+	int err = -1;
+	char *page = NULL;
+    char *ptr = NULL;
+
+	page = kmalloc(PAGE_SIZE, GFP_KERNEL);	
+	if (!page) 
+	{		
+		kfree(page);		
+		return -ENOMEM;	
+	}
+
+    ptr = page;
+
+	val = fusb300_i2c_r_reg(typec_client, 1);
+	len = sprintf(ptr, "%02x%x%x", val, smt_blnCCPinIsCC1, smt_blnCCPinIsCC2);	
+
+	 	
+	if(*ppos >= len)
+	{		
+		kfree(page); 		
+		return 0; 	
+	}	
+	err = copy_to_user(buffer,(char *)page,len); 			
+	*ppos += len; 	
+	if(err) 
+	{		
+	    kfree(page); 		
+		return err; 	
+	}	
+	kfree(page); 	
+	return len;	
+}
+
+static const struct file_operations typec_smt_proc_fops = {
+	.read = typec_smt_read,
+};
+//[agold][xfl][20160229][end]
+
 static int fusb300_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 	struct usbtypc *typec;
@@ -2675,6 +2780,10 @@ static int fusb300_i2c_probe(struct i2c_client *client, const struct i2c_device_
 	fusb300_eint_init(typec);
 	fusb_printk(K_INFO, "%s %x\n", __func__, fusb300_i2c_r_reg(client, 0x1));
 
+	//[agold][xfl][20160229][start]
+	proc_create("agold_typec_smt", 0644, NULL,&typec_smt_proc_fops);
+	//[agold][xfl][20160229][end]
+
 	/*precheck status */
 	/* StateMachineFUSB300(typec); */
 
@@ -2697,6 +2806,8 @@ static const struct of_device_id fusb302_of_match[] = {
 
 struct i2c_driver usb_i2c_driver = {
 	.probe = fusb300_i2c_probe,
+	.suspend = fusb300_i2c_suspend,
+	.resume = fusb300_i2c_resume,
 	.driver = {
 		.owner = THIS_MODULE,
 		.name = FUSB302_NAME,

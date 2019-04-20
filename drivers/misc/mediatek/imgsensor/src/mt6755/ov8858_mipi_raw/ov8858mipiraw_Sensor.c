@@ -1,16 +1,3 @@
-/*
- * Copyright (C) 2015 MediaTek Inc.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- */
-
 /*****************************************************************************
  *
  * Filename:
@@ -25,13 +12,13 @@
  * ------------
  *	 Source code of Sensor driver
  *	PengtaoFan
- *  0528:ä¿®æ¹get_info,??mipi ??? *  0604:å¢?init preview å»¶æ¶??0ms
- *  0604:??­init settingä¸?stream on,?otp??è®?
- *  0608:??°ov???setting
- *  0703:for  ä¿®æ¹?non continue mode 4800
+ *  0528:修改get_info,??mipi ??? *  0604:�?init preview 延时??0ms
+ *  0604:??�init setting�?stream on,?otp??�?
+ *  0608:??�ov???setting
+ *  0703:for  修改?non continue mode 4800
  *  0703:for  crc test 0x5002=00
- *  ---RD ??????? *  0714 ??¥capture setting full size@30fps 24fps 15fps
- *  15072115172729: ??¥nick??full size 30fps settingï¼for ???size ä¸???®é??
+ *  ---RD ??????? *  0714 ??�capture setting full size@30fps 24fps 15fps
+ *  15072115172729: ??�nick??full size 30fps setting，for ???size �???��??
  *------------------------------------------------------------------------------
  * Upper this line, this part is controlled by CC/CQ. DO NOT MODIFY!!
  *============================================================================
@@ -63,6 +50,11 @@
 #define LOG_INF(format, args...)    pr_debug(PFX "[%s] " format, __FUNCTION__, ##args)
 /****************************   Modify end    *******************************************/
 
+
+
+
+//#define OV8858_MIRROR_HV
+
 typedef enum {
 	OV8858R2A,
 	OV8858R1A
@@ -74,10 +66,13 @@ enum boot_mode_t bm;
 static DEFINE_SPINLOCK(imgsensor_drv_lock);
 
 
+extern void OV8858CheckLensVersion(int writeid);
+extern void otp_cali(void);
+
 static imgsensor_info_struct imgsensor_info = {
 	.sensor_id = OV8858_SENSOR_ID,		//record sensor id defined in Kd_imgsensor.h
 
-	.checksum_value = 0xc2ded17b,		//checksum value for Camera Auto Test
+	.checksum_value = 0xe721bcd1,		//checksum value for Camera Auto Test
 
 	.pre = {
 		.pclk = 144000000,				//record different mode's pclk
@@ -183,7 +178,7 @@ static imgsensor_info_struct imgsensor_info = {
 	.isp_driving_current = ISP_DRIVING_4MA, //mclk driving current
 	.sensor_interface_type = SENSOR_INTERFACE_TYPE_MIPI,//sensor_interface_type
     .mipi_sensor_type = MIPI_OPHY_NCSI2, //0,MIPI_OPHY_NCSI2;  1,MIPI_OPHY_CSI2
-	.mipi_settle_delay_mode = MIPI_SETTLEDELAY_MANUAL,
+    .mipi_settle_delay_mode = MIPI_SETTLEDELAY_AUTO,//0,MIPI_SETTLEDELAY_AUTO; 1,MIPI_SETTLEDELAY_MANNUAL
 	.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW8_B,//sensor output first pixel color
 	.mclk = 24,//mclk value, suggest 24 or 26 for 24Mhz or 26Mhz
 	.mipi_lane_num = SENSOR_MIPI_2_LANE,//mipi lane num
@@ -481,10 +476,18 @@ static void ihdr_write_shutter_gain(kal_uint16 le, kal_uint16 se, kal_uint16 gai
 }
 
 
-#if 0
+
 static void set_mirror_flip(kal_uint8 image_mirror)
 {
+	
 	LOG_INF("image_mirror = %d\n", image_mirror);
+	#if defined(AGOLD_IMGSENSOR_OV8858_H_MIRROR)
+	image_mirror ^= 0x01;
+	#elif defined(AGOLD_IMGSENSOR_OV8858_V_MIRROR)
+	image_mirror ^= 0x02;
+	#elif defined(AGOLD_IMGSENSOR_OV8858_HV_MIRROR)
+	image_mirror ^= 0x03;
+	#endif
 
 	/********************************************************
 	   *
@@ -520,7 +523,7 @@ static void set_mirror_flip(kal_uint8 image_mirror)
 	}
 
 }
-#endif
+
 /*************************************************************************
 * FUNCTION
 *	night_mode
@@ -1495,16 +1498,20 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 		spin_unlock(&imgsensor_drv_lock);
 		do {
 			*sensor_id = ((read_cmos_sensor(0x300B) << 8) | read_cmos_sensor(0x300C));
-			if (*sensor_id == imgsensor_info.sensor_id) {
-				if((read_cmos_sensor(0x302A)) == 0XB2){
- 				ov8858version = OV8858R2A;
-				SENSORDB("i2c write id: 0x%x, sensor id: 0x%x, ov8858version = %d(0=r2a,1=r1a)\n", imgsensor.i2c_write_id,*sensor_id,ov8858version);
-				bm = get_boot_mode();
-				LOG_INF("bm %d\n",bm);
-				if ( bm == FACTORY_BOOT || bm == ATE_FACTORY_BOOT ){
-					imgsensor_info.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_B;
-					imgsensor_dpcm_info_ov8858[1] = COMP8_DI_2A;
-				}
+			if (*sensor_id == imgsensor_info.sensor_id) 
+			{
+				if((read_cmos_sensor(0x302A)) == 0XB2)
+				{
+     				ov8858version = OV8858R2A;
+				    SENSORDB("[zbl][8858]i2c write id: 0x%x, sensor id: 0x%x, ov8858version = %d(0=r2a,1=r1a)\n", imgsensor.i2c_write_id,*sensor_id,ov8858version);
+				    OV8858CheckLensVersion(imgsensor.i2c_write_id);
+				    bm = get_boot_mode();
+				    LOG_INF("bm %d\n",bm);
+				    if ( bm == FACTORY_BOOT || bm == ATE_FACTORY_BOOT )
+				    {
+					    imgsensor_info.sensor_output_dataformat = SENSOR_OUTPUT_FORMAT_RAW_B;
+					    imgsensor_dpcm_info_ov8858[1] = COMP8_DI_2A;
+				    }
 				return ERROR_NONE;
 				}
 				else if((read_cmos_sensor(0x302A)) == 0XB1){
@@ -1530,6 +1537,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 	return ERROR_NONE;
 }
 
+/*****************
 #ifdef OV8858R2AOTP
 
 struct otp_struct {
@@ -1714,6 +1722,10 @@ int apply_otp(struct otp_struct *otp_ptr)
 }
 
 #endif
+*****************************************************/
+
+
+
 /*************************************************************************
 * FUNCTION
 *	open
@@ -1763,6 +1775,8 @@ static kal_uint32 open(void)
 
 	/* initail sequence write in  */
 	sensor_init();
+	otp_cali();
+/*	
 	#ifdef OV8858R2AOTP
 	write_cmos_sensor(0x100 , 0x01);
 	mdelay(10);
@@ -1775,6 +1789,7 @@ static kal_uint32 open(void)
 	write_cmos_sensor(0x100 , 0x00);
 	mdelay(20);
 	#endif
+*/
 	spin_lock(&imgsensor_drv_lock);
 
 	imgsensor.autoflicker_en= KAL_FALSE;
@@ -1855,6 +1870,9 @@ static kal_uint32 preview(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	imgsensor.autoflicker_en = KAL_FALSE;
 	spin_unlock(&imgsensor_drv_lock);
 	preview_setting();
+
+	set_mirror_flip(imgsensor.mirror);
+
 	mdelay(10);
 	return ERROR_NONE;
 }	/*	preview   */
@@ -1904,6 +1922,7 @@ static kal_uint32 capture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	spin_unlock(&imgsensor_drv_lock);
 
 	capture_setting(imgsensor.current_fps);
+    set_mirror_flip(imgsensor.mirror);
 	mdelay(10);
 
 	return ERROR_NONE;
@@ -1924,6 +1943,7 @@ static kal_uint32 normal_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	imgsensor.autoflicker_en = KAL_FALSE;
 	spin_unlock(&imgsensor_drv_lock);
 	normal_video_setting(30);
+	set_mirror_flip(imgsensor.mirror);
 	mdelay(10);
 
 
@@ -1948,6 +1968,7 @@ static kal_uint32 hs_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	imgsensor.autoflicker_en = KAL_FALSE;
 	spin_unlock(&imgsensor_drv_lock);
 	hs_video_setting();
+	set_mirror_flip(imgsensor.mirror);
 	mdelay(10);
 
 	return ERROR_NONE;
@@ -1971,6 +1992,7 @@ static kal_uint32 slim_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
 	imgsensor.autoflicker_en = KAL_FALSE;
 	spin_unlock(&imgsensor_drv_lock);
 	slim_video_setting();
+	set_mirror_flip(imgsensor.mirror);
 	mdelay(10);
 
 	return ERROR_NONE;
@@ -2240,7 +2262,7 @@ static kal_uint32 set_max_framerate_by_scenario(MSDK_SCENARIO_ID_ENUM scenario_i
 
 static kal_uint32 get_default_framerate_by_scenario(MSDK_SCENARIO_ID_ENUM scenario_id, MUINT32 *framerate)
 {
-	//LOG_INF("scenario_id = %d\n", scenario_id);
+	LOG_INF("scenario_id = %d\n", scenario_id);
 
 	switch (scenario_id) {
 		case MSDK_SCENARIO_ID_CAMERA_PREVIEW:
@@ -2346,6 +2368,7 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
             break;
         case SENSOR_FEATURE_CHECK_SENSOR_ID:
             get_imgsensor_id(feature_return_para_32);
+            
             break;
         case SENSOR_FEATURE_SET_AUTO_FLICKER_MODE:
             set_auto_flicker_mode((BOOL)*feature_data_16,*(feature_data_16+1));

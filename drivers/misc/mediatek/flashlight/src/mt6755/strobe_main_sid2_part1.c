@@ -76,6 +76,11 @@
 #define PK_ERR(a, ...)
 #endif
 
+extern int init_lm3643(void);
+extern int flashEnable_lm3643_2(void);
+extern int setDuty_lm3643_2(int duty);
+extern int init_lm3643(void);
+extern int flashDisable_lm3643_2(void);
 /******************************************************************************
  * local variables
 ******************************************************************************/
@@ -99,20 +104,21 @@ static int FL_Enable(void)
 {
 /* flashEnable_sky81296_1(); */
 	PK_DBG("FL_Enable-");
-
+	flashEnable_lm3643_2();
 	return 0;
 }
 
 static int FL_Disable(void)
 {
 	/* flashDisable_sky81296_1(); */
-
+	flashDisable_lm3643_2();
 	return 0;
 }
 
 static int FL_dim_duty(kal_uint32 duty)
 {
 	/* setDuty_sky81296_1(duty); */
+	setDuty_lm3643_2(duty);
 	return 0;
 }
 
@@ -129,7 +135,7 @@ static int FL_Init(void)
 	INIT_WORK(&workTimeOut, work_timeOutFunc);
 	/* register_low_battery_callback(&lowPowerCB, LOW_BATTERY_PRIO_FLASHLIGHT); */
 	/* register_low_battery_notify(&lowPowerCB, LOW_BATTERY_PRIO_FLASHLIGHT); */
-
+	init_lm3643();
 
 
 	return 0;

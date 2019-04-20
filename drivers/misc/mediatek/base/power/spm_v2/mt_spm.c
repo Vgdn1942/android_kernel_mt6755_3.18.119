@@ -922,7 +922,7 @@ static char *local_buf;
 static dma_addr_t local_buf_dma;
 static const struct firmware *spm_fw[DYNA_LOAD_PCM_MAX];
 
-int spm_fw_count = -1;
+int spm_fw_count;
 
 /*Reserved memory by device tree!*/
 int reserve_memory_spm_fn(struct reserved_mem *rmem)
@@ -1310,7 +1310,6 @@ static int spm_pm_event(struct notifier_block *notifier, unsigned long pm_event,
 			iounmap(local_buf);
 			local_buf = NULL;
 		}
-		spm_fw_count = -1;
 		spm_load_pcm_firmware_nodev();
 
 		return NOTIFY_DONE;

@@ -2038,14 +2038,12 @@ const struct hc_driver musb_hc_driver = {
 };
 
 #ifdef CONFIG_USB_C_SWITCH
-#ifndef CONFIG_TCPC_CLASS
 static struct typec_switch_data switch_driver = {
 	.name = (char *)musb_driver_name,
 	.type = DEVICE_TYPE,
 	.enable		= typec_switch_usb_connect,
 	.disable	= typec_switch_usb_disconnect,
 };
-#endif /* CONFIG_TCPC_CLASS */
 #endif
 /* --------------------------------------------------------------------------
  * Init support

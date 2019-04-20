@@ -51,7 +51,7 @@ obj-$(CONFIG_CUSTOM_KERNEL_CHARGEPUMP) += chargepump/
 obj-$(CONFIG_MTK_VIBRATOR)	+= vibrator/
 obj-$(CONFIG_MTK_ACCDET)	+= accdet/
 obj-$(CONFIG_MTK_ECCCI_C2K) += c2k_usb/
-obj-y += irtx/
+obj-$(CONFIG_MTK_IRTX_SUPPORT) += irtx/
 obj-$(CONFIG_MTK_IR_LEARNING_SUPPORT) += ir_learning/
 obj-$(CONFIG_MTK_VIDEOCODEC_DRIVER) += videocodec/
 obj-$(CONFIG_MTK_JPEG)	+= jpeg/
@@ -97,7 +97,7 @@ obj-$(CONFIG_MTK_LENS)   += lens/
 obj-$(CONFIG_MTK_FLASHLIGHT)	+= flashlight/src/
 obj-$(CONFIG_RT_FLASHLIGHT)	+= flashlight/richtek/
 ifneq ($(wildcard $(srctree)/drivers/misc/mediatek/met_drv/),)
-obj-y += met_drv/
+obj-$(CONFIG_MTK_MET) += met_drv/
 endif
 obj-$(CONFIG_MTK_CCCI_DEVICES)	+=  ccci_util/
 obj-$(CONFIG_MTK_NET_CCMNI) +=  ccmni/
@@ -168,3 +168,24 @@ obj-$(CONFIG_MTK_TINYSYS_SCP_SUPPORT) += scp/
 obj-$(CONFIG_MTK_TINYSYS_SCP_SUPPORT) += audio_ipi/
 obj-$(CONFIG_USB)	+= usb_boost/
 obj-$(CONFIG_RT_REGMAP) += rt-regmap/
+
+obj-$(CONFIG_CUSTOM_KERNEL_IRAF) += iraf/
+obj-$(CONFIG_CUSTOM_KERNEL_SNLED) += snled/
+obj-$(CONFIG_CUSTOM_KERNEL_HALL)	+= hall/
+
+ifeq ($(strip $(AGOLD_HW_COMPATIBLE)),yes)
+obj-y += agold_hw_compatible/
+endif
+
+ifeq ($(strip $(AGOLD_CAMERA_VERSION)),yes)
+obj-y	+=  agold_cam_version/
+endif
+
+ifeq ($(strip $(AGOLD_BOARD_VERSION)),yes)
+obj-y	+=  agold_board_version/
+endif
+
+ifeq ($(strip $(AGOLD_HARDWARE_INFO)),yes)
+obj-y	+=  agold_pm_info/
+endif
+

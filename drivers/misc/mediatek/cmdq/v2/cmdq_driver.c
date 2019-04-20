@@ -729,6 +729,13 @@ static long cmdq_ioctl(struct file *pFile, unsigned int code, unsigned long para
 				return -EFAULT;
 			}
 
+			if (!addrReq.count || addrReq.count > CMDQ_MAX_WRITE_ADDR_COUNT) {
+				CMDQ_ERR(
+					"CMDQ_IOCTL_ALLOC_WRITE_ADDRESS invalid alloc write addr count:%u\n",
+					addrReq.count);
+				return -EINVAL;
+			}
+
 			status = cmdqCoreAllocWriteAddress(addrReq.count, &paStart);
 			if (0 != status) {
 				CMDQ_ERR

@@ -33,11 +33,23 @@
 #include "kd_imgsensor_define.h"
 #include "kd_imgsensor_errcode.h"
 
+
+#if defined(AGOLD_CAMERA_VERSION)
+
+#include "agold_camera_info.h" 
+
+#endif
+
+
+extern int g_cur_cam_sensor;
+
+
 extern int iReadRegI2C(u8 *a_pSendData , u16 a_sizeSendData, u8 * a_pRecvData, u16 a_sizeRecvData, u16 i2cId);
 extern int iWriteRegI2C(u8 *a_pSendData , u16 a_sizeSendData, u16 i2cId);
 extern void kdSetI2CSpeed(u16 i2cSpeed);
 //extern int iBurstWriteReg_multi(u8 *pData, u32 bytes, u16 i2cId, u16 transfer_length);
 extern int iMultiReadReg(u16 a_u2Addr , u8 * a_puBuff , u16 i2cId, u8 number);
+
 
 #define USHORT             unsigned short
 #define BYTE               unsigned char
@@ -125,23 +137,31 @@ bool read_s5k3l8_eeprom_SPC( kal_uint16 addr, BYTE* data, kal_uint32 size){
 
 bool S5K3L8CheckLensVersion(void)
 {
-    kal_uint8 otp_flag = 0;
+    kal_uint8 otp_flag = 0;   
     kal_uint8 data[8] = { 0 };
-
-
-
+    
+  
+  
     printk("S5K3L8CheckLensVersion enter\n");
     read_s5k3l8_eeprom(0x0c00,&otp_flag,1);
     printk("[fj]read s5k3l8 otp flag = %d\n", otp_flag);
-
+    
     if(!otp_flag)
     {
         LOG_INF("[fj]read otp failed!\n");
         return false;
     }
-
+    
     read_s5k3l8_eeprom(0x0c01,data,8);
-
+    
+    agold_camera_info[g_cur_cam_sensor-1].mf_id = data[0];
+	agold_camera_info[g_cur_cam_sensor-1].lens_id = data[1];
+	agold_camera_info[g_cur_cam_sensor-1].sen_id = data[2];
+    agold_camera_info[g_cur_cam_sensor-1].date[0] = data[5];
+    agold_camera_info[g_cur_cam_sensor-1].date[1] = data[6];
+    agold_camera_info[g_cur_cam_sensor-1].date[2] = data[7];
+    
+        
     printk("[fj1]read s5k3l8 otp year = %d\n", data[5]);
     printk("[fj1]read s5k3l8 otp month = %d\n", data[6]);
     printk("[fj1]read s5k3l8 otp day = %d\n", data[7]);
@@ -151,7 +171,7 @@ bool S5K3L8CheckLensVersion(void)
     printk("[fj1]read s5k3l8 otp VCM_ID = %d\n", data[3]);
     printk("[fj1]read s5k3l8 otp VCM_Driver_ID = %d\n", data[4]);
 //    LOG_INF("[fj]read s5k3l8 otp corlo temperature = %d\n", data[8]);
-
+    
     return true;
 }
 

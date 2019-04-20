@@ -56,7 +56,11 @@ int idle_switch[NR_TYPES] = {
 #else
 	0,	/* soidle3 switch */
 #endif
+#ifdef AGOLD_CLOSE_SODI
+	0,	/* soidle switch */
+#else
 	1,	/* soidle switch */
+#endif
 #ifdef CONFIG_CPU_ISOLATION
 	1,	/* mcidle switch */
 #else

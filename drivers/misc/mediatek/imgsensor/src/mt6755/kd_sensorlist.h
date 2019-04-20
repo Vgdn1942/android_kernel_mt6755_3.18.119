@@ -149,7 +149,20 @@ UINT32 T8EV5_YUV_SensorInit(PSENSOR_FUNCTION_STRUCT *pfFunc);
 //!    will be possible to be main sensor.
 //!    This can avoid I2C error during searching sensor.
 //! 2. This file should be the same as mediatek\custom\common\hal\imgsensor\src\sensorlist.cpp
+#if defined(AGOLD_HW_COMPATIBLE)
 
+#ifdef AGOLD_CAMERA_AUTO_DETECT
+#define AGOLD_NUM_OF_SUPPORT_SENSOR 8
+#endif
+ACDK_KD_SENSOR_INIT_FUNCTION_STRUCT kdSensorList[AGOLD_NUM_OF_SUPPORT_SENSOR + 1] =
+{
+	{0,{0},NULL},
+	{0,{0},NULL},
+	{0,{0},NULL}
+};
+
+
+#else
 ACDK_KD_SENSOR_INIT_FUNCTION_STRUCT kdSensorList[MAX_NUM_OF_SUPPORT_SENSOR+1] =
 {
 /*IMX*/
@@ -257,7 +270,7 @@ ACDK_KD_SENSOR_INIT_FUNCTION_STRUCT kdSensorList[MAX_NUM_OF_SUPPORT_SENSOR+1] =
     {OV5650MIPI_SENSOR_ID, SENSOR_DRVNAME_OV5650MIPI_RAW,OV5650MIPISensorInit},
 #endif
 #if defined(OV5648_MIPI_RAW)
-    {OV5648MIPI_SENSOR_ID, SENSOR_DRVNAME_OV5648_MIPI_RAW, OV5648_MIPI_RAW_SensorInit},
+    {OV5648MIPI_SENSOR_ID, SENSOR_DRVNAME_OV5648_MIPI_RAW, OV5648MIPISensorInit},
 #endif
 #if defined(OV5647_MIPI_RAW)
     {OV5647MIPI_SENSOR_ID, SENSOR_DRVNAME_OV5647MIPI_RAW, OV5647MIPISensorInit},
@@ -516,5 +529,6 @@ ACDK_KD_SENSOR_INIT_FUNCTION_STRUCT kdSensorList[MAX_NUM_OF_SUPPORT_SENSOR+1] =
 /*  ADD sensor driver before this line */
     {0,{0},NULL}, //end of list
 };
+#endif
 //e_add new sensor driver here
 
