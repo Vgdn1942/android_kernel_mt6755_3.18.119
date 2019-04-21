@@ -3210,6 +3210,12 @@ firmware_class.path=/vendor/firmware loop.max_part=7";
 		compatible = "mediatek,ext_buck_vmd1";
 	};
 
+	cam_cal_drv{
+	    compatible = "mediatek,cam_cal_drv";
+	    main_bus = <2>;
+	    sub_bus = <1>;
+	};
+
 	firmware {
 		android {
 			compatible = "android,firmware";
