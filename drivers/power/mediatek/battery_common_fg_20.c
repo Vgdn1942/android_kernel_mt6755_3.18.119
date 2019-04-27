@@ -643,12 +643,16 @@ static int battery_get_property(struct power_supply *psy,
 		val->intval = data->BAT_CAPACITY;
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-		val->intval = data->BAT_batt_vol * 1000;
+#if !defined(CONFIG_OZ8806_SUPPORT)
+		val->intval = data->BAT_batt_vol;
 		break;
+#endif
 	case POWER_SUPPLY_PROP_TEMP:
+#if !defined(CONFIG_OZ8806_SUPPORT)
 		val->intval = data->BAT_batt_temp;
 		break;
-#if defined(CONFIG_OZ8806_SUPPORT) 
+#endif
+#if defined(CONFIG_OZ8806_SUPPORT)
 	case POWER_SUPPLY_PROP_CURRENT_NOW:
 		val->intval = data->BAT_batt_current * 1000;
 		break;
@@ -1648,8 +1652,8 @@ static void mt_battery_update_EM(struct battery_data *bat_data)
 	BMT_status.UI_SOC2 = BMT_status.SOC;                         
 #else
 	bat_data->BAT_CAPACITY = BMT_status.UI_SOC2;
-#endif
 	bat_data->BAT_CURRENT_NOW = BMT_status.CURRENT_NOW * 100; /* 0.1mA to uA */
+#endif
 #if defined(CONFIG_OZ8806_SUPPORT)
 	if ((BMT_status.SOC == 100) && (BMT_status.charger_exist == KAL_TRUE)
 	    && (BMT_status.bat_charging_state != CHR_ERROR))
