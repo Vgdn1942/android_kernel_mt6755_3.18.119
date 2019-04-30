@@ -17,12 +17,11 @@
 /* ============================================================*/
 /* define*/
 /* ============================================================*/
-#if !defined(CONFIG_OZ8806_SUPPORT)
 /*#define SOC_BY_AUXADC*/
 #define SOC_BY_HW_FG
 /*#define HW_FG_FORCE_USE_SW_OCV*/
 /*#define SOC_BY_SW_FG*/
-#endif
+
 /*#define CONFIG_DIS_CHECK_BATTERY*/
 /*#define FIXED_TBAT_25*/
 
@@ -41,36 +40,15 @@
 #define FG_METER_RESISTANCE	0
 
 /* Qmax for battery  */
-#ifdef AGOLD_BATTERY_CAPACITY25__INT
-	#define Q_MAX_POS_50	AGOLD_BATTERY_CAPACITY25__INT*2743/2709
-	#define Q_MAX_POS_25	AGOLD_BATTERY_CAPACITY25__INT
-	#define Q_MAX_POS_0		AGOLD_BATTERY_CAPACITY25__INT*1168/2709
-	#define Q_MAX_NEG_10	AGOLD_BATTERY_CAPACITY25__INT*762/2709
-#else
 #define Q_MAX_POS_50	2743
 #define Q_MAX_POS_25 2709
 #define Q_MAX_POS_0 1168
 #define Q_MAX_NEG_10 762
-#endif
 
-#ifdef AGOLD_BATTERY_CAPACITY50__INT
-#undef Q_MAX_POS_50
-#define Q_MAX_POS_50 AGOLD_BATTERY_CAPACITY50__INT
-#endif
-
-#ifdef AGOLD_BATTERY_CAPACITY0__INT
-#undef Q_MAX_POS_0
-#define Q_MAX_POS_0 AGOLD_BATTERY_CAPACITY0__INT
-#endif
-
-#ifdef AGOLD_BATTERY_CAPACITY10__INT
-#undef Q_MAX_NEG_10
-#define Q_MAX_NEG_10 AGOLD_BATTERY_CAPACITY10__INT
-#endif
-#define Q_MAX_POS_50_H_CURRENT	Q_MAX_POS_25*2688/2655
-#define Q_MAX_POS_25_H_CURRENT Q_MAX_POS_25
-#define Q_MAX_POS_0_H_CURRENT Q_MAX_POS_25*1145/2655
-#define Q_MAX_NEG_10_H_CURRENT Q_MAX_POS_25*747/2655
+#define Q_MAX_POS_50_H_CURRENT	2688
+#define Q_MAX_POS_25_H_CURRENT 2655
+#define Q_MAX_POS_0_H_CURRENT 1145
+#define Q_MAX_NEG_10_H_CURRENT 747
 
 
 /* Discharge Percentage */
@@ -92,14 +70,11 @@
 #define OCV_BOARD_COMPESATE	0 /*mV */
 #define R_FG_BOARD_BASE	1000
 #define R_FG_BOARD_SLOPE	1000 /*slope*/
-#define CAR_TUNE_VALUE	104 /*1.00 */
-
-//[agold][xfl][20160616][start]
-#ifdef AGOLD_CAR_TUNE_VALUE__INT
-#undef CAR_TUNE_VALUE
-#define CAR_TUNE_VALUE	AGOLD_CAR_TUNE_VALUE__INT
+#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
+	#define CAR_TUNE_VALUE	101 /*1.00 */
+#else
+	#define CAR_TUNE_VALUE	118 /*1.00 */
 #endif
-//[agold][xfl][20160616][stop]
 
 
 /* HW Fuel gague  */
@@ -109,27 +84,25 @@
 #define R_FG_VALUE	10 /* mOhm, base is 20*/
 
 /* fg 2.0 */
-#define DIFFERENCE_HWOCV_RTC	30
-#define DIFFERENCE_HWOCV_SWOCV	10
-#define DIFFERENCE_SWOCV_RTC	10
-#define DIFFERENCE_VBAT_RTC 30
-#define DIFFERENCE_SWOCV_RTC_POS 15
+#define DIFFERENCE_HWOCV_RTC		30
+#define DIFFERENCE_HWOCV_SWOCV		10
+#define DIFFERENCE_SWOCV_RTC		10
+#define DIFFERENCE_HWOCV_VBAT		30
+#define DIFFERENCE_VBAT_RTC			30
+#define DIFFERENCE_SWOCV_RTC_POS	15
 #define MAX_SWOCV	3
 
 #define DIFFERENCE_VOLTAGE_UPDATE	20
 #define AGING1_LOAD_SOC	70
 #define AGING1_UPDATE_SOC	30
 #define BATTERYPSEUDO100	95
-
-//[agold][xfl][20170227][start]
-#ifdef AGOLD_BATTERYPSEUDO1__INT
-#define BATTERYPSEUDO1 AGOLD_BATTERYPSEUDO1__INT
+#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
+#define BATTERYPSEUDO1 2
 #else
 #define BATTERYPSEUDO1 6
 #endif
-//[agold][xfl][20170227][stop]
 
-#define Q_MAX_BY_SYS			/*8. Qmax variant by system drop voltage.*/
+/* #define Q_MAX_BY_SYS */			/*8. Qmax variant by system drop voltage.*/
 #define Q_MAX_SYS_VOLTAGE		3350
 #define SHUTDOWN_GAUGE0
 #define SHUTDOWN_GAUGE1_XMINS
@@ -143,7 +116,6 @@
 /* SW Fuel Gauge */
 #define MAX_HWOCV	5
 #define MAX_VBAT	90
-#define DIFFERENCE_HWOCV_VBAT	30
 
 /* fg 1.0 */
 #define CUST_POWERON_DELTA_CAPACITY_TOLRANCE	40
@@ -177,11 +149,23 @@
 #define MD_SLEEP_CURRENT_CHECK
 
 /*7. Qmax variant by current loading.*/
-/*#define Q_MAX_BY_CURRENT*/
-#if !defined(CONFIG_OZ8806_SUPPORT)
+/* #define Q_MAX_BY_CURRENT */
+
 #define FG_BAT_INT
-#endif
 #define IS_BATTERY_REMOVE_BY_PMIC
+/* #define USE_EMBEDDED_BATTERY */
 
+/* Calculate do in Kernel */
+/* #define FORCE_D0_IN_KERNEL */
 
+/* Use UI_SOC3 to smooth UI_SOC2 */
+/* #define USING_SMOOTH_UI_SOC2 */
+
+/* SOC track to SWOCV */
+#define CUST_TRACKING_GAP		15	/* start tracking gap */
+#define CUST_TRACKINGOFFSET		0	/* Force offset to shift SOC to 0 */
+#define CUST_TRACKINGEN			0	/* 0:disable, 1:enable */
+
+/* Multi battery */
+/* #define MTK_MULTI_BAT_PROFILE_SUPPORT */
 #endif

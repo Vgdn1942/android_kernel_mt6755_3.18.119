@@ -33,10 +33,6 @@
 
 #define DBG_PMAPI_MASK (DBG_PMAPI_ALL)
 
-#if defined(CONFIG_OZ8806_SUPPORT)
-	typedef signed int kal_int32;
-#endif
-
 typedef enum MT65XX_POWER_VOL_TAG {
 	VOL_DEFAULT,
 	VOL_0200 = 200,
