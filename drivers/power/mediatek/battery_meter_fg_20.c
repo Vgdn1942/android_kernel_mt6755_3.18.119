@@ -86,22 +86,22 @@ int Enable_FGADC_LOG = BMLOG_INFO_LEVEL;
 /* ============================================================ // */
 /* global variable */
 /* ============================================================ // */
-BATTERY_METER_CONTROL battery_meter_ctrl = NULL;
+BATTERY_METER_CONTROL battery_meter_ctrl;
 
 kal_bool gFG_Is_Charging = KAL_FALSE;
 kal_bool gFG_Is_Charging_init = KAL_FALSE;
 
-signed int g_auxadc_solution = 0;
+signed int g_auxadc_solution;
 unsigned int g_spm_timer = 600;
-bool bat_spm_timeout = false;
+bool bat_spm_timeout;
 struct timespec g_sleep_total_time;
 
 #ifdef MTK_ENABLE_AGING_ALGORITHM
-unsigned int suspend_total_time = 0;
+unsigned int suspend_total_time;
 #endif
 
-unsigned int add_time = 0;
-signed int g_booting_vbat = 0;
+unsigned int add_time;
+signed int g_booting_vbat;
 /*static unsigned int temperature_change = 1;*/
 
 static struct sock *daemo_nl_sk;
@@ -128,10 +128,10 @@ int g_R_CHARGER_1 = R_CHARGER_1;
 int g_R_CHARGER_2 = R_CHARGER_2;
 
 int gFG_result = 1;
-int gFG_plugout_status = 0;
-int gFG_result_soc = 0;
-int fix_coverity1 = 0;
-int fix_coverity2 = 0;
+int gFG_plugout_status;
+int gFG_result_soc;
+int fix_coverity1;
+int fix_coverity2;
 /* HW FG */
 #ifndef DIFFERENCE_HWOCV_RTC
 #define DIFFERENCE_HWOCV_RTC		30	/* 30% difference */
@@ -188,114 +188,114 @@ int fix_coverity2 = 0;
 
 /* smooth time tracking */
 signed int gFG_coulomb_act_time = -1;
-signed int gFG_coulomb_act_pre = 0;
-signed int gFG_coulomb_act_diff = 0;
-signed int gFG_coulomb_act_diff_time = 0;
-signed int gFG_coulomb_is_charging = 0;
+signed int gFG_coulomb_act_pre;
+signed int gFG_coulomb_act_diff;
+signed int gFG_coulomb_act_diff_time;
+signed int gFG_coulomb_is_charging;
 
 
-signed int gFG_DOD0_init = 0;
-signed int gFG_DOD0 = 0;
-signed int gFG_DOD1 = 0;
-signed int gFG_DOD_B = 0;
-signed int gFG_coulomb = 0;
-signed int gFG_coulomb_act = 0;
-signed int gFG_voltage = 0;
-signed int gFG_current = 0;
-signed int gFG_current_init = 0;
-signed int gFG_capacity = 0;
+signed int gFG_DOD0_init;
+signed int gFG_DOD0;
+signed int gFG_DOD1;
+signed int gFG_DOD_B;
+signed int gFG_coulomb;
+signed int gFG_coulomb_act;
+signed int gFG_voltage;
+signed int gFG_current;
+signed int gFG_current_init;
+signed int gFG_capacity;
 signed int gFG_capacity_by_c = -1;
-signed int gFG_capacity_by_c_init = 0;
-signed int gFG_capacity_by_v = 0;
-signed int gFG_capacity_by_v_init = 0;
+signed int gFG_capacity_by_c_init;
+signed int gFG_capacity_by_v;
+signed int gFG_capacity_by_v_init;
 signed int gFG_temp = 100;
 signed int gFG_temp_avg = 100;
 signed int gFG_temp_avg_init = 100;
-signed int gFG_resistance_bat = 0;
-signed int gFG_compensate_value = 0;
-signed int gFG_ori_voltage = 0;
-signed int gFG_BATT_CAPACITY = 0;
-signed int gFG_voltage_init = 0;
-signed int gFG_current_auto_detect_R_fg_total = 0;
-signed int gFG_current_auto_detect_R_fg_count = 0;
-signed int gFG_current_auto_detect_R_fg_result = 0;
+signed int gFG_resistance_bat;
+signed int gFG_compensate_value;
+signed int gFG_ori_voltage;
+signed int gFG_BATT_CAPACITY;
+signed int gFG_voltage_init;
+signed int gFG_current_auto_detect_R_fg_total;
+signed int gFG_current_auto_detect_R_fg_count;
+signed int gFG_current_auto_detect_R_fg_result;
 signed int gFG_15_vlot = 3700;
 signed int gFG_BATT_CAPACITY_high_current = 1200;
 signed int gFG_BATT_CAPACITY_aging = 1200;
-signed int gFG_vbat = 0;
-signed int gFG_swocv = 0;
-signed int gFG_hwocv = 0;
-signed int gFG_vbat_soc = 0;
-signed int gFG_hw_soc = 0;
-signed int gFG_sw_soc = 0;
+signed int gFG_vbat;
+signed int gFG_swocv;
+signed int gFG_hwocv;
+signed int gFG_vbat_soc;
+signed int gFG_hw_soc;
+signed int gFG_sw_soc;
 #ifdef USING_SMOOTH_UI_SOC2
 signed int temp_UI_SOC2 = -1;
-signed int pre_UI_SOC2 = 0;
-signed int UI_SOC3 = 0;
-signed int pre_cc_act = 0;
+signed int pre_UI_SOC2;
+signed int UI_SOC3;
+signed int pre_cc_act;
 #endif
 
 /* voltage mode */
 signed int gfg_percent_check_point = 50;
-signed int volt_mode_update_timer = 0;
+signed int volt_mode_update_timer;
 signed int volt_mode_update_time_out = 6;	/* 1mins */
 
 /* EM */
-signed int g_fg_dbg_bat_volt = 0;
-signed int g_fg_dbg_bat_current = 0;
-signed int g_fg_dbg_bat_zcv = 0;
-signed int g_fg_dbg_bat_temp = 0;
-signed int g_fg_dbg_bat_r = 0;
-signed int g_fg_dbg_bat_car = 0;
-signed int g_fg_dbg_bat_qmax = 0;
-signed int g_fg_dbg_d0 = 0;
-signed int g_fg_dbg_d1 = 0;
-signed int g_fg_dbg_percentage = 0;
-signed int g_fg_dbg_percentage_fg = 0;
-signed int g_fg_dbg_percentage_voltmode = 0;
+signed int g_fg_dbg_bat_volt;
+signed int g_fg_dbg_bat_current;
+signed int g_fg_dbg_bat_zcv;
+signed int g_fg_dbg_bat_temp;
+signed int g_fg_dbg_bat_r;
+signed int g_fg_dbg_bat_car;
+signed int g_fg_dbg_bat_qmax;
+signed int g_fg_dbg_d0;
+signed int g_fg_dbg_d1;
+signed int g_fg_dbg_percentage;
+signed int g_fg_dbg_percentage_fg;
+signed int g_fg_dbg_percentage_voltmode;
 
 signed int FGvbatVoltageBuffer[FG_VBAT_AVERAGE_SIZE];
-signed int FGbatteryIndex = 0;
-signed int FGbatteryVoltageSum = 0;
-signed int gFG_voltage_AVG = 0;
-signed int gFG_vbat_offset = 0;
-signed int vbat_offset_counter = 0;
+signed int FGbatteryIndex;
+signed int FGbatteryVoltageSum;
+signed int gFG_voltage_AVG;
+signed int gFG_vbat_offset;
+signed int vbat_offset_counter;
 #ifdef Q_MAX_BY_CURRENT
 signed int FGCurrentBuffer[FG_CURRENT_AVERAGE_SIZE];
-signed int FGCurrentIndex = 0;
-signed int FGCurrentSum = 0;
+signed int FGCurrentIndex;
+signed int FGCurrentSum;
 #endif
-signed int gFG_current_AVG = 0;
+signed int gFG_current_AVG;
 signed int g_tracking_point = CUST_TRACKING_POINT;
-signed int g_rtc_fg_soc = 0;
-signed int g_I_SENSE_offset = 0;
+signed int g_rtc_fg_soc;
+signed int g_I_SENSE_offset;
 
 /* SW FG */
-signed int oam_v_ocv_init = 0;
-signed int oam_v_ocv_1 = 0;
-signed int oam_v_ocv_2 = 0;
-signed int oam_r_1 = 0;
-signed int oam_r_2 = 0;
-signed int oam_d0 = 0;
-signed int oam_i_ori = 0;
-signed int oam_i_1 = 0;
-signed int oam_i_2 = 0;
-signed int oam_car_1 = 0;
-signed int oam_car_2 = 0;
+signed int oam_v_ocv_init;
+signed int oam_v_ocv_1;
+signed int oam_v_ocv_2;
+signed int oam_r_1;
+signed int oam_r_2;
+signed int oam_d0;
+signed int oam_i_ori;
+signed int oam_i_1;
+signed int oam_i_2;
+signed int oam_car_1;
+signed int oam_car_2;
 signed int oam_d_1 = 1;
 signed int oam_d_2 = 1;
 signed int oam_d_3 = 1;
-signed int oam_d_3_pre = 0;
-signed int oam_d_4 = 0;
-signed int oam_d_4_pre = 0;
-signed int oam_d_5 = 0;
-signed int oam_init_i = 0;
-signed int oam_run_i = 0;
-signed int d5_count = 0;
+signed int oam_d_3_pre;
+signed int oam_d_4;
+signed int oam_d_4_pre;
+signed int oam_d_5;
+signed int oam_init_i;
+signed int oam_run_i;
+signed int d5_count;
 signed int d5_count_time = 60;
 signed int d5_count_time_rate = 1;
-signed int g_d_hw_ocv = 0;
-signed int g_vol_bat_hw_ocv = 0;
+signed int g_d_hw_ocv;
+signed int g_vol_bat_hw_ocv;
 
 /* SW FG 2.0 */
 signed int oam_v_ocv;
@@ -311,9 +311,9 @@ signed int hwocv_token;
 signed int is_hwocv_update;
 
 
-signed int g_hw_ocv_before_sleep = 0;
+signed int g_hw_ocv_before_sleep;
 struct timespec suspend_time, car_time;
-signed int g_sw_vbat_temp = 0;
+signed int g_sw_vbat_temp;
 struct timespec last_oam_run_time;
 /*static signed int coulomb_before_sleep = 0x123456;*/
 #if !defined(CONFIG_POWER_EXT)
@@ -451,21 +451,21 @@ static signed int shutdown_gauge1_xmins;
 
 static signed int shutdown_gauge1_mins = SHUTDOWN_GAUGE1_MINS;
 
-signed int gFG_battery_cycle = 0;
+signed int gFG_battery_cycle;
 signed int gFG_aging_factor_1 = 100;
 signed int gFG_aging_factor_2 = 100;
 signed int gFG_loading_factor1 = 100;
 signed int gFG_loading_factor2 = 100;
 /* battery info */
 
-signed int gFG_coulomb_cyc = 0;
-signed int gFG_coulomb_aging = 0;
+signed int gFG_coulomb_cyc;
+signed int gFG_coulomb_aging;
 signed int gFG_pre_coulomb_count = 0x12345678;
 #ifdef MTK_BATTERY_LIFETIME_DATA_SUPPORT
-signed int gFG_max_voltage = 0;
+signed int gFG_max_voltage;
 signed int gFG_min_voltage = 10000;
-signed int gFG_max_current = 0;
-signed int gFG_min_current = 0;
+signed int gFG_max_current;
+signed int gFG_min_current;
 signed int gFG_max_temperature = -20;
 signed int gFG_min_temperature = 100;
 
@@ -519,7 +519,7 @@ struct battery_meter_table_custom_data batt_meter_table_cust_data;
 kal_bool gFG_Is_offset_init = KAL_FALSE;
 
 #ifdef MTK_MULTI_BAT_PROFILE_SUPPORT
-unsigned int g_fg_battery_id = 0;
+unsigned int g_fg_battery_id;
 
 #ifdef MTK_GET_BATTERY_ID_BY_AUXADC
 void fgauge_get_profile_id(void)
@@ -5141,6 +5141,7 @@ void bmd_ctrl_cmd_from_user(void *nl_data, struct fgd_nl_msg_t *ret_msg)
 
 	case FG_DAEMON_CMD_GET_BATTERY_INIT_VOLTAGE:
 		{
+			gFG_voltage_init = battery_meter_get_battery_voltage(KAL_TRUE);
 			while (gFG_voltage_init == 0) {
 				msleep(100);
 				bm_err("FG_DAEMON_CMD_GET_BATTERY_INIT_VOLTAGE waiting ,%d %d\n",
@@ -5540,13 +5541,13 @@ void bmd_ctrl_cmd_from_user(void *nl_data, struct fgd_nl_msg_t *ret_msg)
 
 	case FG_DAEMON_CMD_SET_RTC:
 		{
-			#ifndef CONFIG_OZ8806_SUPPORT    //agold qnmd add
+#ifndef CONFIG_OZ8806_SUPPORT
 			signed int rtcvalue;
 
 			memcpy(&rtcvalue, &msg->fgd_data[0], sizeof(rtcvalue));
 			set_rtc_spare_fg_value(rtcvalue);
 			bm_notice("[fg_res] set rtc = %d\n", rtcvalue);
-			#endif
+#endif
 		}
 		break;
 

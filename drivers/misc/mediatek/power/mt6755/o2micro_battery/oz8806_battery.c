@@ -1273,7 +1273,7 @@ int oz8806_get_soc(void)
 }
 EXPORT_SYMBOL(oz8806_get_soc);
 
-int oz8806_get_battry_current(void)
+int oz8806_get_battery_current(void)
 {
 	int ret = -1;
 
@@ -1297,7 +1297,7 @@ int oz8806_get_battry_current(void)
 
 	return ret;
 }
-EXPORT_SYMBOL(oz8806_get_battry_current);
+EXPORT_SYMBOL(oz8806_get_battery_current);
 
 int oz8806_get_battery_voltage(void)
 {

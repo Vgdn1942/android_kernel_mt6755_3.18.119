@@ -331,10 +331,7 @@ static signed int fgauge_initialization(void *data)
 #endif                                      
 	return STATUS_OK;   
 #else
-#if defined(CONFIG_MTK_PMIC_CHIP_MT6353)
-#else
 	unsigned int ret = 0;
-#endif
 	signed int current_temp = 0;
 	int m = 0;
 
@@ -413,7 +410,7 @@ static signed int fgauge_read_current(void *data)
 	*(signed int *) (data) = 0;
 #elif defined(SOC_BY_3RD_FG)                                                   
 #ifdef CONFIG_OZ8806_SUPPORT                                                 
-	*(kal_int32*)(data) = oz8806_get_battry_current() * 10; //mA * 10        
+	*(kal_int32*) (data) = oz8806_get_battery_current() * 10; //mA * 10        
 #endif                                                                       
 	return STATUS_OK;                                                        
 #else
@@ -652,7 +649,7 @@ signed int fgauge_read_IM_current(void *data)
 static signed int fgauge_read_current_sign(void *data)
 {
 #ifdef CONFIG_OZ8806_SUPPORT
-	*(kal_bool*)(data) = 0; 
+	*(kal_bool*) (data) = 0; 
 #else
 	*(kal_bool *) (data) = g_fg_is_charging;
 #endif
@@ -1074,7 +1071,7 @@ static signed int fgauge_read_columb(void *data)
 {
 #if defined(SOC_BY_3RD_FG)
 #ifdef CONFIG_OZ8806_SUPPORT
-	*(kal_int32*)(data) = oz8806_get_remaincap();
+	*(kal_int32*) (data) = oz8806_get_remaincap();
 #endif
 	return STATUS_OK;
 #else
@@ -1087,9 +1084,9 @@ static signed int fgauge_read_columb_accurate(void *data)
 
 #if defined(SOC_BY_3RD_FG)
 #ifdef CONFIG_OZ8806_SUPPORT
-	*(kal_int32*)(data) = oz8806_get_remaincap();
+	*(kal_int32*) (data) = oz8806_get_remaincap();
 #else
-	*(kal_int32 *)(data) = bq27531_get_remaincap();
+	*(kal_int32 *) (data) = bq27531_get_remaincap();
 #endif
 	return STATUS_OK;
 

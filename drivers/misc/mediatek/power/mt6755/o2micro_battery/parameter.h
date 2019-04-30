@@ -294,7 +294,7 @@ extern int oz8806_get_loading_avg(void);
 extern void oz8806_battery_update_data(void);
 extern int oz8806_get_soc(void);
 extern int oz8806_get_remaincap(void);
-extern int oz8806_get_battry_current(void);
+extern int oz8806_get_battery_current(void);
 extern int oz8806_get_battery_voltage(void);
 extern int oz8806_get_battery_temp(void);
 
