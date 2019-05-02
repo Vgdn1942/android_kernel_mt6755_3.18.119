@@ -78,7 +78,8 @@ else
 															ifeq ($(CONFIG_RT5081A_PMU_CHARGER), y)
 																obj-$(CONFIG_MTK_SMART_BATTERY) += switch_charging.o
 															else
-																obj-$(CONFIG_MTK_SMART_BATTERY) += linear_charging.o
+																#obj-$(CONFIG_MTK_SMART_BATTERY) += linear_charging.o
+																obj-$(CONFIG_MTK_SMART_BATTERY) += switch_charging.o
 															endif
 														endif
 													endif
