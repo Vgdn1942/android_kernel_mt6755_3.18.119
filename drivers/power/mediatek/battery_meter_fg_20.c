@@ -317,7 +317,9 @@ signed int g_sw_vbat_temp;
 struct timespec last_oam_run_time;
 /*static signed int coulomb_before_sleep = 0x123456;*/
 #if !defined(CONFIG_POWER_EXT)
+#if !defined(CONFIG_OZ8806_SUPPORT)
 static signed int last_time = 1;
+#endif
 #endif
 /* aging mechanism */
 #ifdef MTK_ENABLE_AGING_ALGORITHM
@@ -1917,6 +1919,11 @@ void fgauge_algo_run_get_init_data(void)
 }
 #endif
 
+#if defined(CONFIG_OZ8806_SUPPORT)
+void update_fg_dbg_tool_value(void)
+{
+}
+#endif
 
 #if defined(SOC_BY_SW_FG)
 void update_fg_dbg_tool_value(void)
@@ -1949,7 +1956,10 @@ void fgauge_algo_run_get_init_data(void)
 
 signed int get_dynamic_period(int first_use, int first_wakeup_time, int battery_capacity_level)
 {
-#if defined(CONFIG_POWER_EXT)
+#if defined(CONFIG_OZ8806_SUPPORT)
+	return LOW_POWER_WAKEUP_PERIOD;	/* 5 min */
+
+#elif defined(CONFIG_POWER_EXT)
 
 	return first_wakeup_time;
 
@@ -2182,6 +2192,11 @@ signed int battery_meter_get_charging_current(void)
 {
 #ifdef DISABLE_CHARGING_CURRENT_MEASURE
 	return 0;
+#elif defined(CONFIG_OZ8806_SUPPORT)
+	int val = 0;
+	battery_meter_ctrl(BATTERY_METER_CMD_GET_HW_FG_CURRENT, &val);
+	if (val < 0) return 0;
+	return val / 10; //mA
 #elif defined(AUXADC_SUPPORT_IMM_CURRENT_MODE)
 	return PMIC_IMM_GetCurrent();
 #elif !defined(EXTERNAL_SWCHR_SUPPORT)
@@ -2333,6 +2348,11 @@ signed int battery_meter_get_battery_temperature(void)
 		gFG_min_temperature = batt_temp;
 
 	return batt_temp;
+#elif defined(CONFIG_OZ8806_SUPPORT)
+	int val = 0;
+	int ret = 0;
+	ret = battery_meter_ctrl(BATTERY_METER_CMD_GET_TEMP, &val);
+	return val;
 #else
 	return force_get_tbat(KAL_TRUE);
 #endif
@@ -2352,23 +2372,31 @@ signed int battery_meter_get_charger_voltage(void)
 
 signed int battery_meter_get_battery_percentage(void)
 {
+#if defined(CONFIG_OZ8806_SUPPORT)
+	kal_int32 val;
+/*	static kal_int32 rtc_soc = -1; */
+	battery_meter_ctrl(BATTERY_METER_CMD_GET_SOC, &val);
+	return val;
+#endif
 #if defined(CONFIG_POWER_EXT)
 	return 50;
-
 #else
 #if defined(SOC_BY_HW_FG)
 	return gFG_capacity_by_c;	/* hw fg, //return gfg_percent_check_point; // voltage mode */
 #else
 	return gFG_capacity_by_c;
 #endif
-
 #endif
 }
 
 
 signed int battery_meter_initial(void)
 {
-#if defined(CONFIG_POWER_EXT)
+#if defined(CONFIG_OZ8806_SUPPORT)
+	bm_print(BM_LOG_CRTI, "[battery_meter_initial] update oz8806\n");
+	battery_meter_ctrl(BATTERY_METER_CMD_HW_FG_INIT, NULL);
+	return 0;
+#elif defined(CONFIG_POWER_EXT)
 	return 0;
 #else
 	static kal_bool meter_initilized = KAL_FALSE;
@@ -2679,8 +2707,10 @@ int temperature_change;
 
 bool is_recovery_mode(void)
 {
+/*
 	if (get_boot_mode() == RECOVERY_BOOT)
 		return true;
+*/
 	return false;
 }
 
@@ -5111,6 +5141,7 @@ void bmd_ctrl_cmd_from_user(void *nl_data, struct fgd_nl_msg_t *ret_msg)
 
 	case FG_DAEMON_CMD_GET_BATTERY_INIT_VOLTAGE:
 		{
+			gFG_voltage_init = battery_meter_get_battery_voltage(KAL_TRUE);
 			while (gFG_voltage_init == 0) {
 				msleep(100);
 				bm_err("FG_DAEMON_CMD_GET_BATTERY_INIT_VOLTAGE waiting ,%d %d\n",
@@ -5510,11 +5541,13 @@ void bmd_ctrl_cmd_from_user(void *nl_data, struct fgd_nl_msg_t *ret_msg)
 
 	case FG_DAEMON_CMD_SET_RTC:
 		{
+#ifndef CONFIG_OZ8806_SUPPORT
 			signed int rtcvalue;
 
 			memcpy(&rtcvalue, &msg->fgd_data[0], sizeof(rtcvalue));
 			set_rtc_spare_fg_value(rtcvalue);
 			bm_notice("[fg_res] set rtc = %d\n", rtcvalue);
+#endif
 		}
 		break;
 
