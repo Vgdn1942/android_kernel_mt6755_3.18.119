@@ -5141,7 +5141,8 @@ void bmd_ctrl_cmd_from_user(void *nl_data, struct fgd_nl_msg_t *ret_msg)
 
 	case FG_DAEMON_CMD_GET_BATTERY_INIT_VOLTAGE:
 		{
-			gFG_voltage_init = battery_meter_get_battery_voltage(KAL_TRUE);
+			// vgdn1942
+			//gFG_voltage_init = battery_meter_get_battery_voltage(KAL_TRUE);
 			while (gFG_voltage_init == 0) {
 				msleep(100);
 				bm_err("FG_DAEMON_CMD_GET_BATTERY_INIT_VOLTAGE waiting ,%d %d\n",
