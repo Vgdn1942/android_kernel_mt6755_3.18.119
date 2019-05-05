@@ -102,3 +102,6 @@ android/configs/android-*.cfg
 
 *.log
 !drivers/misc/mediatek/power/mt6755/o2micro_battery/oz8806_bmulib/bmulib.o
+!drivers/input/touchscreen/mediatek/FT5406_MT/ft_gesture_64bit_lib.a
+!drivers/input/touchscreen/mediatek/FT5406_MT/include/firmware/FT5436I_lemu_truly_app.i
+!drivers/input/touchscreen/mediatek/FT5406_MT/include/firmware/FT5436I_truly_app.i
