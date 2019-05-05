@@ -12,8 +12,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
- * Version: 1.4   
+ *
+ * Version: 1.4
  * Release Date:  2015/07/10
  */
 
@@ -48,14 +48,13 @@
 //#define TPD_POWER_SOURCE_CUSTOM       MT65XX_POWER_LDO_VGP4    //MT6323_POWER_LDO_VGP1
 
 #if TPD_HAVE_BUTTON
-#define TPD_KEY_COUNT   4
-#define key_1           60,2000
-#define key_2           180,2000
-#define key_3           300,2000
-#define key_4           420,2000
+#define TPD_KEY_COUNT   3
+#define key_1           120,1340
+#define key_2           360,1340
+#define key_3           600,1340
 #define TPD_KEY_MAP_ARRAY {{key_1},{key_2},{key_3}}
-#define TPD_KEYS        {KEY_BACK, KEY_HOME, KEY_MENU, KEY_SEARCH}
-#define TPD_KEYS_DIM    {{key_1,50,30},{key_2,50,30},{key_3,50,30},{key_4,50,30}}
+#define TPD_KEYS        {KEY_MENU, KEY_HOME, KEY_BACK}
+#define TPD_KEYS_DIM    {{key_1,100,40},{key_2,100,40},{key_3,100,40}}
 #endif
 
 // Change I/O define & I/O operation mode.

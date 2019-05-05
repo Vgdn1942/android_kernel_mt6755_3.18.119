@@ -1,0 +1,4 @@
+
+config MTK_PA12201001
+	bool "pa12201001 for MediaTek package"
+	default n

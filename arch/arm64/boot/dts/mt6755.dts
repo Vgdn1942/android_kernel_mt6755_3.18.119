@@ -3002,12 +3002,12 @@ firmware_class.path=/vendor/firmware loop.max_part=7";
 			compatible = "mediatek,m_temp_pl";
 			/* vbarometer-supply = <&mt_pmic_vio28_ldo_reg>; */
 		};
-		alsps:als_ps@0 {
-			compatible = "mediatek,als_ps";
+		alsps: alsps@0 {
+			compatible = "mediatek,alsps";
 			/* valsps-supply = <&mt_pmic_vio28_ldo_reg>; */
 		};
 
-		gyroscope:gyroscope@0 {
+		gyroscope: gyroscope@0 {
 			compatible = "mediatek,gyroscope";
 			/* vgyro-supply = <&mt_pmic_vio28_ldo_reg>; */
 		};
@@ -3056,7 +3056,7 @@ firmware_class.path=/vendor/firmware loop.max_part=7";
 		hall_1: hall_1 {
 			compatible = "mediatek,hall_1";
 		};
-		
+
 		lcd_bias: lcd_bias {
 			compatible = "mediatek,LCD_BIAS";
 		};
@@ -3068,20 +3068,20 @@ firmware_class.path=/vendor/firmware loop.max_part=7";
 		strobe: strobe {
 			compatible = "mediatek,strobe";
 		};
-		
+
 		fingerprint: fingerprint {
 			compatible = "mediatek,fingerprint";
 		};
-		
+
 		fingerprint_gf3208: fingerprint_gf3208{
 			compatible = "mediatek,goodix-fp";
 		};
-		
+
 		iraf: iraf {
 			compatible = "mediatek, iraf";
 			//status = "disabled";
 		};
-		
+
 		sn3191: sn3191 {
 			compatible = "mediatek, sn3191";
 			//status = "disabled";
@@ -3138,11 +3138,11 @@ firmware_class.path=/vendor/firmware loop.max_part=7";
 		compatible = "mediatek, sim1_hot_plug-eint";
 		status = "disabled";
 	};
-	
+
 	sim2_hot_plug: sim2_hot_plug {
 		compatible = "mediatek, sim2_hot_plug-eint";
 		status = "disabled";
-	};	
+	};
 
 	msdc1_ins: msdc1_ins {
 		compatible = "mediatek, msdc1_ins-eint";
