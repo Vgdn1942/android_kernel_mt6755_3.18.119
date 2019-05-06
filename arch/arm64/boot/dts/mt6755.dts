@@ -3002,12 +3002,12 @@ firmware_class.path=/vendor/firmware loop.max_part=7";
 			compatible = "mediatek,m_temp_pl";
 			/* vbarometer-supply = <&mt_pmic_vio28_ldo_reg>; */
 		};
-		alsps: alsps@0 {
-			compatible = "mediatek,alsps";
+		alsps:als_ps@0 {
+			compatible = "mediatek,als_ps";
 			/* valsps-supply = <&mt_pmic_vio28_ldo_reg>; */
 		};
 
-		gyroscope: gyroscope@0 {
+		gyroscope:gyroscope@0 {
 			compatible = "mediatek,gyroscope";
 			/* vgyro-supply = <&mt_pmic_vio28_ldo_reg>; */
 		};

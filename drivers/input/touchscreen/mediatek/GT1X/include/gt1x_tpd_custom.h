@@ -24,15 +24,9 @@
 //#include <linux/rtpm_prio.h>
 //#include <mach/mt_pm_ldo.h>
 //#include <mach/mt_typedefs.h>
-//#include <mach/mt_boot.h>
-#ifndef MT6589
-//#include <mach/mt_gpio.h>
-#endif
-//#include <cust_eint.h>
 #include "tpd.h"
-//#include "cust_gpio_usage.h"
-//#include <pmic_drv.h>
 #include "mt_boot_common.h"
+
 #define PLATFORM_MTK
 #define TPD_I2C_NUMBER		        1
 #define TPD_SUPPORT_I2C_DMA         1	// if gt9l, better enable it if hardware platform supported
@@ -47,14 +41,15 @@
 /* y900 */
 //#define TPD_POWER_SOURCE_CUSTOM       MT65XX_POWER_LDO_VGP4    //MT6323_POWER_LDO_VGP1
 
-#if TPD_HAVE_BUTTON
-#define TPD_KEY_COUNT   3
-#define key_1           120,1340
-#define key_2           360,1340
-#define key_3           600,1340
-#define TPD_KEY_MAP_ARRAY {{key_1},{key_2},{key_3}}
-#define TPD_KEYS        {KEY_MENU, KEY_HOME, KEY_BACK}
-#define TPD_KEYS_DIM    {{key_1,100,40},{key_2,100,40},{key_3,100,40}}
+#ifdef TPD_HAVE_BUTTON
+#define TPD_KEY_COUNT   4
+#define key_1           60,1360
+#define key_2           180,1360
+#define key_3           300,1360
+#define key_4           420,1360
+#define TPD_KEY_MAP_ARRAY {{key_1},{key_2},{key_3},{key_4}}
+#define TPD_KEYS        {KEY_BACK, KEY_HOME, KEY_MENU, KEY_SEARCH}
+#define TPD_KEYS_DIM    {{key_1,60,50},{key_2,60,50},{key_3,60,50},{key_4,60,50}}
 #endif
 
 // Change I/O define & I/O operation mode.

@@ -12,8 +12,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
- * Version: 1.4   
+ *
+ * Version: 1.4
  * Release Date:  2015/07/10
  */
 
@@ -64,7 +64,7 @@
 #else
 #define GTP_GESTURE_WAKEUP    0
 #endif
-/* buffer used to store ges track points coor. */    
+/* buffer used to store ges track points coor. */
 #define GES_BUFFER_ADDR       0xA2A0    // GT1151
 //#define GES_BUFFER_ADDR       0x8A40    // GT9L
 //#define GES_BUFFER_ADDR       0x9734     // GT1152
@@ -102,7 +102,7 @@
 #define GTP_DEBUG_FUNC_ON     0
 
 /***************************PART2:TODO define**********************************/
-/* Normal Configs 
+/* Normal Configs
  *  TODO: puts the config info corresponded to your TP here, the following is just
  *         a sample config, send this config should cause the chip cannot work normally
  */
@@ -135,7 +135,7 @@
 	0x33,0x03,0x00,0x00,0x33,0x00,0x0F,0x00,0x00,0x00,\
 	0x50,0x3C,0x50,0x00,0x00,0x00,0x1F,0xA0,0x01\
 	}
-	
+
 #elif defined(AGOLD_GTP_CFG_DATA_FOR_C239V55_KEWEI_U3_FHD)
 	#define GTP_CFG_GROUP0 {\
 	0x4A,0x38,0x04,0x80,0x07,0x05,0x35,0xC1,0x00,0x00,\
@@ -254,7 +254,7 @@
 #else
 	#define GTP_CFG_GROUP0 {\
 	}
-#endif	
+#endif
 
 /* TODO define your config for Sensor_ID == 1 here, if needed */
 #define GTP_CFG_GROUP1 {\
@@ -318,7 +318,7 @@
 #else
 	#define GTP_CFG_GROUP2 {\
 	}
-#endif	
+#endif
 /* TODO define your config for Sensor_ID == 3 here, if needed */
 #define GTP_CFG_GROUP3 {\
     }
@@ -328,7 +328,7 @@
 /* TODO define your config for Sensor_ID == 5 here, if needed */
 #define GTP_CFG_GROUP5 {\
     }
-    
+
 // Gloves Mode
 #if defined(AGOLD_CTP_FOR_HAND)
 #if defined(AGOLD_GTP_CFG_DATA_FOR_S12v55_JIEKE_FOR_HAND)
@@ -384,7 +384,7 @@
 0x00,0x00,0x00,0x00,0x00,0x00,0x01,0xFF,0xFF,0x86,\
 0x22,0x03,0x00,0x00,0x33,0x00,0x0F,0x00,0x00,0x00,\
 0x50,0x3C,0x50,0x00,0x00,0x00,0x79,0xBA,0x01\
-}    
+}
 
 #elif defined(AGOLD_GTP_CFG_FOR_S12_FM_FOR_HAND)
 #define GTP_CFG_FOR_HAND_GROUP0 {\
@@ -441,7 +441,7 @@
 	0x44,0x02,0x00,0x00,0x22,0x00,0x0F,0x28,0x00,0x50,\
 	0x46,0x32,0x00,0x00,0x00,0x13,0xCB,0xC9,0x01\
 }
-#else 
+#else
 	#define GTP_CFG_FOR_HAND_GROUP0 {\
       }
 #endif
@@ -476,7 +476,7 @@
 	0x22,0x03,0x00,0x00,0x13,0x00,0x0F,0x00,0x00,0x28,\
 	0x50,0x32,0x50,0x00,0x00,0x00,0x07,0x63,0x01\
 	}
-#else 
+#else
 #define GTP_CFG_FOR_HAND_GROUP2 {\
     }
 #endif
@@ -489,11 +489,11 @@
 /* TODO define your config for Sensor_ID == 5 here, if needed */
 #define GTP_CFG_FOR_HAND_GROUP5 {\
     }
-#endif    
+#endif
 
 
 /*
-  *         Charger Configs 
+  *         Charger Configs
 */
 /* TODO define your config for Sensor_ID == 0 here, if needed */
 #define GTP_CHARGER_CFG_GROUP0 {\
@@ -539,7 +539,7 @@
 }
 
 /*
-  *         Smart Cover Configs 
+  *         Smart Cover Configs
 */
 /* TODO define your config for Sendor_ID == 0 here, if needed */
 #define GTP_SMART_COVER_CFG_GROUP0 {\
@@ -577,8 +577,8 @@
 }
 
 #if GTP_CUSTOM_CFG
-#define GTP_MAX_HEIGHT   1280
-#define GTP_MAX_WIDTH    720
+#define GTP_MAX_HEIGHT   1920
+#define GTP_MAX_WIDTH    1080
 #define GTP_INT_TRIGGER  1	//0:Rising 1:Falling
 #define GTP_WAKEUP_LEVEL 1
 #else

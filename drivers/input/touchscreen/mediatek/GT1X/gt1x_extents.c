@@ -201,7 +201,7 @@ s32 gesture_event_handler(struct input_dev * dev)
     if (extra_len >= 0) {
         u8 ges_data[extra_len + 1];
         /* head 4 + extra data * 4 + chksum 1 */
-    	ret = gt1x_i2c_read(GTP_REG_WAKEUP_GESTURE + 4,ges_data, extra_len + 1);
+    	ret = gt1x_i2c_read(GTP_REG_WAKEUP_GESTURE + 4, ges_data, extra_len + 1);
 
     	if (ret < 0) {
     		GTP_ERROR("Read extra gesture data failed.");

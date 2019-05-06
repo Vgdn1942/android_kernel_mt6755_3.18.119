@@ -94,7 +94,7 @@ u8 g_single_gesture_flag[31];
  * Func: agold_tpd_parse_command
  * ARGC: UINT32
  * bit[31]--reserved
- * bit[30]--single gesture flag value, 1:enable, 0:disable 
+ * bit[30]--single gesture flag value, 1:enable, 0:disable
  * bit[29:0]--enable "single gesture flag value", at most 29 kinds of touch gesture
  * return value: 0
  */
@@ -102,16 +102,16 @@ u8 g_single_gesture_flag[31];
 static int agold_tpd_parse_gesture(unsigned int arg)
 {
 	int i = 0;
-	
+
 	for(i=0; i<30; i++)
 	{
 		if( (arg >> i) & 0x1 )//select the gesture
 		{
-			g_single_gesture_flag[i] = (arg>>30)&0x1;		
+			g_single_gesture_flag[i] = (arg>>30)&0x1;
 		}
 	}
 	printk("[Bruce] g_single_gesture_flag[%d] = %d\n",i,g_single_gesture_flag[i]);
-	printk("[Bruce] g_gesture_flag = %d\n",g_gesture_flag);	
+	printk("[Bruce] g_gesture_flag = %d\n",g_gesture_flag);
 	return 0;
 }
 
@@ -123,7 +123,7 @@ EXPORT_SYMBOL(tpd_dts_data);
 
 struct pinctrl *pinctrl1;
 struct pinctrl_state *pins_default;
-struct pinctrl_state *eint_as_int, *eint_output0, *eint_output1, *rst_output0, *rst_output1, *pwr_output0, *pwr_output1;
+struct pinctrl_state *eint_as_int, *eint_output0, *eint_output1, *rst_output0, *rst_output1;
 struct of_device_id touch_of_match[] = {
 	{ .compatible = "mediatek,mt6570-touch", },
 	{ .compatible = "mediatek,mt6735-touch", },
@@ -144,7 +144,8 @@ void tpd_get_dts_info(void)
 {
 	struct device_node *node1 = NULL;
 	int key_dim_local[16], i;
-#ifdef CONFIG_LCM_WIDTH //agold
+#if 0
+//#ifdef CONFIG_LCM_WIDTH //agold
 	unsigned long tpd_res_y = 0;
 	int ret = 0;
 #endif
@@ -162,17 +163,17 @@ void tpd_get_dts_info(void)
 			of_property_read_u32_array(node1, "tpd-key-dim-local",
 				key_dim_local, ARRAY_SIZE(key_dim_local));
 			memcpy(tpd_dts_data.tpd_key_dim_local, key_dim_local, sizeof(key_dim_local));
-#ifdef CONFIG_LCM_WIDTH//agold
+#if 0
+//#ifdef CONFIG_LCM_WIDTH//agold
 			ret = kstrtoul(CONFIG_LCM_HEIGHT, 0, &tpd_res_y);
 			if (ret < 0) {
 				pr_err("Touch down get lcm_y failed");
-				
+
 			}
 
 			for(i = 0; i < tpd_dts_data.tpd_key_num; i++)
 			{
 				tpd_dts_data.tpd_key_dim_local[i].key_y = tpd_res_y*850/800;
-				
 			}
 #endif
 			for (i = 0; i < 4; i++) {
@@ -216,20 +217,12 @@ void tpd_gpio_output(int pin, int level)
 {
 	mutex_lock(&tpd_set_gpio_mutex);
 	TPD_DEBUG("[tpd]tpd_gpio_output pin = %d, level = %d\n", pin, level);
-	if (pin == 2) {
-		if (level)
-			pinctrl_select_state(pinctrl1, pwr_output1);
-		else
-			pinctrl_select_state(pinctrl1, pwr_output0);	
-	}
-	else if (pin == 1) 
-	{
+	if (pin == 1) {
 		if (level)
 			pinctrl_select_state(pinctrl1, eint_output1);
 		else
 			pinctrl_select_state(pinctrl1, eint_output0);
-	} 
-	else {
+	} else {
 		if (level)
 			pinctrl_select_state(pinctrl1, rst_output1);
 		else
@@ -285,18 +278,6 @@ int tpd_get_gpio_info(struct platform_device *pdev)
 		dev_err(&pdev->dev, "fwq Cannot find touch pinctrl state_rst_output1!\n");
 		return ret;
 	}
-	pwr_output0 = pinctrl_lookup_state(pinctrl1, "state_pwr_output0");
-	if (IS_ERR(pwr_output0)) {
-		ret = PTR_ERR(pwr_output0);
-		dev_err(&pdev->dev, "fwq Cannot find touch pinctrl state_pwr_output0!\n");
-		return ret;
-	}
-	pwr_output1 = pinctrl_lookup_state(pinctrl1, "state_pwr_output1");
-	if (IS_ERR(pwr_output1)) {
-		ret = PTR_ERR(pwr_output1);
-		dev_err(&pdev->dev, "fwq Cannot find touch pinctrl state_pwr_output1!\n");
-		return ret;
-	}
 	TPD_DEBUG("[tpd%d] mt_tpd_pinctrl----------\n", pdev->id);
 	return 0;
 }
@@ -346,9 +327,9 @@ static long tpd_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned lon
 	void __user *data;
 
 	long err = 0;
-	#ifdef AGOLD_TPD_ADD_GESTURE
+#ifdef AGOLD_TPD_ADD_GESTURE
 	unsigned int gesture_raw = 0;
-	#endif
+#endif
 
 	if (_IOC_DIR(cmd) & _IOC_READ)
 		err = !access_ok(VERIFY_WRITE, (void __user *)arg, _IOC_SIZE(cmd));
@@ -404,7 +385,7 @@ static long tpd_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned lon
 				break;
 			}
 			break;
-		#ifdef AGOLD_TPD_ADD_GESTURE
+#ifdef AGOLD_TPD_ADD_GESTURE
 		case AGOLD_TPD_PARSE_GESTURE:
 			data = (void __user *) arg;
 			if (copy_from_user(&gesture_raw, data, sizeof(int)))
@@ -412,13 +393,13 @@ static long tpd_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned lon
 				printk("[Bruce] AGOLD_TPD_PARSE_GESTURE get gesture_raw error\n");
 				return -1;
 			}
-			
+
 			printk("[Bruce] gesture_raw = 0x%X\n",gesture_raw);
-			
+
 			agold_tpd_parse_gesture(gesture_raw);
-		
+
 		break;
-		
+
 		case AGOLD_TPD_GESTURE_SWITCH:
 			data = (void __user *) arg;
 			if (copy_from_user(&g_gesture_flag, data, sizeof(int)))
@@ -426,11 +407,11 @@ static long tpd_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned lon
 				printk("[Bruce] AGOLD_TPD_GESTURE_SWITCH get g_gesture_flag error\n");
 				return -1;
 			}
-			
+
 			printk("[Bruce] g_gesture_flag = 0x%X\n",g_gesture_flag);
-			
+
 		break;
-		
+
 		case AGOLD_TPD_GET_GESTURE_SUPPORT:
 			data = (void __user *) arg;
 			if (copy_to_user(data, &g_gesture_support, sizeof(int)))
@@ -438,13 +419,13 @@ static long tpd_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned lon
 				printk("[Bruce] AGOLD_TPD_GESTURE_SWITCH send g_gesture_support error\n");
 				return -1;
 			}
-			
-			printk("[Bruce] g_gesture_support = 0x%X\n",g_gesture_support);
-			
-		break;
-		#endif
 
-		#if defined(AGOLD_CTP_FOR_HAND)
+			printk("[Bruce] g_gesture_support = 0x%X\n",g_gesture_support);
+
+		break;
+#endif
+
+#if defined(AGOLD_CTP_FOR_HAND)
 		case AGOLD_CTP_FOR_HANDLER:
 		    data = (void __user *) arg;
 			if (copy_from_user(&g_open_handler, data, sizeof(int)))
@@ -452,7 +433,7 @@ static long tpd_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned lon
 				TPD_DEBUG("[qrp] AGOLD_TPD_FOR_HANDLER get g_open_hanler error\n");
 				return -1;
 			}
-			
+
 			TPD_DEBUG("[gengdong] g_open_hanler = 0x%X\n",g_open_handler);
 			if((g_tpd_drv != NULL)&&(g_tpd_drv->tpd_handler != NULL))
 			{
@@ -461,7 +442,7 @@ static long tpd_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned lon
 				TPD_DEBUG("[ljj]  g_tpd_drv == NULL or g_tpd_drv->tpd_handler == NULL \n");
 			}
 		break;
-		#endif
+#endif
 	default:
 		pr_err("tpd: unknown IOCTL: 0x%08x\n", cmd);
 		err = -ENOIOCTLCMD;
@@ -637,10 +618,10 @@ static int tpd_probe(struct platform_device *pdev)
 	int ret = 0;
 #endif
 #endif
-	#ifdef AGOLD_TPD_ADD_GESTURE
-	int ret = 0;	  
+#ifdef AGOLD_TPD_ADD_GESTURE
+	int ret = 0;
 	memset(g_single_gesture_flag,0,sizeof(g_single_gesture_flag));
-	#endif
+#endif
 
 	TPD_DMESG("enter %s, %d\n", __func__, __LINE__);
 
@@ -799,13 +780,11 @@ static int tpd_probe(struct platform_device *pdev)
 	if (g_tpd_drv->attrs.num)
 		tpd_create_attributes(&pdev->dev, &g_tpd_drv->attrs);
 
-	#ifdef AGOLD_TPD_ADD_GESTURE
-
+#ifdef AGOLD_TPD_ADD_GESTURE
 	ret = agold_create_gesture_file();
 	if(0 != ret)
 		TPD_DEBUG("agold_create_gesture_file failed\n");
-	
-	#endif
+#endif
 	return 0;
 }
 
@@ -901,12 +880,12 @@ int tpd_driver_add(struct tpd_driver_t *tpd_drv)
 			tpd_driver_list[i].resume = tpd_drv->resume;
 			tpd_driver_list[i].tpd_have_button = tpd_drv->tpd_have_button;
 			tpd_driver_list[i].attrs = tpd_drv->attrs;
-			#ifdef AGOLD_HARDWARE_INFO
+#ifdef AGOLD_HARDWARE_INFO
 			tpd_driver_list[i].get_tp_fw_ver = tpd_drv->get_tp_fw_ver;
-			#endif
-			#if defined(AGOLD_CTP_FOR_HAND)
+#endif
+#if defined(AGOLD_CTP_FOR_HAND)
 			tpd_driver_list[i].tpd_handler = tpd_drv->tpd_handler; // .tpd_handler = tpd_handler2
-			#endif
+#endif
 			break;
 		}
 		if (strcmp(tpd_driver_list[i].tpd_device_name, tpd_drv->tpd_device_name) == 0)
