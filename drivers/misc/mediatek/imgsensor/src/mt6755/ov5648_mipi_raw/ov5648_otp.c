@@ -16,9 +16,9 @@
 #include "kd_imgsensor_define.h"
 #include "kd_imgsensor_errcode.h"
 
-
+#if defined(AGOLD_CAMERA_VERSION)
 #include "agold_camera_info.h"
-
+#endif
 //#include "ov5648_otp.h"
 
 #define LOG_INF(format, args...)	printk("[%s] " format, __FUNCTION__, ##args)
@@ -124,7 +124,7 @@ static int check_otp(int index)
 	}
 	else
 	{
-		if (rg == 0 && bg == 0) 
+		if (rg == 0 && bg == 0)
 		{
 		    LOG_INF("[OV5648][zl]otp bank %d is emtpy \n",index);
 			return 0;
@@ -149,104 +149,104 @@ kal_uint16 OV5648MIPI_read_module_info(kal_uint16 index,kal_uint8 *data)
 	for(i = 0; i < 16; i++)
 	{
         OV5648MIPI_write_cmos_sensor(0x3d00 + i, 0x00);
-	}    
+	}
 
   if(index == 1) //Group 1
     {
     	//read otp bank 0
-        OV5648MIPI_write_cmos_sensor(0x3d84,0xc0);	
+        OV5648MIPI_write_cmos_sensor(0x3d84,0xc0);
 		OV5648MIPI_write_cmos_sensor(0x3d85,0x00); //OTP start address, bank 0
 		OV5648MIPI_write_cmos_sensor(0x3d86,0x0f); //OTP end address
 	    OV5648MIPI_write_cmos_sensor(0x3d81,0x01); //OTP Read Enable
-        
+
 		msleep(5); // delay 50ms
         data[0] = OV5648MIPI_read_cmos_sensor(0x3d05);
         data[1] = OV5648MIPI_read_cmos_sensor(0x3d06);
 		data[2] = OV5648MIPI_read_cmos_sensor(0x3d09);
-		//rg = (OV5648MIPI_read_cmos_sensor(0x3d0a) << 8) + OV5648MIPI_read_cmos_sensor(0x3d0b);	
-		//bg = (OV5648MIPI_read_cmos_sensor(0x3d0c) << 8) + OV5648MIPI_read_cmos_sensor(0x3d0d); 	   	
+		//rg = (OV5648MIPI_read_cmos_sensor(0x3d0a) << 8) + OV5648MIPI_read_cmos_sensor(0x3d0b);
+		//bg = (OV5648MIPI_read_cmos_sensor(0x3d0c) << 8) + OV5648MIPI_read_cmos_sensor(0x3d0d);
     }
      else if(index == 2)  //Group 2
     {
     	//read otp bank 1
-        OV5648MIPI_write_cmos_sensor(0x3d84,0xc0);	
+        OV5648MIPI_write_cmos_sensor(0x3d84,0xc0);
 		OV5648MIPI_write_cmos_sensor(0x3d85,0x00); //OTP start address, bank 0
 		OV5648MIPI_write_cmos_sensor(0x3d86,0x0f); //OTP end address
 	    OV5648MIPI_write_cmos_sensor(0x3d81,0x01); //OTP Read Enable
-        
+
 		msleep(5); // delay 50ms
 		data[0] = OV5648MIPI_read_cmos_sensor(0x3d0e);
         data[1] = OV5648MIPI_read_cmos_sensor(0x3d0f);
-        
-        OV5648MIPI_write_cmos_sensor(0x3d84,0xc0);	
+
+        OV5648MIPI_write_cmos_sensor(0x3d84,0xc0);
 		OV5648MIPI_write_cmos_sensor(0x3d85,0x10); //OTP start address, bank 1
 		OV5648MIPI_write_cmos_sensor(0x3d86,0x1f); //OTP end address
 	    OV5648MIPI_write_cmos_sensor(0x3d81,0x01); //OTP Read Enable
 	    msleep(5);
 		data[2] = OV5648MIPI_read_cmos_sensor(0x3d02);
-		//rg = (OV5648MIPI_read_cmos_sensor(0x3d07) << 8) + OV5648MIPI_read_cmos_sensor(0x3d08);	
+		//rg = (OV5648MIPI_read_cmos_sensor(0x3d07) << 8) + OV5648MIPI_read_cmos_sensor(0x3d08);
 		//bg = (OV5648MIPI_read_cmos_sensor(0x3d09) << 8) + OV5648MIPI_read_cmos_sensor(0x3d0a);
-    }    
+    }
     else if(index == 3) //Group 3
     {
     	//read otp bank 0
-        OV5648MIPI_write_cmos_sensor(0x3d84,0xc0);	
+        OV5648MIPI_write_cmos_sensor(0x3d84,0xc0);
 		OV5648MIPI_write_cmos_sensor(0x3d85,0x10); //OTP start address, bank 0
 		OV5648MIPI_write_cmos_sensor(0x3d86,0x1f); //OTP end address
 	    OV5648MIPI_write_cmos_sensor(0x3d81,0x01); //OTP Read Enable
-        
+
 		msleep(50); // delay 50ms
         data[0] = OV5648MIPI_read_cmos_sensor(0x3d07);
         data[1] = OV5648MIPI_read_cmos_sensor(0x3d08);
         data[2] = OV5648MIPI_read_cmos_sensor(0x3d0b);
-		//rg = (OV5648MIPI_read_cmos_sensor(0x3d07) << 8) + OV5648MIPI_read_cmos_sensor(0x3d0b);	
-		//bg = (OV5648MIPI_read_cmos_sensor(0x3d0c) << 8) + OV5648MIPI_read_cmos_sensor(0x3d0d); 	   	
+		//rg = (OV5648MIPI_read_cmos_sensor(0x3d07) << 8) + OV5648MIPI_read_cmos_sensor(0x3d0b);
+		//bg = (OV5648MIPI_read_cmos_sensor(0x3d0c) << 8) + OV5648MIPI_read_cmos_sensor(0x3d0d);
     }
 	else
 	{
         LOG_INF("invalid index!");
         return 0;
 	}
-    
-      
-    
+
+
+
 	//disable otp read
 	OV5648MIPI_write_cmos_sensor(0x3d81,0x00);
-	
+
 	//clear otp buffer
 	for(i=0; i<16; i++)
 	{
         OV5648MIPI_write_cmos_sensor(0x3d00 + i, 0x00);
 	}
-	
+
 	LOG_INF("[OV5648][zl]otp moudule_id:0x%x \n",data[0]);
-		
+
 	flag=data[0]&0x80;
-	if (flag==0x80) 
+	if (flag==0x80)
 	{
 	LOG_INF("[OV5648][zl]otp bank %d is invalid \n",index);
-	return 0;	
+	return 0;
 	}
 	else if(data[0]==0)
 	{
 	LOG_INF("[OV5648][zl]otp bank %d is emtpy \n",index);
-	return 0;		
+	return 0;
 	}
 	else
-	{	
+	{
     LOG_INF("[OV5648][zl]otp_log read mf_id, %d ,id=0x%2x\n", index ,data[0]&0x7f);
-    data[0] &= 0x7f;  
-    return 1;	
+    data[0] &= 0x7f;
+    return 1;
     }
 }
 
 // index: index of otp group. (1, 2, 3)
-// return:	0, 
+// return:	0,
 static int read_otp(int index, struct otp_struct *otp_ptr)
 {
 	int i, temp;
 
-	// read otp into buffer 
+	// read otp into buffer
 	if (index == 1)
 	{
 		// read otp --Bank 0
@@ -314,7 +314,7 @@ static int read_otp(int index, struct otp_struct *otp_ptr)
 		OV5648MIPI_write_cmos_sensor(0x3d00 + i, 0x00);
 	}
 
-	return 0; 
+	return 0;
 }
 
 
@@ -355,7 +355,7 @@ int update_otp(void)
 	int rg,bg;
 
 	// R/G and B/G of current camera module is read out from sensor OTP
-	
+
 	for(i=1;i<=3;i++) {
 		temp = check_otp(i);
 		if (temp == 2) {
@@ -393,14 +393,14 @@ int update_otp(void)
 	//0x400 = 1x gain
 	if(bg < BG_Ratio_Typical) {
 		if (rg< RG_Ratio_Typical) {
-			// current_otp.bg_ratio < BG_Ratio_typical &&? 
+			// current_otp.bg_ratio < BG_Ratio_typical &&?
 			// current_otp.rg_ratio < RG_Ratio_typical
 			G_gain = 0x400;
 			B_gain = 0x400 * BG_Ratio_Typical / bg;
-			R_gain = 0x400 * RG_Ratio_Typical / rg; 
+			R_gain = 0x400 * RG_Ratio_Typical / rg;
 		}
 		else {
-			// current_otp.bg_ratio < BG_Ratio_typical &&? 
+			// current_otp.bg_ratio < BG_Ratio_typical &&?
 			// current_otp.rg_ratio >= RG_Ratio_typical
 			R_gain = 0x400;
 			G_gain = 0x400 * rg / RG_Ratio_Typical;
@@ -409,14 +409,14 @@ int update_otp(void)
 	}
 	else {
 		if (rg < RG_Ratio_Typical) {
-			// current_otp.bg_ratio >= BG_Ratio_typical &&? 
+			// current_otp.bg_ratio >= BG_Ratio_typical &&?
 			// current_otp.rg_ratio < RG_Ratio_typical
 			B_gain = 0x400;
 			G_gain = 0x400 * bg / BG_Ratio_Typical;
 			R_gain = G_gain * RG_Ratio_Typical / rg;
 		}
 		else {
-			// current_otp.bg_ratio >= BG_Ratio_typical &&? 
+			// current_otp.bg_ratio >= BG_Ratio_typical &&?
 			// current_otp.rg_ratio >= RG_Ratio_typical
 			G_gain_B = 0x400 * bg / BG_Ratio_Typical;
 			G_gain_R = 0x400 * rg / RG_Ratio_Typical;
@@ -444,16 +444,16 @@ int update_otp(void)
 	LOG_INF("BG_Ratio_Typical = %x\r\n", BG_Ratio_Typical);
 	LOG_INF("RG = %x\r\n", rg);
 	LOG_INF("BG = %x\r\n", bg);
-	
+
 	update_awb_gain(R_gain, G_gain, B_gain);
-  //after 
+  //after
 	LOG_INF("reg[0x5186] = %x\r\n", OV5648MIPI_read_cmos_sensor(0x5186));
 	LOG_INF("reg[0x5187] = %x\r\n", OV5648MIPI_read_cmos_sensor(0x5187));
 	LOG_INF("reg[0x5188] = %x\r\n", OV5648MIPI_read_cmos_sensor(0x5188));
 	LOG_INF("reg[0x5189] = %x\r\n", OV5648MIPI_read_cmos_sensor(0x5189));
 	LOG_INF("reg[0x518a] = %x\r\n", OV5648MIPI_read_cmos_sensor(0x518a));
 	LOG_INF("reg[0x518b] = %x\r\n", OV5648MIPI_read_cmos_sensor(0x518b));
-	
+
 	return 0;
 }
 
@@ -469,26 +469,15 @@ void OV5648CheckLensVersion(kal_uint8  write_id)
        if(OV5648MIPI_read_module_info(i,data)==1)
        {
         bank_index = i;
-        break; 
+        break;
        }
-	}	
+	}
 	LOG_INF("[zbl] module id=0x%x\n",data[0]);
 	LOG_INF("[zbl] lens_id=0x%x,sensid=0x%x\n",data[1],data[2]);
+#if defined(AGOLD_CAMERA_VERSION)
 	agold_camera_info[g_cur_cam_sensor-1].mf_id = data[0];
 	agold_camera_info[g_cur_cam_sensor-1].lens_id = data[1];
 	agold_camera_info[g_cur_cam_sensor-1].sen_id = data[2];
+#endif
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -53,8 +53,9 @@
 
 extern kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id);
 extern kal_bool IMX214MIPI_ReadAWBFromOtp(void);
+#if defined(AGOLD_CAMERA_VERSION)
 #include "agold_camera_info.h"
-
+#endif
 
 
 static DEFINE_SPINLOCK(imgsensor_drv_lock);
@@ -739,13 +740,13 @@ static void set_mirror_flip(kal_uint8 image_mirror)
 	#elif defined(AGOLD_IMGSENSOR_IMX214_HV_MIRROR)
 		image_mirror^=0x03;
 	#endif
-	
+
 	#if defined(AGOLD_IMX214_MIRROR_XHGT)
 	if(agold_camera_info[0].mf_id == 0xf0 || agold_camera_info[0].mf_id == 0x00)
 	{
 		image_mirror^=0x03;
 	}
-	
+
 		if(agold_camera_info[0].mf_id == 0xed && agold_camera_info[0].lens_id ==0x07)
 	{
 		image_mirror^=0x03;
@@ -1986,7 +1987,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 	kal_uint8 i = 0;
 	kal_uint8 retry = 2;
 #ifndef AGOLD_IMX214_OTP_NULL
-	bool read_otp = false;            
+	bool read_otp = false;
 	static kal_uint8 checkVersion =0;
 #endif
 	//sensor have two i2c address 0x6c 0x6d & 0x21 0x20, we should detect the module used i2c address
@@ -1998,7 +1999,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 			*sensor_id = ((read_cmos_sensor(0x0016) << 8) | read_cmos_sensor(0x0017));
 			if (*sensor_id == imgsensor_info.sensor_id) {
 				LOG_INF("i2c write id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id,*sensor_id);
-#ifndef AGOLD_IMX214_OTP_NULL				
+#ifndef AGOLD_IMX214_OTP_NULL
 				if(checkVersion != 1)
 				{
 					read_otp = IMX214MIPI_ReadIDFromOtp(imgsensor.i2c_write_id);
@@ -2221,8 +2222,8 @@ static kal_uint32 capture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
     if((imgsensor.ihdr_mode == 2) || (imgsensor.ihdr_mode == 9))
         fullsize_setting_HDR(imgsensor.current_fps);
     else
-	    capture_setting(imgsensor.current_fps); 
-	
+	    capture_setting(imgsensor.current_fps);
+
 	set_mirror_flip(imgsensor.mirror);
 	return ERROR_NONE;
 }	/* capture() */

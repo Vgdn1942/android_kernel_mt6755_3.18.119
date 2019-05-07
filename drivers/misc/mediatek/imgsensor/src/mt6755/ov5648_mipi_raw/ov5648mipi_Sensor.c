@@ -397,7 +397,7 @@ static void ihdr_write_shutter_gain(kal_uint16 le, kal_uint16 se, kal_uint16 gai
 static void set_mirror_flip(kal_uint8 image_mirror)
 {
     LOG_INF("image_mirror = %d\n", image_mirror);
-    
+
     #if defined(AGOLD_IMGSENSOR_OV5648_H_MIRROR)
 	image_mirror ^= 0x01;
 	#elif defined(AGOLD_IMGSENSOR_OV5648_V_MIRROR)
@@ -1843,4 +1843,4 @@ UINT32 OV5648_MIPI_RAW_SensorInit(PSENSOR_FUNCTION_STRUCT *pfFunc)
     if (pfFunc!=NULL)
         *pfFunc=&sensor_func;
     return ERROR_NONE;
-}    /*    OV5648MIPISensorInit    */
+}    /*    OV5648_MIPI_RAW_SensorInit    */

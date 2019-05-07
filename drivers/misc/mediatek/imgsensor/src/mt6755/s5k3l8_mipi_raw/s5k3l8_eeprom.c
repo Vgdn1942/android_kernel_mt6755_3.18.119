@@ -25,7 +25,7 @@
 /****************************   Modify end    *******************************************/
 #if defined(AGOLD_CAMERA_VERSION)
 
-#include "agold_camera_info.h" 
+#include "agold_camera_info.h"
 
 #endif
 
@@ -55,11 +55,11 @@ int S5K3L8_EEPROM_READ_ID = 0xA0;
 #else
 #define S5K3L8_EEPROM_READ_ID  0xB0
 #endif
-#else 
+#else
 int S5K3L8_EEPROM_READ_ID =0xA0;
 #endif
 #define S5K3L8_EEPROM_WRITE_ID 0xA1   //  0xA3
-#define S5K3L8_I2C_SPEED        100  
+#define S5K3L8_I2C_SPEED        100
 #define S5K3L8_MAX_OFFSET		0xFFFF
 static int s5k3l8_write_id;
 
@@ -93,13 +93,13 @@ typedef struct S5K3L8_MIPI_otp_struct{
 
 
 #define s5k3l8_write_cmos_sensor(addr, para) iWriteReg((u16) addr , (u32) para , 1, g_s5k3l8mipi_write_id)
-//static kal_uint8 g_s5k3l8mipi_write_id = 0x0;  //i2c address 
+//static kal_uint8 g_s5k3l8mipi_write_id = 0x0;  //i2c address
 
 typedef struct {
 //        u8     	proc1_flag;                      // 0x0x790
 	u8    	proc1_data[496];		 // 0x791---0x980
 //	u8     	proc1_checksum;	                //  0x981
-//        u8     	proc2_flag;                     //  0x982     
+//        u8     	proc2_flag;                     //  0x982
 	u8    	proc2_data[908];		//  0x0983------0x0ca8
 //	u8     	proc2_checksum;	                 // 0x0ca9
 //        u8     	proc3_flag;                     // 0x0caa
@@ -108,7 +108,7 @@ typedef struct {
 }PDAF_MTK_TYPE;
 
 
- 
+
 typedef union {
         u8 Data[DATA_SIZE];
         PDAF_MTK_TYPE       MtkPdafData;
@@ -155,12 +155,12 @@ static kal_uint8 eeprom_read(kal_uint32 addr)
 static void write_cmos_sensor_byte(kal_uint32 addr, kal_uint32 para)
 {
     char pu_send_cmd[3] = {(char)(addr >> 8), (char)(addr & 0xFF), (char)(para & 0xFF)};
-    
+
     iWriteRegI2C(pu_send_cmd, 3, s5k3l8_write_id);
 }
 
 void S5K3L8_MIPI_read_otp_wb(S5K3L8_OTP_TYPE *otp)
-{	
+{
    	kal_uint16 RGr_ratio, BGr_ratio, GbGr_ratio;
    	#ifdef AGOLD_S5K3L8_OTP_JLX
   	RGr_ratio = (eeprom_read(0x0C2B)<<8) | eeprom_read(0x0C2C);
@@ -177,7 +177,7 @@ void S5K3L8_MIPI_read_otp_wb(S5K3L8_OTP_TYPE *otp)
   	#endif
   	printk("[fj],RGr_ratio = 0x%x,BGr_ratio = 0x%x,GbGr_ratio = 0x%x\n",RGr_ratio,BGr_ratio,GbGr_ratio);
    	otp->RGr_ratio = RGr_ratio;
-   	otp->BGr_ratio = BGr_ratio;	
+   	otp->BGr_ratio = BGr_ratio;
    	otp->GbGr_ratio = GbGr_ratio;
 }
 
@@ -185,16 +185,16 @@ void S5K3L8_MIPI_write_otp_wb(S5K3L8_OTP_TYPE *otp)
 {
     int R_gain, B_gain, Gb_gain, Gr_gain, Base_gain;
     kal_uint16 RGr_ratio, BGr_ratio, GbGr_ratio;
-   
+
     RGr_ratio = otp->RGr_ratio;
     BGr_ratio = otp->BGr_ratio;
     GbGr_ratio = otp->GbGr_ratio;
-   
-    #if defined (AGOLD_CAMERA_VERSION)	
+
+    #if defined (AGOLD_CAMERA_VERSION)
 	BGr_ratio_Typical=agold_get_bg_ratio(g_cur_cam_sensor-1);
 	RGr_ratio_Typical=agold_get_rg_ratio(g_cur_cam_sensor-1);
     #endif
-   
+
     R_gain = (RGr_ratio_Typical*1000) / RGr_ratio;
 	B_gain = (BGr_ratio_Typical*1000) / BGr_ratio;
 	Gb_gain = (GbGr_ratio_Typical*1000) / GbGr_ratio;
@@ -228,7 +228,7 @@ void S5K3L8_MIPI_write_otp_wb(S5K3L8_OTP_TYPE *otp)
 		    write_cmos_sensor_byte(0x0214,Gb_gain>>8);
             write_cmos_sensor_byte(0x0215,Gb_gain&0xff);
 		}
-		
+
   	printk("S5K3L8_OTP:Gr_gain=0x%x\n",Gr_gain);
 	LOG_INF("S5K3L8_OTP:R_gain=0x%x\n",R_gain);
 	LOG_INF("S5K3L8_OTP:B_gain=0x%x\n",B_gain);
@@ -238,7 +238,7 @@ void S5K3L8_MIPI_write_otp_wb(S5K3L8_OTP_TYPE *otp)
 
 void S5K3L8_MIPI_update_wb_register_from_otp(void)
 {
-   S5K3L8_OTP_TYPE current_otp;  
+   S5K3L8_OTP_TYPE current_otp;
    S5K3L8_MIPI_read_otp_wb(&current_otp);
    S5K3L8_MIPI_write_otp_wb(&current_otp);
 }
@@ -253,40 +253,40 @@ kal_bool read_s5k3l8_otp_eeprom( kal_uint16 addr, BYTE* data, kal_uint32 size)
 	//int total_size = 1404;
 	size = 1404;
 	addr=0xa0;
- 	
-        
+
+
 
 	LOG_INF("read 3m2 eeprom, size = %d\n", size);
-	
+
     #ifdef AGOLD_S5K3L8_OTP_JLX
-    read_s5k3l8_eeprom_size(addr,0x1801,s5k3l8_pdaf_data.MtkPdafData.proc1_data,496);   
+    read_s5k3l8_eeprom_size(addr,0x1801,s5k3l8_pdaf_data.MtkPdafData.proc1_data,496);
     #elif defined AGOLD_S5K3P8_OTP_BYD
     read_s5k3l8_eeprom_size(addr,0x0841,s5k3l8_pdaf_data.MtkPdafData.proc1_data,496);
-    #else                                     //elif defined AGOLD_S5K3P8_OTP_SY 
+    #else                                     //elif defined AGOLD_S5K3P8_OTP_SY
     read_s5k3l8_eeprom_size(addr,0x0791,s5k3l8_pdaf_data.MtkPdafData.proc1_data,496);
     #endif
-      	
+
 	memcpy(data, s5k3l8_pdaf_data.MtkPdafData.proc1_data,496);
 	for(i = 0; i < 496; i++){
-		printk("s5k3l8_pdaf_data.MtkPdafData.proc1_data[ %d]= %d   \n", i,s5k3l8_pdaf_data.MtkPdafData.proc1_data[i]);	
-	}	
-    
+		printk("s5k3l8_pdaf_data.MtkPdafData.proc1_data[ %d]= %d   \n", i,s5k3l8_pdaf_data.MtkPdafData.proc1_data[i]);
+	}
+
     #ifdef AGOLD_S5K3L8_OTP_JLX
-    read_s5k3l8_eeprom_size(addr,0x19F1,s5k3l8_pdaf_data.MtkPdafData.proc2_data,908);   
+    read_s5k3l8_eeprom_size(addr,0x19F1,s5k3l8_pdaf_data.MtkPdafData.proc2_data,908);
     #elif defined AGOLD_S5K3P8_OTP_BYD
-    read_s5k3l8_eeprom_size(addr,0xa31,s5k3l8_pdaf_data.MtkPdafData.proc2_data,908);	
-    #else 										//elif defined AGOLD_S5K3P8_OTP_SY 
+    read_s5k3l8_eeprom_size(addr,0xa31,s5k3l8_pdaf_data.MtkPdafData.proc2_data,908);
+    #else 										//elif defined AGOLD_S5K3P8_OTP_SY
     read_s5k3l8_eeprom_size(addr,0x0983,s5k3l8_pdaf_data.MtkPdafData.proc2_data,908);
     #endif
 	memcpy(data+496, s5k3l8_pdaf_data.MtkPdafData.proc2_data,908);
 	for(i = 0; i < 908; i++){
-		printk("s5k3l8_pdaf_data.MtkPdafData.proc2_data[ %d]= %d   \n", i,s5k3l8_pdaf_data.MtkPdafData.proc2_data[i]);	
-	}	
+		printk("s5k3l8_pdaf_data.MtkPdafData.proc2_data[ %d]= %d   \n", i,s5k3l8_pdaf_data.MtkPdafData.proc2_data[i]);
+	}
 
         /*read_s5k3l8_eeprom_size(addr,0x0cab,s5k3l8_pdaf_data.MtkPdafData.proc3_data,102);
-        memcpy(data+496+806, s5k3l8_pdaf_data.MtkPdafData.proc3_data,102);	
+        memcpy(data+496+806, s5k3l8_pdaf_data.MtkPdafData.proc3_data,102);
 	for(i = 0; i < 102; i++){
-		LOG_INF("s5k3l8_pdaf_data.MtkPdafData.proc3_data[ %d]= %d   \n", i,s5k3l8_pdaf_data.MtkPdafData.proc3_data[i]);	
+		LOG_INF("s5k3l8_pdaf_data.MtkPdafData.proc3_data[ %d]= %d   \n", i,s5k3l8_pdaf_data.MtkPdafData.proc3_data[i]);
 	}	*/
 	//c220v35_psmemcpy(data, &s5k3l8_pdaf_data.Data, size);
 
@@ -296,8 +296,10 @@ kal_bool read_s5k3l8_otp_eeprom( kal_uint16 addr, BYTE* data, kal_uint32 size)
 /***************************************/
 bool s5k3l8CheckLensVersion(int id)
 {
-    kal_uint8 otp_flag = 0;   
+    kal_uint8 otp_flag = 0;
+#if defined(AGOLD_CAMERA_VERSION)
     kal_uint8 data[8] = { 0 };
+#endif
     s5k3l8_write_id=id;
     #ifdef AGOLD_S5K3L8_OTP_JLX
     read_cmos_sensor( S5K3L8_EEPROM_READ_ID,0x0c00,&otp_flag);
@@ -308,7 +310,7 @@ bool s5k3l8CheckLensVersion(int id)
 	read_cmos_sensor( S5K3L8_EEPROM_READ_ID,0x0000,&otp_flag);
 	#endif
     printk("read s5k3l8 otp flag = %d\n", otp_flag);
-    
+
     if(!otp_flag)
     {
         LOG_INF("[fj]read otp B0 failed,read otp A0 failed!\n");
@@ -320,8 +322,8 @@ bool s5k3l8CheckLensVersion(int id)
 	#endif
         return false;
     }
-    
-    #ifdef AGOLD_S5K3L8_OTP_JLX           
+#if defined(AGOLD_CAMERA_VERSION)
+    #ifdef AGOLD_S5K3L8_OTP_JLX
    	read_s5k3l8_eeprom_size(S5K3L8_EEPROM_READ_ID,0x0c01,data,8);
    	agold_camera_info[g_cur_cam_sensor-1].mf_id = data[0];
 	agold_camera_info[g_cur_cam_sensor-1].lens_id = data[1];
@@ -330,12 +332,12 @@ bool s5k3l8CheckLensVersion(int id)
     agold_camera_info[g_cur_cam_sensor-1].date[1] = data[6];
     agold_camera_info[g_cur_cam_sensor-1].date[2] = data[7];
     #elif defined AGOLD_S5K3P8_OTP_BYD
-    read_s5k3l8_eeprom_size(S5K3L8_EEPROM_READ_ID, 0x0004,data,8);	
+    read_s5k3l8_eeprom_size(S5K3L8_EEPROM_READ_ID, 0x0004,data,8);
    	agold_camera_info[g_cur_cam_sensor-1].mf_id = data[0];
 	agold_camera_info[g_cur_cam_sensor-1].lens_id = data[1];
 	agold_camera_info[g_cur_cam_sensor-1].sen_id = data[4];
 	#else                           //    #elif defined AGOLD_S5K3P8_OTP_SY
-	read_s5k3l8_eeprom_size(S5K3L8_EEPROM_READ_ID, 0x0001,data,8);	
+	read_s5k3l8_eeprom_size(S5K3L8_EEPROM_READ_ID, 0x0001,data,8);
    	agold_camera_info[g_cur_cam_sensor-1].mf_id = data[0];
 	agold_camera_info[g_cur_cam_sensor-1].lens_id = data[1];
 	agold_camera_info[g_cur_cam_sensor-1].sen_id = data[2];
@@ -343,7 +345,7 @@ bool s5k3l8CheckLensVersion(int id)
     agold_camera_info[g_cur_cam_sensor-1].date[1] = data[5];
     agold_camera_info[g_cur_cam_sensor-1].date[2] = data[6];
     #endif
-        
+
     printk("read s5k3l8 otp year = %d\n", data[5]);
     printk("read s5k3l8 otp month = %d\n", data[6]);
     printk("read s5k3l8 otp day = %d\n", data[7]);
@@ -354,7 +356,7 @@ bool s5k3l8CheckLensVersion(int id)
     printk("read s5k3l8 otp VCM_Driver_ID = %d\n", data[4]);
 
 //    LOG_INF("[fj]read s5k3l8 otp corlo temperature = %d\n", data[8]);
-    
+#endif
     return true;
 }
 
