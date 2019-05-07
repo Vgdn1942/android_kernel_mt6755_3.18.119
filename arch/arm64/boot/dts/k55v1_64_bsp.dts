@@ -26,32 +26,32 @@
 &odm {
 	led0:led@0 {
 		compatible = "mediatek,red";
-		led_mode = <2>;
+		led_mode = <0>;
 		data = <0>;
 		pwm_config = <0 0 0 0 0>;
 	};
 	led1:led@1 {
 		compatible = "mediatek,green";
-		led_mode = <2>;
-		data = <1>;
+		led_mode = <0>;
+		data = <0>;
 		pwm_config = <0 0 0 0 0>;
 	};
 	led2:led@2 {
 		compatible = "mediatek,blue";
-		led_mode = <2>;
-		data = <2>;
+		led_mode = <0>;
+		data = <0>;
 		pwm_config = <0 0 0 0 0>;
 	};
 	led3:led@3 {
 		compatible = "mediatek,jogball-backlight";
 		led_mode = <0>;
-		data = <1>;
+		data = <0>;
 		pwm_config = <0 0 0 0 0>;
 	};
 	led4:led@4 {
 		compatible = "mediatek,keyboard-backlight";
 		led_mode = <0>;
-		data = <1>;
+		data = <0>;
 		pwm_config = <0 0 0 0 0>;
 	};
 	led5:led@5 {
@@ -89,9 +89,9 @@
 &touch {
 	tpd-resolution = <720 1280>;
 	use-tpd-button = <1>;
-	tpd-key-num = <4>;
+	tpd-key-num = <3>;
 	tpd-key-local= <139 102 158 0>;
-	tpd-key-dim-local = <60 1360 100 40 300 1360 100 40 180 1360 100 40 0 0 0 0>; /* x y w h */
+	tpd-key-dim-local = <60 1360 120 120 300 1360 120 120 180 1360 120 120 0 0 0 0>;
 	tpd-max-touch-num = <5>;
 	tpd-filter-enable = <1>;
 	tpd-filter-pixel-density = <146>;

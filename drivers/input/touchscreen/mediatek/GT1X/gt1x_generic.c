@@ -56,7 +56,7 @@ struct key_map_t {
    int x;
    int y;
 };
-static struct key_map_t tpd_virtual_key_array[] = TPD_KEY_MAP_ARRAY;
+static struct key_map_t tpd_virtual_key_array[]= TPD_KEY_MAP_ARRAY;
 #endif
 
 #if GTP_WITH_STYLUS && GTP_HAVE_STYLUS_KEY
@@ -1265,11 +1265,7 @@ s32 gt1x_touch_event_handler(u8 * data, struct input_dev * dev, struct input_dev
 	s32 id = 0;
 	s32 i = 0;
 	s32 ret = -1;
-#if 0
-//#if TPD_HAVE_BUTTON
-	s32 key_x = 0;
-	s32 key_y = 0;
-#endif
+
 	GTP_DEBUG_FUNC();
 	touch_num = data[0] & 0x0f;
 	if (touch_num > GTP_MAX_TOUCH) {
@@ -1380,7 +1376,7 @@ s32 gt1x_touch_event_handler(u8 * data, struct input_dev * dev, struct input_dev
 			GTP_DEBUG("Key Up.");
 		}
 	}
-#elif TPD_HAVE_BUTTON /* #if 0 */
+#elif TPD_HAVE_BUTTON
 	if (CHK_BIT(cur_event, BIT_TOUCH_KEY) || CHK_BIT(pre_event, BIT_TOUCH_KEY)) {
 		for (i = 0; i < TPD_KEY_COUNT; i++) {
 			if (key_value & (0x01 << i)) {
@@ -1394,46 +1390,6 @@ s32 gt1x_touch_event_handler(u8 * data, struct input_dev * dev, struct input_dev
 			GTP_DEBUG("Key Up.");
 		}
     }
-#if 0 /* #else */
-	if (CHK_BIT(cur_event, BIT_TOUCH_KEY))
-	{
-		if (key_value & 0x01)
-		{
-			key_x=60;
-			key_y=AGOLD_TPD_RES_Y*850/800;
-		}
-		else if(key_value & 0x02)
-		{
-		#if defined AGOLD_TOUCH_KEY_FOR_KEWEI_U3
-			key_x=180;
-		#else
-			key_x=300;
-		#endif
-			key_y=AGOLD_TPD_RES_Y*850/800;
-		}
-		else if(key_value & 0x04)
-		{
-		#if defined AGOLD_TOUCH_KEY_FOR_KEWEI_U3
-			key_x=300;
-		#else
-			key_x=180;
-		#endif
-			key_y=AGOLD_TPD_RES_Y*850/800;
-		}
-		else if(key_value & 0x08)
-		{
-			key_x=420;
-			key_y=AGOLD_TPD_RES_Y*850/800;
-		}
-		gt1x_touch_down(key_x, key_y, 0, 0);
-		GTP_INFO("Key Down.");
-	}
-	else if (CHK_BIT(pre_event, BIT_TOUCH_KEY))
-	{
-		gt1x_touch_up(0);
-		GTP_INFO("Key Up.");
-	}
-#endif
 #endif
 
 /* finger touch event*/
@@ -1451,8 +1407,8 @@ s32 gt1x_touch_event_handler(u8 * data, struct input_dev * dev, struct input_dev
 				input_y = GTP_WARP_Y(gt1x_abs_y_max, input_y);
 
 				GTP_DEBUG("(%d)(%d,%d)[%d]", id, input_x, input_y, input_w);
-				if (report_num++ < touch_num) {
 					gt1x_touch_down(input_x, input_y, input_w, i);
+				if (report_num++ < touch_num) {
 					coor_data += 8;
 					id = coor_data[0] & 0x0F;
 				}
@@ -2385,9 +2341,7 @@ int gt1x_suspend(void)
 
 #if GTP_GESTURE_WAKEUP
 	gesture_clear_wakeup_data();
-	printk("[chen] gesture_clear_wakeup_data,%d\n",g_gesture_flag);
 	if (g_gesture_flag) {
-	printk("[chen]  g_gesture_flag enter\n");
 		gesture_enter_doze();
 		gt1x_irq_enable();
 		gt1x_halt = 0;

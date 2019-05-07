@@ -13,10 +13,10 @@
 
 #include "tpd.h"
 
-int tpd_calibrate_en = 0;
+int tpd_calibrate_en;
 module_param(tpd_calibrate_en, int, 0664);
 
-int tpd_show_version = 0;
+int tpd_show_version;
 module_param(tpd_show_version, int, 0664);
 
 /* switch touch panel into single scan mode for decreasing interference */
