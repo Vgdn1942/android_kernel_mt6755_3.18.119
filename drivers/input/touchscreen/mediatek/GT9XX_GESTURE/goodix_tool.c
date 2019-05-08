@@ -7,17 +7,17 @@
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be a reference
+ * This program is distributed in the hope that it will be a reference 
  * to you, when you are integrating the GOODiX's CTP IC into your system,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU 
  * General Public License for more details.
  *
  * Version: V2.4
  * Release Date: 2014/11/28
  *
  */
-
+     
 #include "tpd.h"
 #include <linux/interrupt.h>
 //#include <cust_eint.h>
@@ -35,14 +35,14 @@
 #include <linux/proc_fs.h>  /*proc*/
 
 #include "tpd_gt9xx_common.h"
-
-
+  
+ 
 #pragma pack(1)
-typedef struct
+typedef struct 
 {
     u8  wr;         //write read flag£¬0:R  1:W  2:PID 3:
     u8  flag;       //0:no need flag/int 1: need flag  2:need int
-    u8 flag_addr[2];  //flag address
+    u8 flag_addr[2];  //flag address 
     u8  flag_val;   //flag val
     u8  flag_relation;  //flag_val:flag 0:not equal 1:equal 2:> 3:<
     u16 circle;     //polling cycle
@@ -56,7 +56,7 @@ typedef struct
     u8 *data;       //data pointer
 } st_cmd_head;
 #pragma pack()
-static st_cmd_head cmd_head, cmd_head2;
+st_cmd_head cmd_head, cmd_head2;
 
 #define UPDATE_FUNCTIONS
 #define DATA_LENGTH_UINT    512
@@ -69,8 +69,8 @@ static struct i2c_client *gt_client = NULL;
 extern s32 gup_enter_update_mode(struct i2c_client *client);
 extern void gup_leave_update_mode(void);
 extern s32 gup_update_proc(void *dir);
-#endif
-#if GTP_COMPATIBLE_MODE
+#endif 
+#if GTP_COMPATIBLE_MODE 
 extern s32 gup_load_calibration1(void);
 extern s32 gup_load_calibration2(void);
 extern s32 gup_recovery_calibration0(void);
@@ -102,8 +102,8 @@ extern void gtp_esd_switch(struct i2c_client *client, s32 on);
 extern u8 is_reseting;
 #endif
 
-static s32 DATA_LENGTH = 0;
-static s8 IC_TYPE[16] = "GT9XX";
+s32 DATA_LENGTH = 0;
+s8 IC_TYPE[16] = "GT9XX"; 
 
 #if HOTKNOT_BLOCK_RW
 DECLARE_WAIT_QUEUE_HEAD(bp_waiter);
@@ -136,18 +136,18 @@ static struct miscdevice hotknot_misc_device =
 
 static void tool_set_proc_name(char * procname)
 {
-    char *months[12] = {"Jan", "Feb", "Mar", "Apr", "May",
+    char *months[12] = {"Jan", "Feb", "Mar", "Apr", "May", 
         "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     char date[20] = {0};
     char month[4] = {0};
     int i = 0, n_month = 1, n_day = 0, n_year = 0;
-
+    
     //sprintf(date, "%s", __DATE__);
     sprintf(date, "%s", "Jan 29 2016");
     //GTP_DEBUG("compile date: %s", date);
-
+    
     sscanf(date, "%s %d %d", month, &n_day, &n_year);
-
+    
     for (i = 0; i < 12; ++i)
     {
         if (!memcmp(months[i], month, 3))
@@ -156,8 +156,8 @@ static void tool_set_proc_name(char * procname)
             break;
         }
     }
-
-    sprintf(procname, "gmnode%04d%02d%02d", n_year, n_month, n_day);
+    
+    sprintf(procname, "gmnode%04d%02d%02d", n_year, n_month, n_day); 
 }
 static s32 tool_i2c_read_no_extra(u8 *buf, u16 len)
 {
@@ -298,7 +298,7 @@ s32 init_wr_node(struct i2c_client *client)
 
     cmd_head2.addr_len = 2;
     cmd_head2.retry = 5;
-
+	
     register_i2c_func();
 
     tool_set_proc_name(procname);
@@ -309,7 +309,7 @@ s32 init_wr_node(struct i2c_client *client)
         printk("mtk_tpd: hotknot_device register failed\n");
         return FAIL;
     }
-#endif
+#endif 
     if (goodix_proc_entry == NULL)
     {
         GTP_ERROR("Couldn't create proc entry!");
@@ -429,7 +429,7 @@ static ssize_t goodix_tool_write(struct file *filp, const char __user *buff, siz
     s32 ret = 0;
     GTP_DEBUG_FUNC();
     GTP_DEBUG_ARRAY((u8 *)buff, len);
-	#if (GTP_ESD_PROTECT || GTP_COMPATIBLE_MODE)
+	#if (GTP_ESD_PROTECT || GTP_COMPATIBLE_MODE)	
     if(is_reseting == 1)
     {
         //GTP_ERROR("[Write]tpd_halt =1 fail!");
@@ -541,7 +541,7 @@ static ssize_t goodix_tool_write(struct file *filp, const char __user *buff, siz
         return CMD_HEAD_LENGTH;
     }
 
-#ifdef UPDATE_FUNCTIONS
+#ifdef UPDATE_FUNCTIONS      
     else if (11 == cmd_head.wr) //Enter update mode!
     {
         if (FAIL == gup_enter_update_mode(gt_client))
@@ -583,7 +583,7 @@ static ssize_t goodix_tool_write(struct file *filp, const char __user *buff, siz
 			if (FAIL == gup_load_calibration2())
 			{
 				return FAIL;
-			}
+			}		
 		}
         else if(2 == cmd_head.data[0])
         {
@@ -599,25 +599,25 @@ static ssize_t goodix_tool_write(struct file *filp, const char __user *buff, siz
 				return FAIL;
 			}
 		}
-	}
+	}	
 #endif
 #if HOTKNOT_BLOCK_RW
     else if (21 == cmd_head.wr)
     {
         u16 wait_hotknot_timeout = 0;
         u8  rqst_hotknot_state;
-
-        ret = copy_from_user(&cmd_head.data[GTP_ADDR_LENGTH],
+				
+        ret = copy_from_user(&cmd_head.data[GTP_ADDR_LENGTH], 
             &buff[CMD_HEAD_LENGTH], cmd_head.data_len);
 
         if (ret)
         {
             GTP_ERROR("copy_from_user failed.");
         }
-
+        
         rqst_hotknot_state = cmd_head.data[GTP_ADDR_LENGTH];
         wait_hotknot_state |= rqst_hotknot_state;
-        wait_hotknot_timeout = (cmd_head.data[GTP_ADDR_LENGTH + 1]<<8) +
+        wait_hotknot_timeout = (cmd_head.data[GTP_ADDR_LENGTH + 1]<<8) + 
             cmd_head.data[GTP_ADDR_LENGTH + 2];
         GTP_DEBUG("Goodix tool received wait polling state:0x%x,timeout:%d, all wait state:0x%x",
             rqst_hotknot_state, wait_hotknot_timeout, wait_hotknot_state);
@@ -628,7 +628,7 @@ static ssize_t goodix_tool_write(struct file *filp, const char __user *buff, siz
             set_current_state(TASK_INTERRUPTIBLE);
             case HN_DEVICE_PAIRED:
                 hotknot_paired_flag = 0;
-                wait_event_interruptible(bp_waiter, force_wake_flag ||
+                wait_event_interruptible(bp_waiter, force_wake_flag || 
                     rqst_hotknot_state == (got_hotknot_state&rqst_hotknot_state));
                 wait_hotknot_state &= (~rqst_hotknot_state);
                 if(rqst_hotknot_state != (got_hotknot_state&rqst_hotknot_state))
@@ -640,7 +640,7 @@ static ssize_t goodix_tool_write(struct file *filp, const char __user *buff, siz
             break;
             case HN_MASTER_SEND:
             case HN_SLAVE_RECEIVED:
-                wait_event_interruptible_timeout(bp_waiter, force_wake_flag ||
+                wait_event_interruptible_timeout(bp_waiter, force_wake_flag || 
                     rqst_hotknot_state == (got_hotknot_state&rqst_hotknot_state),
                     wait_hotknot_timeout);
                 wait_hotknot_state &= (~rqst_hotknot_state);
@@ -657,7 +657,7 @@ static ssize_t goodix_tool_write(struct file *filp, const char __user *buff, siz
             break;
             case HN_MASTER_DEPARTED:
             case HN_SLAVE_DEPARTED:
-                wait_event_interruptible_timeout(bp_waiter, force_wake_flag ||
+                wait_event_interruptible_timeout(bp_waiter, force_wake_flag || 
                     rqst_hotknot_state == (got_hotknot_state&rqst_hotknot_state),
                     wait_hotknot_timeout);
                 wait_hotknot_state &= (~rqst_hotknot_state);
@@ -699,11 +699,11 @@ static ssize_t goodix_tool_read(struct file *flie, char __user *page, size_t siz
 {
     s32 ret;
     GTP_DEBUG_FUNC();
-	#if (GTP_ESD_PROTECT || GTP_COMPATIBLE_MODE)
+	#if (GTP_ESD_PROTECT || GTP_COMPATIBLE_MODE)	
     if(is_reseting == 1)
 		return FAIL;
     #endif
-
+		
 	if (*ppos) {
 		*ppos = 0;
 		return 0;
@@ -775,7 +775,7 @@ static ssize_t goodix_tool_read(struct file *flie, char __user *page, size_t siz
             GTP_DEBUG_ARRAY(&cmd_head.data[GTP_ADDR_LENGTH], len);
             GTP_DEBUG_ARRAY(page, len);
         }
-        return cmd_head.data_len;
+        return cmd_head.data_len; 
     }
     else if (2 == cmd_head.wr)
     {
@@ -789,7 +789,7 @@ static ssize_t goodix_tool_read(struct file *flie, char __user *page, size_t siz
         progress_buf[1] = show_len & 0xff;
         progress_buf[2] = total_len >> 8;
         progress_buf[3] = total_len & 0xff;
-
+        
         ret = simple_read_from_buffer(page, size, ppos, progress_buf, 4);
         return ret;
     }
@@ -810,11 +810,11 @@ static int hotknot_open(struct inode *node, struct file *flip) {
     gtp_hotknot_enabled = 1;
     return 0;
 }
-
+ 
 static int hotknot_release(struct inode *node, struct file *filp) {
     GTP_DEBUG("Hotknot is disable.");
     gtp_hotknot_enabled = 0;
-    return 0;
+    return 0;  
 }
 
 /*******************************************************
@@ -830,7 +830,7 @@ static ssize_t hotknot_write(struct file *filp, const char __user *buff, size_t 
     s32 ret = 0;
     GTP_DEBUG_FUNC();
     GTP_DEBUG_ARRAY((u8 *)buff, len);
-	#if (GTP_ESD_PROTECT || GTP_COMPATIBLE_MODE)
+	#if (GTP_ESD_PROTECT || GTP_COMPATIBLE_MODE)	
     if(is_reseting == 1)
     {
         GTP_DEBUG("[Write]tpd_halt =1 fail!");
@@ -957,7 +957,7 @@ static ssize_t hotknot_write(struct file *filp, const char __user *buff, size_t 
         return CMD_HEAD_LENGTH;
     }
 
-#ifdef UPDATE_FUNCTIONS
+#ifdef UPDATE_FUNCTIONS      
     else if (11 == cmd_head2.wr) //Enter update mode!
     {
         if (FAIL == gup_enter_update_mode(gt_client))
@@ -999,7 +999,7 @@ static ssize_t hotknot_write(struct file *filp, const char __user *buff, size_t 
 			if (FAIL == gup_load_calibration2())
 			{
 				return FAIL;
-			}
+			}		
 		}
         else if(2 == cmd_head2.data[0])
         {
@@ -1016,24 +1016,24 @@ static ssize_t hotknot_write(struct file *filp, const char __user *buff, size_t 
 			}
 		}
 	}
-#endif
+#endif		
 #if HOTKNOT_BLOCK_RW
     else if (21 == cmd_head2.wr)
     {
         u16 wait_hotknot_timeout = 0;
         u8  rqst_hotknot_state;
-
-        ret = copy_from_user(&cmd_head2.data[GTP_ADDR_LENGTH],
+				
+        ret = copy_from_user(&cmd_head2.data[GTP_ADDR_LENGTH], 
             &buff[CMD_HEAD_LENGTH], cmd_head2.data_len);
 
         if (ret)
         {
             GTP_ERROR("copy_from_user failed.");
         }
-
+        
         rqst_hotknot_state = cmd_head2.data[GTP_ADDR_LENGTH];
         wait_hotknot_state |= rqst_hotknot_state;
-        wait_hotknot_timeout = (cmd_head2.data[GTP_ADDR_LENGTH + 1]<<8) +
+        wait_hotknot_timeout = (cmd_head2.data[GTP_ADDR_LENGTH + 1]<<8) + 
             cmd_head2.data[GTP_ADDR_LENGTH + 2];
         GTP_DEBUG("Goodix tool received wait polling state:0x%x,timeout:%d, all wait state:0x%x",
             rqst_hotknot_state, wait_hotknot_timeout, wait_hotknot_state);
@@ -1044,7 +1044,7 @@ static ssize_t hotknot_write(struct file *filp, const char __user *buff, size_t 
             set_current_state(TASK_INTERRUPTIBLE);
             case HN_DEVICE_PAIRED:
                 hotknot_paired_flag = 0;
-                wait_event_interruptible(bp_waiter, force_wake_flag ||
+                wait_event_interruptible(bp_waiter, force_wake_flag || 
                     rqst_hotknot_state == (got_hotknot_state&rqst_hotknot_state));
                 wait_hotknot_state &= (~rqst_hotknot_state);
                 if(rqst_hotknot_state != (got_hotknot_state&rqst_hotknot_state))
@@ -1056,7 +1056,7 @@ static ssize_t hotknot_write(struct file *filp, const char __user *buff, size_t 
             break;
             case HN_MASTER_SEND:
             case HN_SLAVE_RECEIVED:
-                wait_event_interruptible_timeout(bp_waiter, force_wake_flag ||
+                wait_event_interruptible_timeout(bp_waiter, force_wake_flag || 
                     rqst_hotknot_state == (got_hotknot_state&rqst_hotknot_state),
                     wait_hotknot_timeout);
                 wait_hotknot_state &= (~rqst_hotknot_state);
@@ -1073,7 +1073,7 @@ static ssize_t hotknot_write(struct file *filp, const char __user *buff, size_t 
             break;
             case HN_MASTER_DEPARTED:
             case HN_SLAVE_DEPARTED:
-                wait_event_interruptible_timeout(bp_waiter, force_wake_flag ||
+                wait_event_interruptible_timeout(bp_waiter, force_wake_flag || 
                     rqst_hotknot_state == (got_hotknot_state&rqst_hotknot_state),
                     wait_hotknot_timeout);
                 wait_hotknot_state &= (~rqst_hotknot_state);
@@ -1114,14 +1114,14 @@ Output:
 static ssize_t _hotknot_read(struct file *file, char __user *page, size_t size, loff_t *ppos)
 {
     GTP_DEBUG_FUNC();
-	#if (GTP_ESD_PROTECT || GTP_COMPATIBLE_MODE)
+	#if (GTP_ESD_PROTECT || GTP_COMPATIBLE_MODE)	
     if(is_reseting == 1)
     {
         GTP_DEBUG("[READ]tpd_halt =1 fail!");
 		return FAIL;
     }
     #endif
-
+	
 	if (*ppos) {
 		*ppos = 0;
 		return 0;

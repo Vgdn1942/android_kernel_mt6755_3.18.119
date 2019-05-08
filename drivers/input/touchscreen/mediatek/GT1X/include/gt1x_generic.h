@@ -83,7 +83,7 @@
 #define GTP_HEADER_FW_UPDATE  0	// firmware in gt1x_firmware.h
 #define GTP_FW_UPDATE_VERIFY  0 // verify fw when updating
 
-#define GTP_HAVE_TOUCH_KEY    0 // touch key support
+#define GTP_HAVE_TOUCH_KEY    1 // touch key support
 #define GTP_WITH_STYLUS       0 // pen support
 #define GTP_HAVE_STYLUS_KEY   0 //
 
@@ -577,8 +577,8 @@
 }
 
 #if GTP_CUSTOM_CFG
-#define GTP_MAX_HEIGHT   1920
-#define GTP_MAX_WIDTH    1080
+#define GTP_MAX_HEIGHT   1280
+#define GTP_MAX_WIDTH    720
 #define GTP_INT_TRIGGER  1	//0:Rising 1:Falling
 #define GTP_WAKEUP_LEVEL 1
 #else

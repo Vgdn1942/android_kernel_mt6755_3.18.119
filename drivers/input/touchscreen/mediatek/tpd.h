@@ -30,6 +30,7 @@
 #include <linux/kobject.h>
 #include <linux/regulator/consumer.h>
 
+
 /*debug macros */
 /*#define TPD_DEBUG */
 #define TPD_DEBUG_CODE
@@ -136,12 +137,10 @@ struct tpd_driver_t {
 	void (*resume)(struct device *h);
 	int tpd_have_button;
 	struct tpd_attrs attrs;
-#ifdef AGOLD_HARDWARE_INFO
+	#ifdef AGOLD_HARDWARE_INFO
 	int (*get_tp_fw_ver)(void);
-#endif
-#if defined(AGOLD_CTP_FOR_HAND)
+	#endif
 	void (*tpd_handler)(int tmp);
-#endif
 };
 
 
@@ -163,9 +162,10 @@ extern struct tpd_device *tpd;
 extern void tpd_get_dts_info(void);
 #define GTP_RST_PORT    0
 #define GTP_INT_PORT    1
+#define GTP_PWR_PORT    2
 extern void tpd_gpio_as_int(int pin);
 extern void tpd_gpio_output(int pin, int level);
-extern const struct of_device_id touch_of_match[];
+extern struct of_device_id touch_of_match[];
 #ifdef TPD_DEBUG_CODE
 #include "tpd_debug.h"
 #endif
@@ -186,21 +186,4 @@ void _tpd_switch_single_mode(void);
 void _tpd_switch_multiple_mode(void);
 void _tpd_switch_sleep_mode(void);
 void _tpd_switch_normal_mode(void);
-
-/* Vanzo:yangzhihong on: Thu, 25 Feb 2016 20:26:13 +0800
- */
-#define CFG_TPD_MAX_TOUCH_NUM   5
-#define CFG_TPD_USE_BUTTON      1
-
-#if CFG_TPD_USE_BUTTON
-
-#define CFG_TPD_KEY_COUNT           4
-#define CFG_TPD_KEYS                {KEY_MENU, KEY_HOME, KEY_BACK, 0}
-#define CFG_TPD_KEYS_DIM            {{60,1360,60,50},{300,1360,60,50},{180,1360,60,50},{420,1360,60,50}}
-#define CFG_TPD_WIDTH               720
-#define CFG_TPD_HEIGHT              1280
-
-#endif /*CFG_TPD_USE_BUTTON*/
-
-// End of Vanzo:yangzhihong
 #endif

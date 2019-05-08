@@ -56,7 +56,7 @@
 	};
 	led5:led@5 {
 		compatible = "mediatek,button-backlight";
-		led_mode = <3>;
+		led_mode = <2>;
 		data = <1>;
 		pwm_config = <0 0 0 0 0>;
 	};
@@ -91,7 +91,7 @@
 	use-tpd-button = <1>;
 	tpd-key-num = <3>;
 	tpd-key-local= <139 102 158 0>;
-	tpd-key-dim-local = <60 1360 120 120 300 1360 120 120 180 1360 120 120 0 0 0 0>;
+	tpd-key-dim-local = <60 1360 60 40 300 1360 60 40 180 1360 60 40 0 0 0 0>;
 	tpd-max-touch-num = <5>;
 	tpd-filter-enable = <1>;
 	tpd-filter-pixel-density = <146>;

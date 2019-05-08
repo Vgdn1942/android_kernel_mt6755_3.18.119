@@ -21,8 +21,8 @@
 #include "met_ftrace_touch.h"
 
 #ifdef TPD_DEBUG_CODE
-int tpd_fail_count;
-int tpd_trial_count;
+int tpd_fail_count = 0;
+int tpd_trial_count = 0;
 
 void tpd_debug_no_response(struct i2c_client *i2c_client)
 {
@@ -43,12 +43,10 @@ void tpd_debug_no_response(struct i2c_client *i2c_client)
 	int wakeup_count = 200;
 
 	for (i = 0; i < trial[trial_index]; i++) {
-		if (i2c_master_send(i2c_client, sleep, 2) != 2)
-			pr_debug("i2c_master_send sleep fail\n");
+		i2c_master_send(i2c_client, sleep, 2);
 		msleep(delay[delay_index]);
 		for (j = 0; j < wakeup_count; j++) {
-			if (i2c_master_send(i2c_client, wakeup, 2) != 2)
-				pr_debug("i2c_master_send wakeup fail\n");
+			i2c_master_send(i2c_client, wakeup, 2);
 			if (i2c_master_send(i2c_client, wakeup, 2) == 2)
 				break;
 			msleep(20);
@@ -70,19 +68,19 @@ void tpd_debug_no_response(struct i2c_client *i2c_client)
 	trial_index = ((trial_index + 1) % trial_max);
 }
 
-int tpd_debug_nr;
+int tpd_debug_nr = 0;
 module_param(tpd_debug_nr, int, 0644);
 module_param(tpd_fail_count, int, 0644);
 module_param(tpd_trial_count, int, 0644);
 
-int tpd_debug_time;
+int tpd_debug_time = 0;
 EXPORT_SYMBOL(tpd_debug_time);
 long tpd_last_2_int_time[2] = { 0 };
 
-long tpd_last_down_time;
-int tpd_start_profiling;
+long tpd_last_down_time = 0;
+int tpd_start_profiling = 0;
 
-int tpd_down_status;
+int tpd_down_status = 0;
 EXPORT_SYMBOL(tpd_down_status);
 module_param(tpd_debug_time, int, 0644);
 
@@ -109,9 +107,9 @@ void tpd_debug_set_time(void)
 EXPORT_SYMBOL(tpd_debug_set_time);
 
 #ifdef TPD_DEBUG_TRACK
-int tpd_debug_track;
-int tpd_debug_track_color;
-int tpd_debug_touch_up;
+int tpd_debug_track = 0;
+int tpd_debug_track_color = 0;
+int tpd_debug_touch_up = 0;
 module_param(tpd_debug_track, int, 0644);
 
 void tpd_draw(int x, int y)
@@ -154,7 +152,7 @@ void tpd_up_debug_track(int x, int y)
 
 #define BUFFER_SIZE 128
 
-int tpd_em_log;
+int tpd_em_log = 0;
 EXPORT_SYMBOL(tpd_em_log);
 module_param(tpd_em_log, int, 0664);
 
@@ -168,7 +166,7 @@ void tpd_enable_em_log(int enable)
 EXPORT_SYMBOL(tpd_enable_em_log);
 
 
-int tpd_em_log_to_fs;
+int tpd_em_log_to_fs = 0;
 EXPORT_SYMBOL(tpd_em_log_to_fs);
 module_param(tpd_em_log_to_fs, int, 0664);
 
@@ -261,23 +259,17 @@ struct tpd_debug_log_buf tpd_buf;
 
 static int tpd_debug_log_open(struct inode *inode, struct file *file)
 {
-	unsigned char *temp_buffer;
-
-	temp_buffer = vmalloc(tpd_log_line_cnt * tpd_log_line_buffer);
-	spin_lock(&tpd_buf.buffer_lock);
+	memset(&tpd_buf, 0, sizeof(struct tpd_debug_log_buf));
+	tpd_buf.buffer = vmalloc(tpd_log_line_cnt * tpd_log_line_buffer);
 	if (tpd_buf.buffer == NULL) {
-		if (temp_buffer == NULL) {
-			spin_unlock(&tpd_buf.buffer_lock);
-			pr_debug("tpd_log: nomem for tpd_buf->buffer\n");
+		pr_err("tpd_log: nomem for tpd_buf->buffer\n");
 		return -ENOMEM;
 	}
-		tpd_buf.buffer = temp_buffer;
+	spin_lock_init(&tpd_buf.buffer_lock);
+	spin_lock(&tpd_buf.buffer_lock);
 	tpd_buf.head = tpd_buf.tail = 0;
 	spin_unlock(&tpd_buf.buffer_lock);
-	} else {
-		spin_unlock(&tpd_buf.buffer_lock);
-		vfree(temp_buffer);
-	}
+
 
 	file->private_data = &tpd_buf;
 	pr_debug("[tpd_em_log]: open log file\n");
@@ -286,15 +278,9 @@ static int tpd_debug_log_open(struct inode *inode, struct file *file)
 
 static int tpd_debug_log_release(struct inode *inode, struct file *file)
 {
-	unsigned char *temp_buffer = NULL;
 	/* struct tpd_debug_log_buf *tpd_buf = (tpd_debug_log_buf *)file->private_data; */
 	pr_debug("[tpd_em_log]: close log file\n");
-	spin_lock(&tpd_buf.buffer_lock);
-	temp_buffer = tpd_buf.buffer;
-	tpd_buf.buffer = NULL;
-	spin_unlock(&tpd_buf.buffer_lock);
-	if (temp_buffer)
-		vfree(temp_buffer);
+	vfree(tpd_buf.buffer);
 	/* free(tpd_buf); */
 	return 0;
 }
@@ -311,10 +297,6 @@ static ssize_t tpd_debug_log_read(struct file *file, char __user *buffer,
 	struct tpd_debug_log_buf *tpd_buf = (struct tpd_debug_log_buf *)file->private_data;
 	unsigned int retval = 0, unit = tpd_log_line_buffer;
 	unsigned char *tmp_buf = NULL;
-
-	if (tpd_buf == NULL)
-		return -ENOMEM;
-
 
 	if (tpd_buf->head == tpd_buf->tail && (file->f_flags & O_NONBLOCK))
 		return -EAGAIN;
@@ -396,7 +378,6 @@ noinline void MET_touch(int raw_x, int raw_y, int cal_x, int cal_y, int p, int d
 	}
 }
 EXPORT_SYMBOL(MET_touch);
-
 void tpd_em_log_output(int raw_x, int raw_y, int cal_x, int cal_y, int p, int down)
 {
 	if (down == TPD_TYPE_INT_DOWN) {
@@ -533,8 +514,6 @@ EXPORT_SYMBOL(tpd_em_log_release);
 
 static int __init tpd_log_init(void)
 {
-	memset(&tpd_buf, 0, sizeof(struct tpd_debug_log_buf));
-	spin_lock_init(&tpd_buf.buffer_lock);
 	if (misc_register(&tpd_debug_log_dev) < 0) {
 		pr_err("[tpd_em_log] :register device failed\n");
 		return -1;
@@ -543,7 +522,7 @@ static int __init tpd_log_init(void)
 	return 0;
 }
 
-int tpd_debuglog;
+int tpd_debuglog = 0;
 module_param(tpd_debuglog, int, 0664);
 module_init(tpd_log_init);
 MODULE_LICENSE("GPL");

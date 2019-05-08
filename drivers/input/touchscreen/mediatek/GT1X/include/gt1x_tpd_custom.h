@@ -21,16 +21,22 @@
 #define GT1X_TPD_CUSTOM_H__
 
 #include <asm/uaccess.h>
+//#include <linux/rtpm_prio.h>
+//#include <mach/mt_pm_ldo.h>
+//#include <mach/mt_typedefs.h>
+//#include <mach/mt_boot.h>
+#ifndef MT6589
+//#include <mach/mt_gpio.h>
+#endif
+//#include <cust_eint.h>
 #include "tpd.h"
+//#include "cust_gpio_usage.h"
+//#include <pmic_drv.h>
 #include "mt_boot_common.h"
 #define PLATFORM_MTK
 #define TPD_I2C_NUMBER		        1
-#ifdef CONFIG_MTK_I2C_EXTENSION
-#define TPD_SUPPORT_I2C_DMA         1	/* if gt9l, better enable it if hardware platform supported*/
-#else
-#define TPD_SUPPORT_I2C_DMA         0
-#endif
-#define TPD_HAVE_BUTTON             1	//report key as coordinate,Vibration feedback
+#define TPD_SUPPORT_I2C_DMA         1	// if gt9l, better enable it if hardware platform supported
+#define TPD_HAVE_BUTTON             0	//report key as coordinate,Vibration feedback
 
 /* s960t */
 //#define TPD_POWER_SOURCE_CUSTOM	MT6323_POWER_LDO_VGP1	//MT6323_POWER_LDO_VGP1
@@ -47,10 +53,9 @@
 #define key_2           300,1360
 #define key_3           180,1360
 #define key_4           420,1360
-#define TPD_KEY_MAP_ARRAY {{key_1},{key_2},{key_3},{key_4}}
-#define TPD_KEYS        {KEY_MENU, KEY_HOME ,KEY_BACK, KEY_SEARCH}
-#define TPD_KEYS_DIM    {{key_1,60,50},{key_2,60,50},{key_3,60,50},{key_4,60,50}}
-
+#define TPD_KEY_MAP_ARRAY {{key_1},{key_2},{key_3}}
+#define TPD_KEYS        {KEY_MENU, KEY_HOME, KEY_BACK, KEY_SEARCH}
+#define TPD_KEYS_DIM    {{key_1,60,40},{key_2,60,40},{key_3,60,30},{key_4,60,40}}
 #endif
 
 // Change I/O define & I/O operation mode.
@@ -73,6 +78,13 @@
 #define GTP_GPIO_OUTPUT(pin,level)      tpd_gpio_output(pin, level)
 
 #define GTP_IRQ_TAB                     {IRQ_TYPE_EDGE_RISING, IRQ_TYPE_EDGE_FALLING, IRQ_TYPE_LEVEL_LOW, IRQ_TYPE_LEVEL_HIGH}
+
+#ifdef MT6589
+extern void mt65xx_eint_unmask(unsigned int line);
+extern void mt65xx_eint_mask(unsigned int line);
+#define mt_eint_mask mt65xx_eint_mask
+#define mt_eint_unmask mt65xx_eint_unmask
+#endif
 
 #define IIC_MAX_TRANSFER_SIZE         8
 #define IIC_DMA_MAX_TRANSFER_SIZE     250

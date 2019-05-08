@@ -77,8 +77,6 @@ extern int tpd_type_cap;
 void tpd_em_log_output(int raw_x, int raw_y, int cal_x, int cal_y, int p, int down);
 void tpd_em_log_store(int raw_x, int raw_y, int cal_x, int cal_y, int p, int down);
 void tpd_em_log_release(void);
-void tpd_enable_em_log(int enable);
-
 #ifndef CREATE_TRACE_POINTS
 #define CREATE_TRACE_POINTS
 #endif
@@ -94,6 +92,7 @@ noinline void MET_touch(int raw_x, int raw_y, int cal_x, int cal_y, int p, int d
 
 #define TPD_EM_PRINT(raw_x, raw_y, cal_x, cal_y, p, down)                           \
 	do {                                                                            \
+		MET_touch(raw_x, raw_y, cal_x, cal_y, p, down);                         \
 		if (tpd_em_log) {                                                           \
 			if (!tpd_em_log_to_fs) {                                                \
 				tpd_em_log_output(raw_x, raw_y, cal_x, cal_y, p, down);             \
@@ -101,12 +100,16 @@ noinline void MET_touch(int raw_x, int raw_y, int cal_x, int cal_y, int p, int d
 				tpd_em_log_store(raw_x, raw_y, cal_x, cal_y, p, down);              \
 				tpd_em_log_output(raw_x, raw_y, cal_x, cal_y, p, down);                \
 			}                                                                       \
-		} else {                                                                      \
+			if (down == 1)                                                          \
+				tpd_down_status = 1;                                                \
+			else if (down == 0)                                                     \
+				tpd_down_status = 0;                                                \
+		}                                                                           \
+		else {                                                                      \
 			if (tpd_em_log_to_fs) {                                                 \
 				tpd_em_log_release();                                               \
 			}                                                                       \
 		}                                                                           \
-		MET_touch(raw_x, raw_y, cal_x, cal_y, p, down);                         \
 	} while (0)
 
 #ifdef TPD_DEBUG_TRACK

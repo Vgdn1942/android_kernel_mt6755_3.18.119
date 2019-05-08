@@ -12,8 +12,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- *
- * Version: 1.4
+ * 
+ * Version: 1.4   
  * Release Date:  2015/07/10
  */
 
@@ -43,7 +43,7 @@ extern struct tpd_device *tpd;
 #if defined(AGOLD_CTP_FOR_HAND)
 extern void gt1x_write_hand_cfg(void);
 #endif
-static spinlock_t irq_lock;
+static spinlock_t irq_lock; 
 static int tpd_flag = 0;
 static int tpd_irq_flag;
 static int tpd_eint_mode = 1;
@@ -52,6 +52,11 @@ static struct task_struct *thread = NULL;
 
 static DECLARE_WAIT_QUEUE_HEAD(waiter);
 static DEFINE_MUTEX(i2c_access);
+static int boot_mode = 0;
+#if TPD_HAVE_BUTTON
+//static int tpd_keys_local[TPD_KEY_COUNT] = TPD_KEYS;
+//static int tpd_keys_dim_local[TPD_KEY_COUNT][4] = TPD_KEYS_DIM;
+#endif
 
 #if (defined(TPD_WARP_START) && defined(TPD_WARP_END))
 static int tpd_wb_start_local[TPD_WARP_CNT] = TPD_WARP_START;
@@ -99,7 +104,7 @@ static struct i2c_driver tpd_i2c_driver = {
 	.driver = {
 		.name = GTP_DRIVER_NAME,
 		.of_match_table = tpd_of_match,
-	},
+		},
 	.id_table = tpd_i2c_id,
 	.address_list = (const unsigned short *)forces,
 };
@@ -209,12 +214,8 @@ static s32 i2c_write_mtk(u16 addr, u8 * buffer, s32 len)
 
 	struct i2c_msg msg = {
 		.flags = 0,
-#ifdef CONFIG_MTK_I2C_EXTENSION
 		.addr = (gt1x_i2c_client->addr & I2C_MASK_FLAG) | (I2C_ENEXT_FLAG),	//remain
 		.timing = I2C_MASTER_CLOCK,
-#else
-		.addr = gt1x_i2c_client->addr,
-#endif
 	};
 
 	ret = do_i2c_write(&msg, addr, buffer, len);
@@ -228,23 +229,15 @@ static s32 i2c_read_mtk(u16 addr, u8 * buffer, s32 len)
 
 	struct i2c_msg msgs[2] = {
 		{
-#ifdef CONFIG_MTK_I2C_EXTENSION
 		 .addr = ((gt1x_i2c_client->addr & I2C_MASK_FLAG) | (I2C_ENEXT_FLAG)),
-		 .timing = I2C_MASTER_CLOCK,
-#else
-		 .addr = gt1x_i2c_client->addr,
-#endif
 		 .flags = 0,
 		 .buf = addr_buf,
-		 .len = GTP_ADDR_LENGTH,},
+		 .len = GTP_ADDR_LENGTH,
+		 .timing = I2C_MASTER_CLOCK},
 		{
-#ifdef CONFIG_MTK_I2C_EXTENSION
 		 .addr = ((gt1x_i2c_client->addr & I2C_MASK_FLAG) | (I2C_ENEXT_FLAG)),
-		 .timing = I2C_MASTER_CLOCK
-#else
-		 .addr = gt1x_i2c_client->addr,
-#endif
-		 .flags = I2C_M_RD,},
+		 .flags = I2C_M_RD,
+		 .timing = I2C_MASTER_CLOCK},
 	};
 
 	ret = do_i2c_read(msgs, addr, buffer, len);
@@ -360,7 +353,7 @@ static int tpd_power_on(void)
 void gt1x_irq_enable(void)
 {
     unsigned long flag;
-
+    
     spin_lock_irqsave(&irq_lock, flag);
     if (!tpd_irq_flag) { // 0-disabled
         tpd_irq_flag = 1;  // 1-enabled
@@ -392,14 +385,14 @@ void gt1x_irq_disable(void)
 int gt1x_power_switch(s32 state)
 {
     static int power_state = 0;
-
+    
 	GTP_GPIO_OUTPUT(GTP_RST_PORT, 0);
 	GTP_GPIO_OUTPUT(GTP_INT_PORT, 0);
 	msleep(10);
 
 	switch (state) {
 	case SWITCH_ON:
-        if (power_state == 0) {
+        if (power_state == 0) {    
     		GTP_DEBUG("Power switch on!");
 //#ifdef MT6573
 #ifdef AGOLD_CTP_POWER_EN
@@ -412,7 +405,7 @@ int gt1x_power_switch(s32 state)
     #if 1
              // set 2.8v
 GTP_INFO("[geng_gt1x] use regulator_set_voltage");
-            if (regulator_set_voltage(tpd->reg, 2800000, 2800000))
+            if (regulator_set_voltage(tpd->reg, 2800000, 2800000))   
                 GTP_ERROR("regulator_set_voltage() failed!");
             //enable regulator
             if (regulator_enable(tpd->reg))
@@ -467,12 +460,13 @@ GTP_INFO("[geng_gt1x] use regulator_set_voltage");
 
 static int tpd_irq_registration(void)
 {
+#ifdef GTP_CONFIG_OF
 	struct device_node *node = NULL;
 	int ret = 0;
 	u32 ints[2] = {0,0};
 	GTP_INFO("Device Tree Tpd_irq_registration!");
-
-node = of_find_matching_node(node, touch_of_match);
+node = of_find_matching_node(node, touch_of_match);	
+	//node = of_find_compatible_node(NULL, NULL, "mediatek, TOUCH_PANEL-eint");
 	if(node){
 		of_property_read_u32_array(node , "debounce", ints, ARRAY_SIZE(ints));
 		gpio_set_debounce(ints[0], ints[1]);
@@ -481,12 +475,14 @@ node = of_find_matching_node(node, touch_of_match);
 		GTP_INFO("Device gt1x_int_type = %d!", gt1x_int_type);
 		if (!gt1x_int_type)	//EINTF_TRIGGER
 		{
+GTP_INFO("[geng_gt1x] EINTF_TRIGGER_RISING");
 			ret = request_irq(tpd_touch_irq, (irq_handler_t)tpd_eint_interrupt_handler, IRQF_TRIGGER_RISING, "TOUCH_PANEL-eint", NULL);
 			if(ret > 0){
 			    ret = -1;
 			    GTP_ERROR("tpd request_irq IRQ LINE NOT AVAILABLE!.");
 			}
 		} else {
+GTP_INFO("[geng_gt1x] EINTF_TRIGGER_FALLING");
 			ret = request_irq(tpd_touch_irq, (irq_handler_t)tpd_eint_interrupt_handler, IRQF_TRIGGER_FALLING, "TOUCH_PANEL-eint", NULL);
 			if(ret > 0){
 			    ret = -1;
@@ -499,6 +495,28 @@ node = of_find_matching_node(node, touch_of_match);
 	}
 	GTP_INFO("irq:%d, debounce:%d-%d:", tpd_touch_irq, ints[0], ints[1]);
 	return ret;
+    
+#else
+
+    #ifndef MT6589
+	if (!gt1x_int_type) {	/*EINTF_TRIGGER */
+		mt_eint_registration(CUST_EINT_TOUCH_PANEL_NUM, EINTF_TRIGGER_RISING, tpd_eint_interrupt_handler, 1);
+	} else {
+		mt_eint_registration(CUST_EINT_TOUCH_PANEL_NUM, EINTF_TRIGGER_FALLING, tpd_eint_interrupt_handler, 1);
+	}
+
+    #else
+	mt65xx_eint_set_sens(CUST_EINT_TOUCH_PANEL_NUM, CUST_EINT_TOUCH_PANEL_SENSITIVE);
+	mt65xx_eint_set_hw_debounce(CUST_EINT_TOUCH_PANEL_NUM, CUST_EINT_TOUCH_PANEL_DEBOUNCE_CN);
+
+	if (!gt1x_int_type) {
+		mt65xx_eint_registration(CUST_EINT_TOUCH_PANEL_NUM, CUST_EINT_TOUCH_PANEL_DEBOUNCE_EN, CUST_EINT_POLARITY_HIGH, tpd_eint_interrupt_handler, 1);
+	} else {
+		mt65xx_eint_registration(CUST_EINT_TOUCH_PANEL_NUM, CUST_EINT_TOUCH_PANEL_DEBOUNCE_EN, CUST_EINT_POLARITY_LOW, tpd_eint_interrupt_handler, 1);
+	}
+    #endif
+    return 0;
+#endif
 }
 
 #ifdef AGOLD_HARDWARE_INFO
@@ -521,10 +539,10 @@ static int gt1x_get_fw_ver(void)
 	{
 		printk("%s : get TP config_ver error!\n",__func__);
 		return -1;
-	}
+	}	
 	printk("geng_tp_ver ver = %02x\n",ver);
 	return ver;
-}
+}	
 #endif
 
 #if defined(AGOLD_CTP_FOR_HAND)
@@ -553,7 +571,7 @@ static void tpd_handler2(int temp)
 		}else{
 			printk("[chenpeng]  error!  should not print this ! \n");
 		}
-
+	
 }
 #endif
 
@@ -561,10 +579,12 @@ static void tpd_handler2(int temp)
 static s32 tpd_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 	s32 err = 0;
+#if GTP_HAVE_TOUCH_KEY
 	s32 idx = 0;
+#endif
 
     if (RECOVERY_BOOT == get_boot_mode())   // important
-        return -1;
+        return 0;
 	client->addr = 0x5d;
 	gt1x_i2c_client = client;
     spin_lock_init(&irq_lock);
@@ -582,9 +602,11 @@ static s32 tpd_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
 		err = PTR_ERR(thread);
 		GTP_ERROR(TPD_DEVICE " failed to create kernel thread: %d\n", err);
 	}
-	for (idx = 0; idx < tpd_dts_data.tpd_key_num; idx++) {
-		input_set_capability(tpd->dev, EV_KEY, tpd_dts_data.tpd_key_local[idx]);
+#if GTP_HAVE_TOUCH_KEY
+	for (idx = 0; idx < GTP_MAX_KEY_NUM; idx++) {
+		input_set_capability(tpd->dev, EV_KEY, gt1x_touch_key_array[idx]);
 	}
+#endif
 
 #if GTP_GESTURE_WAKEUP
 	g_gesture_support = 0x7E7F;
@@ -623,7 +645,7 @@ static s32 tpd_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
 static irqreturn_t tpd_eint_interrupt_handler(unsigned irq, struct irq_desc *desc)
 {
     TPD_DEBUG_PRINT_INT;
-
+	
 	tpd_flag = 1;
 
 	/* enter EINT handler disable INT, make sure INT is disable when handle touch event including top/bottom half */
@@ -674,11 +696,12 @@ void gt1x_touch_down(s32 x, s32 y, s32 size, s32 id)
 	input_report_abs(tpd->dev, ABS_MT_POSITION_Y, y);
 	input_mt_sync(tpd->dev);
 #endif
-    if (tpd_dts_data.use_tpd_button) {
+
+#ifdef TPD_HAVE_BUTTON
 	if (FACTORY_BOOT == get_boot_mode() || RECOVERY_BOOT == get_boot_mode()) {
 		tpd_button(x, y, 1);
 	}
-    }
+#endif
 }
 
 void gt1x_touch_up(s32 id)
@@ -690,18 +713,18 @@ void gt1x_touch_up(s32 id)
 	input_report_key(tpd->dev, BTN_TOUCH, 0);
 	input_mt_sync(tpd->dev);
 #endif
-    if (tpd_dts_data.use_tpd_button) {
+#ifdef TPD_HAVE_BUTTON
 	if (FACTORY_BOOT == get_boot_mode() || RECOVERY_BOOT == get_boot_mode()) {
 		tpd_button(0, 0, 0);
 	}
-    }
+#endif
 }
 
 #if GTP_CHARGER_SWITCH
 #ifdef MT6573
 #define CHR_CON0      (0xF7000000+0x2FA00)
 #else
-extern bool upmu_is_chr_det(void);
+extern kal_bool upmu_is_chr_det(void);
 #endif
 
 u32 gt1x_get_charger_status(void)
@@ -743,7 +766,7 @@ static int tpd_event_handler(void *unused)
             GTP_DEBUG("Ignore interrupts during fw updating.");
             continue;
         }
-
+        
 		mutex_lock(&i2c_access);
 		/* don't reset before "if (gt1x_halt..."  */
 
@@ -903,6 +926,8 @@ GTP_INFO("[geng_gt1x] regulator_get");
 #endif
 #endif
 #endif
+	boot_mode = get_boot_mode();
+	if(boot_mode==3||boot_mode==7) boot_mode = NORMAL_BOOT;
 
 #if TPD_SUPPORT_I2C_DMA
 	mutex_init(&dma_mutex);
@@ -922,16 +947,23 @@ GTP_INFO("[geng_gt1x] regulator_get");
 	if (tpd_load_status == 0)	// disable auto load touch driver for linux3.0 porting
 	{
 		GTP_ERROR("add error touch panel driver.");
+		//[Agold][Jason][20171031] 释放2.8v
 		gt1x_power_switch(SWITCH_OFF);
-		i2c_del_driver(&tpd_i2c_driver);
+		if(boot_mode != RECOVERY_BOOT)
+		{
+			i2c_del_driver(&tpd_i2c_driver);
+		}
 		return -1;
 	}
 	input_set_abs_params(tpd->dev, ABS_MT_TRACKING_ID, 0, (GTP_MAX_TOUCH - 1), 0, 0);
+#if TPD_HAVE_BUTTON
 	if (tpd_dts_data.use_tpd_button) {
 		/*initialize tpd button data*/
 		tpd_button_setting(tpd_dts_data.tpd_key_num, tpd_dts_data.tpd_key_local,
 		tpd_dts_data.tpd_key_dim_local);
 	}
+#endif
+
 #if (defined(TPD_WARP_START) && defined(TPD_WARP_END))
 	TPD_DO_WARP = 1;
 	memcpy(tpd_wb_start, tpd_wb_start_local, TPD_WARP_CNT * 4);
@@ -976,11 +1008,6 @@ static struct tpd_driver_t tpd_device_driver = {
 	.tpd_local_init = tpd_local_init,
 	.suspend = tpd_suspend,
 	.resume = tpd_resume,
-#ifdef TPD_HAVE_BUTTON
-	.tpd_have_button = 1,
-#else
-	.tpd_have_button = 0,
-#endif
 #ifdef AGOLD_HARDWARE_INFO
 	.get_tp_fw_ver = gt1x_get_fw_ver,
 #endif
@@ -1001,12 +1028,15 @@ void tpd_on(void)
 {
 	s32 ret = -1, retry = 0;
 
-	if (gt1x_suspend_status) {
+	if (gt1x_suspend_status)
+	{
 		ret = tpd_power_on();
 		if (ret < 0) {
 			GTP_ERROR("I2C Power on ERROR!");
 		}
-	} else {
+	}
+	else
+	{
 		while (retry++ < 5) {
 			ret = tpd_power_on();
 			if (ret < 0) {
@@ -1032,8 +1062,8 @@ static int __init tpd_driver_init(void)
 {
 	GTP_INFO("Goodix touch panel driver init.");
 
+	//i2c_register_board_info(TPD_I2C_NUMBER, &i2c_tpd, 1);
 	tpd_get_dts_info();
-
 	if (tpd_driver_add(&tpd_device_driver) < 0) {
 		GTP_ERROR("add generic driver failed.");
 	}

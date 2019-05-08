@@ -18,7 +18,7 @@
 
 /* #if (defined(TPD_WARP_START) && defined(TPD_WARP_END)) */
 /* #define TPD_DO_WARP */
-int TPD_DO_WARP;
+int TPD_DO_WARP = 0;
 int tpd_wb_start[TPD_WARP_CNT] = { 0 };
 int tpd_wb_end[TPD_WARP_CNT] = { 0 };
 
