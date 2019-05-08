@@ -425,7 +425,7 @@ static long CAM_CAL_Ioctl(
 
 	ptempbuf = (stCAM_CAL_INFO_STRUCT *)pBuff;
 	if (NULL == pBuff) /* Dream add for non-null at 2016.02.29 */
-		return -ENOMEM;	
+		return -ENOMEM;
 	if (ptempbuf->u4Length <= 0 || ptempbuf->u4Length > 65535) {
 		kfree(pBuff);
 		CAM_CALDB("ptempbuf->u4Length range is failed\n");
@@ -652,7 +652,7 @@ static int CAM_CAL_i2c_detect(struct i2c_client *client, struct i2c_board_info *
 static int CAM_CAL_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id);
 static int CAM_CAL_i2c_remove(struct i2c_client *);
 
-static const struct i2c_device_id CAM_CAL_i2c_id[] = {{CAM_CAL_DRVNAME, 0}, {} };
+static const struct i2c_device_id CAM_CAL_i2c_id[] = { {CAM_CAL_DRVNAME, 0}, {} };
 
 
 

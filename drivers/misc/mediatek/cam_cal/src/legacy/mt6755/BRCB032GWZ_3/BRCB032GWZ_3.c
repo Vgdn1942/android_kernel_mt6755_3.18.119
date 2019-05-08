@@ -447,10 +447,10 @@ static long CAM_CAL_Ioctl(
         CAM_CALDB("11111111111\n");
 		} else if (ptempbuf->u4Offset == 0x000CB032) {
 			*(u32 *)pWorkingBuff = 0x000CB032;
-		CAM_CALDB("22222222\n");	
+		CAM_CALDB("22222222\n");
 		} else if (ptempbuf->u4Offset == 0x100CB032) {
 			*(u32 *)pWorkingBuff = 0x100CB032;
-		CAM_CALDB("3333333333\n");	
+		CAM_CALDB("3333333333\n");
 		} else if (ptempbuf->u4Offset == 0xFFFFFFFF) {
 			char puSendCmd[1] = {0, };
 
@@ -473,7 +473,7 @@ static long CAM_CAL_Ioctl(
 				ptempbuf->u4Length, pWorkingBuff); */
 			CAM_CALDB("[zbl]ptempbuf->u4Length=0x%x\n",ptempbuf->u4Length);
 			i4RetValue = iReadData((u16)ptempbuf->u4Offset, ptempbuf->u4Length,pWorkingBuff);
-			
+
 #if 0
 				if (0 < test_retry) {
 					CAM_CALDB("[BRCB032GWZ] Test error (%d) Read retry (%d)\n",
@@ -692,7 +692,7 @@ static const struct file_operations g_stCAM_CAL_fops = {
 	/* .ioctl = CAM_CAL_Ioctl */
 	#ifdef CONFIG_COMPAT
 	.compat_ioctl = brcb032gez_Ioctl_Compat,
-    #endif	
+    #endif
 	.unlocked_ioctl = CAM_CAL_Ioctl
 };
 
@@ -775,7 +775,7 @@ static int CAM_CAL_i2c_detect(struct i2c_client *client, struct i2c_board_info *
 static int CAM_CAL_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id);
 static int CAM_CAL_i2c_remove(struct i2c_client *);
 
-static const struct i2c_device_id CAM_CAL_i2c_id[] = {{CAM_CAL_DRVNAME, 0}, {} };
+static const struct i2c_device_id CAM_CAL_i2c_id[] = { {CAM_CAL_DRVNAME, 0}, {} };
 #if 0 /* test110314 Please use the same I2C Group ID as Sensor */
 static unsigned short force[] = {CAM_CAL_I2C_GROUP_ID, S24CS64A_DEVICE_ID, I2C_CLIENT_END, I2C_CLIENT_END};
 #else
@@ -787,7 +787,7 @@ I2C_CLIENT_END}; */
 
 #ifdef CONFIG_OF
 static const struct of_device_id imx258otp_of_match[] = {
-	{.compatible = "mediatek,EEPROM"},
+	{.compatible = "mediatek,eeprom"},
 	{},
 };
 #endif

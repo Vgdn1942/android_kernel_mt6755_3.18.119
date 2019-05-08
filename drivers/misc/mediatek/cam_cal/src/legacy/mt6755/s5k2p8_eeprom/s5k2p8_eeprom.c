@@ -328,9 +328,9 @@ static long CAM_CAL_Ioctl(
 	}
 
 	ptempbuf = (stCAM_CAL_INFO_STRUCT *)pBuff;
-	if(NULL == pBuff) 
+	if(NULL == pBuff)
 		return -ENOMEM;
-	else 
+	else
 		pu1Params = kmalloc(ptempbuf->u4Length, GFP_KERNEL);
 	if (NULL == pu1Params) {
 		kfree(pBuff);
@@ -556,7 +556,7 @@ static int CAM_CAL_i2c_detect(struct i2c_client *client, struct i2c_board_info *
 static int CAM_CAL_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id);
 static int CAM_CAL_i2c_remove(struct i2c_client *);
 
-static const struct i2c_device_id CAM_CAL_i2c_id[] = {{CAM_CAL_DRVNAME, 0}, {} };
+static const struct i2c_device_id CAM_CAL_i2c_id[] = { {CAM_CAL_DRVNAME, 0}, {} };
 
 
 
