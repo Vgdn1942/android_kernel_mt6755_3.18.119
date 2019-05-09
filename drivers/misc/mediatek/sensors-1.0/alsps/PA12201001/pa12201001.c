@@ -56,48 +56,45 @@ u16 als_count=0;
 #define I2C_FLAG_WRITE	0
 #define I2C_FLAG_READ	1
 
-#if defined(AGOLD_PROX_CALI_ENABLE)
 #ifndef AGOLD_DEFINED_ALSPS_PA12201001_PS_THD_VALUE
 #define AGOLD_DEFINED_ALSPS_PA12201001_PS_THD_VALUE	"0x60"
 #endif
 #define AGOLD_PA12201001_THRESHOLD_MIN 0X30
-
 extern long agold_strtol(char *str);
-#endif
 
 static unsigned int PA12201001_Current_Ps_Thd_Value = 0x60;
 static int intr_flag_value = 0;
-#if defined(AGOLD_PROX_CALI_ENABLE)
 static DEFINE_SPINLOCK(ps_cali_lock);
-#endif
 
 static int g_interrupt_flag = 0;
+struct alsps_hw alsps_cust_pa122001001;
+static struct alsps_hw *hw = &alsps_cust_pa122001001;
+struct platform_device *alsps_PltFmDev;
 
 static int pa12201001_local_init(void);
 static int pa12201001_remove(void);
-static int pa12201001_init_flag = -1; // 0<==>OK -1 <==> fail
+static int pa12201001_init_flag =-1; // 0<==>OK -1 <==> fail
 static struct alsps_init_info pa12201001_init_info = {
-		.name = PA12201001_DEV_NAME,
+		.name = "pa12201001",
 		.init = pa12201001_local_init,
 		.uninit = pa12201001_remove,
+
 };
 
 /*----------------------------------------------------------------------------*/
 static int pa12201001_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id);
 static int pa12201001_i2c_remove(struct i2c_client *client);
 static int pa12201001_i2c_detect(struct i2c_client *client, struct i2c_board_info *info);
-#ifdef CONFIG_PM_SLEEP
 static int pa12201001_i2c_suspend(struct i2c_client *client, pm_message_t msg);
 static int pa12201001_i2c_resume(struct i2c_client *client);
-#endif
 
-static const struct i2c_device_id pa12201001_i2c_id[] = { {PA12201001_DEV_NAME, 0}, {} };
+static const struct i2c_device_id pa12201001_i2c_id[] = {{PA12201001_DEV_NAME,0},{}};
 
 static int pa12201001_read_als(struct i2c_client *client, u16 *data);
 static int pa12201001_read_ps(struct i2c_client *client, u8 *data);
 /*----------------------------------------------------------------------------*/
 struct pa12201001_priv {
-	struct alsps_hw hw;
+	struct alsps_hw  *hw;
 	struct i2c_client *client;
 	struct work_struct	eint_work;
 
@@ -172,6 +169,7 @@ static struct i2c_driver pa12201001_i2c_driver = {
 #endif
 	},
 };
+
 
 /*----------------------------------------------------------------------------*/
 
@@ -404,7 +402,7 @@ static int pa12201001_get_ps_value(struct pa12201001_priv *obj, u8 ps)
 		invalid = 1;
 	}
 
-	else if(atomic_read(&obj->ps_deb_on) == 1)
+	else if(1 == atomic_read(&obj->ps_deb_on))
 	{
 		unsigned long endt = atomic_read(&obj->ps_deb_end);
 		APS_LOG("[mcz] endt = 0x%lu\n",endt);
@@ -413,7 +411,7 @@ static int pa12201001_get_ps_value(struct pa12201001_priv *obj, u8 ps)
 			atomic_set(&obj->ps_deb_on, 0);
 		}
 
-		if (atomic_read(&obj->ps_deb_on) == 1)
+		if (1 == atomic_read(&obj->ps_deb_on))
 		{
 			invalid = 1;
 		}
@@ -434,7 +432,7 @@ static int pa12201001_get_ps_value(struct pa12201001_priv *obj, u8 ps)
 				APS_DBG("PS:  %05d => %05d\n", ps, val);
 			}
 		}
-		if(test_bit(CMC_BIT_PS, &obj->enable) == 1)
+		if(0 == test_bit(CMC_BIT_PS,  &obj->enable))
 		{
 		    //if ps is disable do not report value
 		    APS_DBG("PS: not enable and do not report this value\n");
@@ -463,7 +461,7 @@ static int pa12201001_get_als_value(struct pa12201001_priv *obj, u16 als)
 		int invalid = 0;
 		for(idx = 0; idx < obj->als_level_num; idx++)
 		{
-			if(als < obj->hw.als_level[idx])
+			if(als < obj->hw->als_level[idx])
 			{
 				break;
 			}
@@ -474,7 +472,7 @@ static int pa12201001_get_als_value(struct pa12201001_priv *obj, u16 als)
 			idx = obj->als_value_num - 1;
 		}
 
-		if(atomic_read(&obj->als_deb_on) == 1)
+		if(1 == atomic_read(&obj->als_deb_on))
 		{
 			unsigned long endt = atomic_read(&obj->als_deb_end);
 			if(time_after(jiffies, endt))
@@ -482,7 +480,7 @@ static int pa12201001_get_als_value(struct pa12201001_priv *obj, u16 als)
 				atomic_set(&obj->als_deb_on, 0);
 			}
 
-			if(atomic_read(&obj->als_deb_on) == 1)
+			if(1 == atomic_read(&obj->als_deb_on))
 			{
 				invalid = 1;
 			}
@@ -492,19 +490,20 @@ static int pa12201001_get_als_value(struct pa12201001_priv *obj, u16 als)
 		{
 			if (atomic_read(&obj->trace) & CMC_TRC_CVT_ALS)
 			{
-				APS_DBG("ALS: %05d => %05d\n", als, obj->hw.als_value[idx]);
+				APS_DBG("ALS: %05d => %05d\n", als, obj->hw->als_value[idx]);
 			}
 
-			return obj->hw.als_value[idx];
+			return obj->hw->als_value[idx];
 		}
 		else
 		{
 			if(atomic_read(&obj->trace) & CMC_TRC_CVT_ALS)
 			{
-				APS_DBG("ALS: %05d => %05d (-1)\n", als, obj->hw.als_value[idx]);
+				APS_DBG("ALS: %05d => %05d (-1)\n", als, obj->hw->als_value[idx]);
 			}
 			return -1;
 		}
+
 }
 
 static int pa12201001_get_ps_raw_data(int *psdata)
@@ -554,7 +553,7 @@ static ssize_t pa12201001_store_config(struct device_driver *ddri, const char *b
 		return 0;
 	}
 
-	if(sscanf(buf, "%d %d %d %d %d", &retry, &als_deb, &mask, &thres, &ps_deb) == 5)
+	if(5 == sscanf(buf, "%d %d %d %d %d", &retry, &als_deb, &mask, &thres, &ps_deb))
 	{
 		atomic_set(&pa12201001_obj->i2c_retry, retry);
 		atomic_set(&pa12201001_obj->als_debounce, als_deb);
@@ -591,7 +590,7 @@ static ssize_t pa12201001_store_trace(struct device_driver *ddri, const char *bu
 		return 0;
 	}
 
-	if(sscanf(buf, "0x%x", &trace) == 1)
+	if(1 == sscanf(buf, "0x%x", &trace))
 	{
 		atomic_set(&pa12201001_obj->trace, trace);
 	}
@@ -641,11 +640,11 @@ static ssize_t pa12201001_show_ps(struct device_driver *ddri, char *buf)
 	}
 	else
 	{
-#if defined(AGOLD_PROX_CALI_ENABLE)
+		#if defined(AGOLD_PROX_CALI_ENABLE)
 	    if( raw_ps > PA12201001_Current_Ps_Thd_Value)
-#else
+		#else
 	    if( raw_ps > (ssize_t)atomic_read(&pa12201001_obj->ps_thd_val_high))
-#endif
+		#endif
 		{
 			dat = 0x80;
         }
@@ -698,7 +697,7 @@ static ssize_t pa12201001_store_send(struct device_driver *ddri, const char *buf
 		APS_ERR("pa12201001_obj is null!!\n");
 		return 0;
 	}
-	else if(sscanf(buf, "%x %x", &addr, &cmd) != 2)
+	else if(2 != sscanf(buf, "%x %x", &addr, &cmd))
 	{
 		APS_ERR("invalid format: '%s'\n", buf);
 		return 0;
@@ -742,8 +741,15 @@ static ssize_t pa12201001_show_status(struct device_driver *ddri, char *buf)
 		return 0;
 	}
 
-	len += snprintf(buf+len, PAGE_SIZE-len, "CUST: %d, (%d %d)\n",
-		pa12201001_obj->hw.i2c_num, pa12201001_obj->hw.power_id, pa12201001_obj->hw.power_vol);
+	if(pa12201001_obj->hw)
+	{
+		len += snprintf(buf+len, PAGE_SIZE-len, "CUST: %d, (%d %d)\n",
+			pa12201001_obj->hw->i2c_num, pa12201001_obj->hw->power_id, pa12201001_obj->hw->power_vol);
+	}
+	else
+	{
+		len += snprintf(buf+len, PAGE_SIZE-len, "CUST: NULL\n");
+	}
 
 	len += snprintf(buf+len, PAGE_SIZE-len, "REGS: %02X %02X %02X %02lX %02lX\n",
 				atomic_read(&pa12201001_obj->als_cmd_val), atomic_read(&pa12201001_obj->ps_cmd_val),
@@ -794,7 +800,7 @@ static ssize_t pa12201001_show_alslv(struct device_driver *ddri, char *buf)
 
 	for(idx = 0; idx < pa12201001_obj->als_level_num; idx++)
 	{
-		len += snprintf(buf+len, PAGE_SIZE-len, "%d ", pa12201001_obj->hw.als_level[idx]);
+		len += snprintf(buf+len, PAGE_SIZE-len, "%d ", pa12201001_obj->hw->als_level[idx]);
 	}
 	len += snprintf(buf+len, PAGE_SIZE-len, "\n");
 	return len;
@@ -809,10 +815,10 @@ static ssize_t pa12201001_store_alslv(struct device_driver *ddri, const char *bu
 	}
 	else if(!strcmp(buf, "def"))
 	{
-		memcpy(pa12201001_obj->als_level, pa12201001_obj->hw.als_level, sizeof(pa12201001_obj->als_level));
+		memcpy(pa12201001_obj->als_level, pa12201001_obj->hw->als_level, sizeof(pa12201001_obj->als_level));
 	}
 	else if(pa12201001_obj->als_level_num != read_int_from_buf(pa12201001_obj, buf, count,
-			pa12201001_obj->hw.als_level, pa12201001_obj->als_level_num))
+			pa12201001_obj->hw->als_level, pa12201001_obj->als_level_num))
 	{
 		APS_ERR("invalid format: '%s'\n", buf);
 	}
@@ -831,7 +837,7 @@ static ssize_t pa12201001_show_alsval(struct device_driver *ddri, char *buf)
 
 	for(idx = 0; idx < pa12201001_obj->als_value_num; idx++)
 	{
-		len += snprintf(buf+len, PAGE_SIZE-len, "%d ", pa12201001_obj->hw.als_value[idx]);
+		len += snprintf(buf+len, PAGE_SIZE-len, "%d ", pa12201001_obj->hw->als_value[idx]);
 	}
 	len += snprintf(buf+len, PAGE_SIZE-len, "\n");
 	return len;
@@ -846,10 +852,10 @@ static ssize_t pa12201001_store_alsval(struct device_driver *ddri, const char *b
 	}
 	else if(!strcmp(buf, "def"))
 	{
-		memcpy(pa12201001_obj->als_value, pa12201001_obj->hw.als_value, sizeof(pa12201001_obj->als_value));
+		memcpy(pa12201001_obj->als_value, pa12201001_obj->hw->als_value, sizeof(pa12201001_obj->als_value));
 	}
 	else if(pa12201001_obj->als_value_num != read_int_from_buf(pa12201001_obj, buf, count,
-			pa12201001_obj->hw.als_value, pa12201001_obj->als_value_num))
+			pa12201001_obj->hw->als_value, pa12201001_obj->als_value_num))
 	{
 		APS_ERR("invalid format: '%s'\n", buf);
 	}
@@ -1021,7 +1027,7 @@ static void pa12201001_eint_work(struct work_struct *work)
 	int sendvalue = 0;
 	u8 cfgdata=0;
 
-#ifdef CUSTOM_KERNEL_SENSORHUB
+	#ifdef CUSTOM_KERNEL_SENSORHUB
 	int psvalue = 0;
 	if((pa12201001_read_ps(obj->client, &obj->ps)))
 	{
@@ -1033,7 +1039,7 @@ static void pa12201001_eint_work(struct work_struct *work)
     {
         printk("pa12201001_eint_work err\n");
     }
-#else //#ifdef CUSTOM_KERNEL_SENSORHUB
+	#else //#ifdef CUSTOM_KERNEL_SENSORHUB
 
 	struct pa12201001_priv *obj = (struct pa12201001_priv *)container_of(work, struct pa12201001_priv, eint_work);
 
@@ -1096,9 +1102,11 @@ EXIT_INTR_ERR:
 	enable_irq(obj->irq);
 	printk("pa12201001_eint_work err: %d\n", res);
 	return;
-#endif //#ifdef CUSTOM_KERNEL_SENSORHUB
+	#endif //#ifdef CUSTOM_KERNEL_SENSORHUB
 
 }
+
+
 
 #ifdef CUSTOM_KERNEL_SENSORHUB
 static void pa12201001_init_done_work(struct work_struct *work)
@@ -1242,7 +1250,9 @@ int pa12201001_setup_eint(struct i2c_client *client)
 
 	g_pa12201001_ptr = obj;
 
-	pinctrl = devm_pinctrl_get(&client->dev);
+	alsps_PltFmDev = get_alsps_platformdev();
+
+	pinctrl = devm_pinctrl_get(&alsps_PltFmDev->dev);
 	if (IS_ERR(pinctrl))
 	{
 		ret = PTR_ERR(pinctrl);
@@ -1298,7 +1308,6 @@ int pa12201001_setup_eint(struct i2c_client *client)
 	return 0;
 }
 
-#if 0
 /************************************************************/
 static int pa12201001_open(struct inode *inode, struct file *file)
 {
@@ -1318,7 +1327,7 @@ static int pa12201001_release(struct inode *inode, struct file *file)
 	file->private_data = NULL;
 	return 0;
 }
-#endif
+
 
 int pa12201001_set_ps_threshold_factory(struct i2c_client *client,int ps_thd_value,int high_th)
 {
@@ -1484,13 +1493,13 @@ static int PA12201001_get_ps_data_for_cali(struct i2c_client *client, int flag)
 	}
 	if((res = pa12201001_enable_ps(client, 0)))
 	{
-		APS_ERR("enable ps fail: %ld\n", res);
+		APS_ERR("enable als fail: %ld\n", res);
 		return res;
 	}
 
 	if((res = pa12201001_enable_ps(client, 1)))
 	{
-		APS_ERR("enable ps fail: %ld\n", res);
+		APS_ERR("enable als fail: %ld\n", res);
 		return res;
 	}
 
@@ -1537,8 +1546,6 @@ static int PA12201001_get_ps_data_for_cali(struct i2c_client *client, int flag)
 }
 #endif
 #endif
-
-#if 0
 static long pa12201001_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 		struct i2c_client *client = (struct i2c_client*)file->private_data;
@@ -1548,11 +1555,9 @@ static long pa12201001_unlocked_ioctl(struct file *file, unsigned int cmd, unsig
 		u8 dat;
 		uint32_t enable;
 		int ps_result;
-#if defined(AGOLD_PROX_CALI_ENABLE)
 		int  ps_dat[2] = {0,0};
-#endif
 		int ps_cali_data;
-#ifdef CUSTOM_KERNEL_SENSORHUB
+		#ifdef CUSTOM_KERNEL_SENSORHUB
 		SCP_SENSOR_HUB_DATA data;
 		PA12_CUST_DATA *pCustData;
 		int len;
@@ -1560,7 +1565,7 @@ static long pa12201001_unlocked_ioctl(struct file *file, unsigned int cmd, unsig
 		data.set_cust_req.sensorType = ID_PROXIMITY;
 		data.set_cust_req.action = SENSOR_HUB_SET_CUST;
 		pCustData = (PA12_CUST_DATA *)(&data.set_cust_req.custData);
-#endif //#ifdef CUSTOM_KERNEL_SENSORHUB
+		#endif //#ifdef CUSTOM_KERNEL_SENSORHUB
 
 		switch (cmd)
 		{
@@ -1616,7 +1621,7 @@ static long pa12201001_unlocked_ioctl(struct file *file, unsigned int cmd, unsig
 
 			case ALSPS_GET_PS_RAW_DATA:
 
-#if defined(AGOLD_PROX_CALI_ENABLE)
+			#if defined(AGOLD_PROX_CALI_ENABLE)
 			err = pa12201001_read_ps(obj->client, &dat);
 			if(err)
 			{
@@ -1630,7 +1635,7 @@ static long pa12201001_unlocked_ioctl(struct file *file, unsigned int cmd, unsig
 				err = -EFAULT;
 				goto err_out;
 			}
-#else
+			#else
 
 			if((err = pa12201001_read_ps(obj->client, &obj->ps)))
 			{
@@ -1643,7 +1648,7 @@ static long pa12201001_unlocked_ioctl(struct file *file, unsigned int cmd, unsig
 				err = -EFAULT;
 				goto err_out;
 			}
-#endif
+			#endif
 				break;
 
 			case ALSPS_SET_ALS_MODE:
@@ -1773,7 +1778,6 @@ static long pa12201001_unlocked_ioctl(struct file *file, unsigned int cmd, unsig
 		err_out:
 		return err;
 }
-#endif
 
 #if defined(AGOLD_PROX_CALI_ENABLE)
 static void agold_pa12201001_set_ps_cali(AGOLD_PS_CALI_DATA_STRUCT ps_cali_dat)
@@ -1790,7 +1794,7 @@ static void agold_pa12201001_set_ps_cali(AGOLD_PS_CALI_DATA_STRUCT ps_cali_dat)
 	else
 	{
 		spin_lock(&ps_cali_lock);
-#if defined(AGOLD_DEFINED_ALSPS_PA12201001_PS_THD_VALUE)
+		#if defined(AGOLD_DEFINED_ALSPS_PA12201001_PS_THD_VALUE)
 		PA12201001_Current_Ps_Thd_Value = agold_strtol(AGOLD_DEFINED_ALSPS_PA12201001_PS_THD_VALUE);
 
 		if( PA12201001_Current_Ps_Thd_Value < AGOLD_PA12201001_THRESHOLD_MIN )
@@ -1800,11 +1804,11 @@ static void agold_pa12201001_set_ps_cali(AGOLD_PS_CALI_DATA_STRUCT ps_cali_dat)
 
 		ps_cali_dat.close = PA12201001_Current_Ps_Thd_Value;
 		ps_cali_dat.far_away = PA12201001_Current_Ps_Thd_Value;
-#else
+		#else
 		PA12201001_Current_Ps_Thd_Value = AGOLD_PA12201001_THRESHOLD_MIN;
 		ps_cali_dat.close = AGOLD_PA12201001_THRESHOLD_MIN;
 		ps_cali_dat.far_away = AGOLD_PA12201001_THRESHOLD_MIN;
-#endif
+		#endif
 		spin_unlock(&ps_cali_lock);
 	}
 	printk("[Bruce] %d, ps_cali_dat.close = 0x%x ,ps_cali_dat.ppcount = 0x%x\n ",__LINE__,ps_cali_dat.close,ps_cali_dat.ppcount);
@@ -1881,9 +1885,10 @@ static int agold_pa12201001_get_ps_raw_data_for_cali(AGOLD_PS_CALI_DATA_STRUCT *
 	printk("[Agold spl] agold_pa12201001_get_ps_raw_data_for_cali end, res = %d\n",res);
 	return res;
 }
+
+
 #endif
 
-#if 0
 /*--------------------misc device related operation functions--------------------------*/
 static struct file_operations pa12201001_fops = {
 	.owner = THIS_MODULE,
@@ -1897,7 +1902,6 @@ static struct miscdevice pa12201001_device = {
 	.name = "pa12201001",
 	.fops = &pa12201001_fops,
 };
-#endif
 
 /*--------------------------------------------------------------------------------------*/
 
@@ -1944,16 +1948,6 @@ static int als_enable_nodata(int en)
 static int als_set_delay(u64 ns)
 {
 	return 0;
-}
-
-static int als_batch(int flag, int64_t samplingPeriodNs, int64_t maxBatchReportLatencyNs)
-{
-	return als_set_delay(samplingPeriodNs);
-}
-
-static int als_flush(void)
-{
-	return als_flush_report();
 }
 
 static int als_get_data(int* value, int* status)
@@ -2054,16 +2048,6 @@ static int ps_set_delay(u64 ns)
 	return 0;
 }
 
-static int ps_batch(int flag, int64_t samplingPeriodNs, int64_t maxBatchReportLatencyNs)
-{
-	return 0;
-}
-
-static int ps_flush(void)
-{
-	return ps_flush_report();
-}
-
 static int ps_get_data(int* value, int* status)
 {
     int err = 0;
@@ -2111,180 +2095,6 @@ static int ps_get_data(int* value, int* status)
 
 	return 0;
 }
-
-static int pa12201001_als_factory_enable_sensor(bool enable_disable, int64_t sample_periods_ms)
-{
-	int err = 0;
-
-	err = als_enable_nodata(enable_disable ? 1 : 0);
-	if (err) {
-		APS_ERR("%s:%s failed\n", __func__, enable_disable ? "enable" : "disable");
-		return -1;
-	}
-	err = als_batch(0, sample_periods_ms * 1000000, 0);
-	if (err) {
-		APS_ERR("%s set_batch failed\n", __func__);
-		return -1;
-	}
-	return 0;
-}
-static int pa12201001_als_factory_get_data(int32_t *data)
-{
-	int status;
-
-	return als_get_data(data, &status);
-}
-static int pa12201001_als_factory_get_raw_data(int32_t *data)
-{
-	int err = 0;
-	struct pa12201001_priv *obj = pa12201001_obj;
-
-	if (!obj) {
-		APS_ERR("obj is null!!\n");
-		return -1;
-	}
-
-	err = pa12201001_read_als(obj->client, &obj->als);
-	if (err) {
-		APS_ERR("%s failed\n", __func__);
-		return -1;
-	}
-	*data = pa12201001_obj->als;
-
-	return 0;
-}
-static int pa12201001_als_factory_enable_calibration(void)
-{
-	return 0;
-}
-static int pa12201001_als_factory_clear_cali(void)
-{
-	return 0;
-}
-static int pa12201001_als_factory_set_cali(int32_t offset)
-{
-	return 0;
-}
-static int pa12201001_als_factory_get_cali(int32_t *offset)
-{
-	return 0;
-}
-static int pa12201001_ps_factory_enable_sensor(bool enable_disable, int64_t sample_periods_ms)
-{
-	int err = 0;
-
-	err = ps_enable_nodata(enable_disable ? 1 : 0);
-	if (err) {
-		APS_ERR("%s:%s failed\n", __func__, enable_disable ? "enable" : "disable");
-		return -1;
-	}
-	err = ps_batch(0, sample_periods_ms * 1000000, 0);
-	if (err) {
-		APS_ERR("%s set_batch failed\n", __func__);
-		return -1;
-	}
-	return err;
-}
-static int pa12201001_ps_factory_get_data(int32_t *data)
-{
-	int err = 0, status = 0;
-
-	err = ps_get_data(data, &status);
-	if (err < 0)
-		return -1;
-	return 0;
-}
-static int pa12201001_ps_factory_get_raw_data(int32_t *data)
-{
-	int err = 0;
-	struct pa12201001_priv *obj = pa12201001_obj;
-
-	err = pa12201001_read_ps(obj->client, &obj->ps);
-	if (err) {
-		APS_ERR("%s failed\n", __func__);
-		return -1;
-	}
-	*data = pa12201001_obj->ps;
-	return 0;
-}
-static int pa12201001_ps_factory_enable_calibration(void)
-{
-	return 0;
-}
-static int pa12201001_ps_factory_clear_cali(void)
-{
-	struct pa12201001_priv *obj = pa12201001_obj;
-
-	obj->ps_cali = 0;
-	return 0;
-}
-static int pa12201001_ps_factory_set_cali(int32_t offset)
-{
-	struct pa12201001_priv *obj = pa12201001_obj;
-
-	obj->ps_cali = offset;
-	return 0;
-}
-static int pa12201001_ps_factory_get_cali(int32_t *offset)
-{
-	struct pa12201001_priv *obj = pa12201001_obj;
-
-	*offset = obj->ps_cali;
-	return 0;
-}
-#if 0
-static int pa12201001_ps_factory_set_threashold(int32_t threshold[2])
-{
-	int err = 0;
-	struct pa12201001_priv *obj = pa12201001_obj;
-
-	APS_ERR("%s set threshold high: 0x%x, low: 0x%x\n", __func__, threshold[0], threshold[1]);
-	atomic_set(&obj->ps_thd_val_high, (threshold[0] + obj->ps_cali));
-	atomic_set(&obj->ps_thd_val_low, (threshold[1] + obj->ps_cali));
-	err = set_psensor_threshold(obj->client);
-
-	if (err < 0) {
-		APS_ERR("set_psensor_threshold fail\n");
-		return -1;
-	}
-	return 0;
-}
-#endif
-static int pa12201001_ps_factory_get_threashold(int32_t threshold[2])
-{
-	struct pa12201001_priv *obj = pa12201001_obj;
-
-	threshold[0] = atomic_read(&obj->ps_thd_val_high) - obj->ps_cali;
-	threshold[1] = atomic_read(&obj->ps_thd_val_low) - obj->ps_cali;
-	return 0;
-}
-
-static struct alsps_factory_fops pa12201001_factory_fops = {
-	.als_enable_sensor = pa12201001_als_factory_enable_sensor,
-	.als_get_data = pa12201001_als_factory_get_data,
-	.als_get_raw_data = pa12201001_als_factory_get_raw_data,
-	.als_enable_calibration = pa12201001_als_factory_enable_calibration,
-	.als_clear_cali = pa12201001_als_factory_clear_cali,
-	.als_set_cali = pa12201001_als_factory_set_cali,
-	.als_get_cali = pa12201001_als_factory_get_cali,
-
-	.ps_enable_sensor = pa12201001_ps_factory_enable_sensor,
-	.ps_get_data = pa12201001_ps_factory_get_data,
-	.ps_get_raw_data = pa12201001_ps_factory_get_raw_data,
-	.ps_enable_calibration = pa12201001_ps_factory_enable_calibration,
-	.ps_clear_cali = pa12201001_ps_factory_clear_cali,
-	.ps_set_cali = pa12201001_ps_factory_set_cali,
-	.ps_get_cali = pa12201001_ps_factory_get_cali,
-//	.ps_set_threashold = pa12201001_ps_factory_set_threashold,
-	.ps_get_threashold = pa12201001_ps_factory_get_threashold,
-};
-
-static struct alsps_factory_public pa12201001_factory_device = {
-	.gain = 1,
-	.sensitivity = 1,
-	.fops = &pa12201001_factory_fops,
-};
-
 static int pa12201001_init_client(struct i2c_client *client)
 {
 	struct pa12201001_priv *obj = i2c_get_clientdata(client);
@@ -2335,8 +2145,9 @@ static int pa12201001_init_client(struct i2c_client *client)
 	sendvalue=PA12_PS_TH_LOW;
 	res=hwmsen_write_byte(client,REG_PS_TL,sendvalue); //set TL threshold
 
+
 	// Polling Setting
-	intmode = (((obj->hw.polling_mode_ps)<<1) | ((obj->hw.polling_mode_als)));
+	intmode = (((obj->hw->polling_mode_ps)<<1) | ((obj->hw->polling_mode_als)));
 	APS_LOG("[mcz]intmode = 0x%x\n",intmode);
 	res=hwmsen_read_byte(client,REG_CFG2,&sendvalue);
 	APS_LOG("[mcz] read: REG_CFG2 sendvalue=0x%x\n",sendvalue);
@@ -2395,7 +2206,6 @@ static int pa12201001_init_client(struct i2c_client *client)
 }
 /*--------------------------------------------------------------------------------*/
 
-#if 0
 int pa12201001_ps_operate(void* self, uint32_t command, void* buff_in, int size_in,
 		void* buff_out, int size_out, int* actualout)
 {
@@ -2564,8 +2374,6 @@ int pa12201001_als_operate(void* self, uint32_t command, void* buff_in, int size
 	return err;
 
 }
-#endif
-
 /*--------------------------------------------------------------------------------*/
 
 static int pa12201001_get_ps_threshold_setting(int type, int value[2])
@@ -2608,7 +2416,7 @@ static int pa12201001_get_ps_threshold_setting(int type, int value[2])
 /*-----------------------------------i2c operations----------------------------------*/
 static int pa12201001_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
-	struct pa12201001_priv *obj = NULL;
+	struct pa12201001_priv *obj;
 
 	int err = 0;
 	u8 value = 0;
@@ -2619,28 +2427,23 @@ static int pa12201001_i2c_probe(struct i2c_client *client, const struct i2c_devi
 	struct ps_control_path ps_ctl = { 0 };
 	struct ps_data_path ps_data = { 0 };
 
-	/* get customization and power on */
 	if(!(obj = kzalloc(sizeof(*obj), GFP_KERNEL)))
 	{
 		err = -ENOMEM;
 		goto exit;
 	}
 
-	err = get_alsps_dts_func(client->dev.of_node, &obj->hw);
-	if (err < 0) {
-		APS_ERR("get customization info from dts failed\n");
-		goto exit_init_failed;
-	}
-
+	memset(obj, 0, sizeof(*obj));memset(obj, 0, sizeof(*obj));
 	pa12201001_obj = obj;
+
+	obj->hw = hw;
 
 	INIT_WORK(&obj->eint_work, pa12201001_eint_work);
 
 	#ifdef CUSTOM_KERNEL_SENSORHUB
-	INIT_WORK(&obj->init_done_work, pa12201001_init_done_work);
+    INIT_WORK(&obj->init_done_work, pa12201001_init_done_work);
 	#endif
 
-	client->addr = 0x1e;
 	obj->client = client;
 	i2c_set_clientdata(client, obj);
 
@@ -2655,28 +2458,29 @@ static int pa12201001_i2c_probe(struct i2c_client *client, const struct i2c_devi
 	atomic_set(&obj->als_suspend, 0);
 	atomic_set(&obj->als_cmd_val, 0xDF);
 	atomic_set(&obj->ps_cmd_val,  0xC1);
-	atomic_set(&obj->ps_thd_val_high,  obj->hw.ps_threshold_high);
-	atomic_set(&obj->ps_thd_val_low,  obj->hw.ps_threshold_low);
-	atomic_set(&obj->als_thd_val_high,  obj->hw.als_threshold_high);
-	atomic_set(&obj->als_thd_val_low,  obj->hw.als_threshold_low);
-	obj->irq_node = of_find_compatible_node(NULL, NULL, "mediatek, als-eint");
+	atomic_set(&obj->ps_thd_val_high,  obj->hw->ps_threshold_high);
+	atomic_set(&obj->ps_thd_val_low,  obj->hw->ps_threshold_low);
+	atomic_set(&obj->als_thd_val_high,  obj->hw->als_threshold_high);
+	atomic_set(&obj->als_thd_val_low,  obj->hw->als_threshold_low);
 
 	obj->enable = 0;
 	obj->pending_intr = 0;
-	obj->als_level_num = sizeof(obj->hw.als_level)/sizeof(obj->hw.als_level[0]);
-	obj->als_value_num = sizeof(obj->hw.als_value)/sizeof(obj->hw.als_value[0]);
+	obj->als_level_num = sizeof(obj->hw->als_level)/sizeof(obj->hw->als_level[0]);
+	obj->als_value_num = sizeof(obj->hw->als_value)/sizeof(obj->hw->als_value[0]);
 
+	obj->irq_node = of_find_compatible_node(NULL, NULL, "mediatek, ALS-eint");
 	/*-----------------------------value need to be confirmed-----------------------------------------*/
 
-	BUG_ON(sizeof(obj->als_level) != sizeof(obj->hw.als_level));
-	memcpy(obj->als_level, obj->hw.als_level, sizeof(obj->als_level));
-	BUG_ON(sizeof(obj->als_value) != sizeof(obj->hw.als_value));
-	memcpy(obj->als_value, obj->hw.als_value, sizeof(obj->als_value));
+	BUG_ON(sizeof(obj->als_level) != sizeof(obj->hw->als_level));
+	memcpy(obj->als_level, obj->hw->als_level, sizeof(obj->als_level));
+	BUG_ON(sizeof(obj->als_value) != sizeof(obj->hw->als_value));
+	memcpy(obj->als_value, obj->hw->als_value, sizeof(obj->als_value));
 	atomic_set(&obj->i2c_retry, 3);
 	set_bit(CMC_BIT_ALS, &obj->enable);
 	set_bit(CMC_BIT_PS, &obj->enable);
 
 	pa12201001_i2c_client = client;
+
 
 	ret=hwmsen_read_byte(client,REG_CFG2,&value);
 	APS_LOG("[mcz] ret = 0x%x, value = 0x%x\n",ret, value);
@@ -2688,8 +2492,7 @@ static int pa12201001_i2c_probe(struct i2c_client *client, const struct i2c_devi
 	}
 	APS_LOG("pa12201001_init_client() OK!\n");
 
-	/* err = misc_register(&pa12201001_device); */
-	err = alsps_factory_device_register(&pa12201001_factory_device);
+	err = misc_register(&pa12201001_device);
 	if(err)
 	{
 		APS_ERR("pa12201001_device register failed\n");
@@ -2711,8 +2514,6 @@ static int pa12201001_i2c_probe(struct i2c_client *client, const struct i2c_devi
 	als_ctl.open_report_data= als_open_report_data;
 	als_ctl.enable_nodata = als_enable_nodata;
 	als_ctl.set_delay  = als_set_delay;
-	als_ctl.batch = als_batch;
-	als_ctl.flush = als_flush;
 	als_ctl.is_report_input_direct = false;
 #ifdef CUSTOM_KERNEL_SENSORHUB
 	als_ctl.is_support_batch = obj->hw->is_batch_supported_als;
@@ -2731,7 +2532,7 @@ static int pa12201001_i2c_probe(struct i2c_client *client, const struct i2c_devi
 	als_data.als_get_raw_data = pa12201001_get_als_raw_data;
 	als_data.vender_div = 100;
 	err = als_register_data_path(&als_data);
-	if (err)
+	if(err)
 	{
 		printk("tregister fail = %d\n", err);
 		goto exit;
@@ -2740,8 +2541,6 @@ static int pa12201001_i2c_probe(struct i2c_client *client, const struct i2c_devi
 	ps_ctl.open_report_data= ps_open_report_data;
 	ps_ctl.enable_nodata = ps_enable_nodata;
 	ps_ctl.set_delay  = ps_set_delay;
-	ps_ctl.batch = ps_batch;
-	ps_ctl.flush = ps_flush;
 	ps_ctl.is_report_input_direct = true;
 #ifdef CUSTOM_KERNEL_SENSORHUB
 	ps_ctl.is_support_batch = obj->hw->is_batch_supported_ps;
@@ -2774,6 +2573,20 @@ static int pa12201001_i2c_probe(struct i2c_client *client, const struct i2c_devi
 		goto exit;
 	}
 
+	err = batch_register_support_info(ID_LIGHT,als_ctl.is_support_batch, 100, 0);
+	if(err)
+	{
+		printk("register light batch support err = %d\n", err);
+		goto exit;
+	}
+
+	err = batch_register_support_info(ID_PROXIMITY,ps_ctl.is_support_batch, 100, 0);
+	if(err)
+	{
+		printk("register proximity batch support err = %d\n", err);
+		goto exit;
+	}
+
 	APS_LOG("%s: OK\n", __func__);
 
 	pa12201001_init_flag = 0;
@@ -2781,11 +2594,10 @@ static int pa12201001_i2c_probe(struct i2c_client *client, const struct i2c_devi
 
 	exit_create_attr_failed:
 	exit_misc_device_register_failed:
+		misc_deregister(&pa12201001_device);
 	exit_init_failed:
 		kfree(obj);
 	exit:
-	obj = NULL;
-	pa12201001_obj = NULL;
 	pa12201001_i2c_client = NULL;
 	APS_ERR("%s: err = %d\n", __func__, err);
 	pa12201001_init_flag = -1;
@@ -2802,6 +2614,12 @@ static int pa12201001_i2c_remove(struct i2c_client *client)
 		APS_ERR("pa12201001_delete_attr fail: %d\n", err);
 	}
 
+	err = misc_deregister(&pa12201001_device);
+	if(err)
+	{
+		APS_ERR("misc_deregister fail: %d\n", err);
+	}
+
 	pa12201001_i2c_client = NULL;
 	i2c_unregister_device(client);
 	kfree(i2c_get_clientdata(client));
@@ -2813,6 +2631,7 @@ static int pa12201001_i2c_detect(struct i2c_client *client, struct i2c_board_inf
 {
 	strcpy(info->type, PA12201001_DEV_NAME);
 	return 0;
+
 }
 
 static int pa12201001_i2c_suspend(struct i2c_client *client, pm_message_t msg)
@@ -2835,7 +2654,7 @@ static int pa12201001_local_init(void)
 		APS_ERR("add driver error\n");
 		return -1;
 	}
-	if(pa12201001_init_flag == -1)
+	if(-1 == pa12201001_init_flag)
 	{
 		APS_ERR("[mcz] i2c del driver.\n");
 		i2c_del_driver(&pa12201001_i2c_driver);
@@ -2854,6 +2673,14 @@ static int pa12201001_remove(void)
 /*----------------------------------------------------------------------------*/
 static int __init pa12201001_init(void)
 {
+	const char *name = "mediatek,pa12201001";
+
+	hw = get_alsps_dts_func(name, hw);
+	if (!hw)
+	{
+		APS_ERR("get_alsps_dts_func fail\n");
+		return 0;
+	}
 	alsps_driver_add(&pa12201001_init_info);
 	return 0;
 }

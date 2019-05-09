@@ -1,4 +1,4 @@
-/* 
+/*
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
  * may be copied, distributed, and modified under those terms.
@@ -21,11 +21,6 @@
 /*pa12201001 als/ps Default*/
 #define PA12_I2C_ADDRESS        0x1E  	//7 bit Address
 
-#define GET_TH_HIGH		1
-#define GET_TH_LOW		2
-#define SET_TH			3
-#define GET_TH_RESULT		4
-
 #define PA12_ALS_TH_HIGH	35000
 #define PA12_ALS_TH_LOW		0
 #define PA12_PS_TH_HIGH		130
@@ -44,7 +39,7 @@
 
 #define PA12_INT_TYPE		0 	// 0:Window type 1:Hysteresis type for Auto Clear flag
 #define PA12_PS_PERIOD		0	// 6.25 ms
-#define PA12_ALS_PERIOD		0	// 0 ms 
+#define PA12_ALS_PERIOD		0	// 0 ms
 
 
 
