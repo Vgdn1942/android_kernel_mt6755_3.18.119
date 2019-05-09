@@ -135,7 +135,6 @@ static struct tpd_data *ts = NULL;
 static struct workqueue_struct *mtk_tpd_wq;
 static struct function_descriptor fd_01;
 static struct function_descriptor fd_34;
-static u8 boot_mode;
 
 /* Register */
 #define FD_ADDR_MAX    	0xE9
@@ -168,7 +167,7 @@ static const unsigned short * const forces[] = { force, NULL };
 //static struct i2c_client_address_data addr_data = { .forces = forces, };
 //static struct i2c_board_info __initdata i2c_tpd={ I2C_BOARD_INFO("mtk-tpd", (0x40>>1))};
 
-static const struct of_device_id S2202_dt_match[] = 
+static const struct of_device_id S2202_dt_match[] =
 {
 	{.compatible = "mediatek,cap_touch"},
 	{},
@@ -218,8 +217,8 @@ static void tpd_down(int x, int y, int p, int trackid)
 	if((0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "270", 3))||(0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "90", 2)))
     {
     	TPD_DEBUG("[wangxing] rotation\n");
-		if(boot_mode!=NORMAL_BOOT && x>=TPD_RES_Y) 
-		{ 
+		if (get_boot_mode() == FACTORY_BOOT && x>=TPD_RES_Y)
+		{
 			int temp;
 			temp = y;
 			y = x;
@@ -227,17 +226,17 @@ static void tpd_down(int x, int y, int p, int trackid)
 			tpd_button(x, y, 1);
 			return;
 		}
-		else if(boot_mode!=NORMAL_BOOT && y>=TPD_RES_Y)
+		else if (get_boot_mode() == FACTORY_BOOT && y>=TPD_RES_Y)
 		{
 			tpd_button(x, y, 1);
-			return;		
+			return;
 		}
 	}
     else
-	{	
+	{
 		TPD_DEBUG("[wangxing] else \n");
-		if(boot_mode!=NORMAL_BOOT && y>=TPD_RES_Y) 
-		{ 
+		if (get_boot_mode() == FACTORY_BOOT && y>=TPD_RES_Y)
+		{
 			TPD_DEBUG("[wangxing] factory mode \n" );
 			tpd_button(x, y, 1);
 			return;
@@ -250,7 +249,7 @@ static void tpd_down(int x, int y, int p, int trackid)
 	input_report_abs(tpd->dev, ABS_MT_TOUCH_MAJOR, 1);
 
 	/*[AGOLD][xxd][begin]*/
-	if((0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "180", 3)) && y <= AGOLD_TPD_RES_Y && boot_mode ==NORMAL_BOOT)
+	if((0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "180", 3)) && y <= AGOLD_TPD_RES_Y && get_boot_mode() != FACTORY_BOOT)
 	{
 	 input_report_abs(tpd->dev, ABS_MT_POSITION_X, AGOLD_TPD_RES_X-x);
 	 input_report_abs(tpd->dev, ABS_MT_POSITION_Y, AGOLD_TPD_RES_Y-y);
@@ -265,7 +264,7 @@ static void tpd_down(int x, int y, int p, int trackid)
 	input_mt_sync(tpd->dev);
 #if 0
 	#ifdef TPD_HAVE_BUTTON
-	if (NORMAL_BOOT != boot_mode)
+	if (get_boot_mode() == FACTORY_BOOT)
 	{
 		tpd_button(x, y, 1);
 	}
@@ -298,7 +297,7 @@ static void tpd_up(int x, int y,int trackid)
 #endif
 #if 0
 	#ifdef TPD_HAVE_BUTTON
-	if (NORMAL_BOOT != boot_mode)
+	if (get_boot_mode() == FACTORY_BOOT)
 	{
 		tpd_button(x, y, 0);
 	}
@@ -328,12 +327,12 @@ static void tpd_work_func(struct work_struct *work)
 	tpd_clear_interrupt(ts->client);
 
 	for (i = 0; i < loop; i++)
-        { 
+        {
 		tpd_i2c_read_data(ts->client, ts->data_base + 8*i, ts->data + 8*i, 8);
 	}
 
 	if (ts->data_length % 8)
-        { 
+        {
 		tpd_i2c_read_data(ts->client, ts->data_base + 8*i, ts->data + 8*i, ts->data_length % 8);
 	}
 
@@ -352,7 +351,7 @@ static void tpd_work_func(struct work_struct *work)
 		ppt->status = finger_status;
 		if (finger_status)
 		{
-			last_key = 0;  
+			last_key = 0;
 			touch_num = 0;
 			finger_reg = &pdata[fsr_len + 5 * i];
 
@@ -369,61 +368,61 @@ static void tpd_work_func(struct work_struct *work)
 			tpd_down(ppt->x, ppt->y, ppt->z, i);
 			//TPD_EM_PRINT(ppt->raw_x, ppt->raw_y, ppt->x, ppt->y, ppt->z, 1);
 		}
-	
+
 		else
 		{
 			ppt = &ts->pre_points[i];
-			//last_point = ppt->status;				
+			//last_point = ppt->status;
 			if (ppt->status)
 			{
 				TPD_DEBUG("finger [%d] status [%d] \n", i, ppt->status);
-				tpd_up(ppt->x, ppt->y, i); 
+				tpd_up(ppt->x, ppt->y, i);
 				//TPD_EM_PRINT(ppt->raw_x, ppt->raw_y, ppt->x, ppt->y, ppt->z, 0);
 			}
 		}
-	
+
 	}
-	
+
 #ifdef TPD_HAVE_BUTTON//TPD_HAVE_TOUCH_KEY
     tpd_i2c_write_byte_data(ts->client, 0xFF, 0x02);
     tpd_i2c_read_data(ts->client,0x00 , &key, 1);
     TPD_DEBUG("[mtk-tpd][trace] STATUS : %x\n", key);
     key = key & 0x0f;
-	 
+
     if (key)
     {
-		
+
     	if(key&0x01)
 		{
 			ppt->x=60;
-			ppt->y=TPD_RES_Y*850/800;   		
+			ppt->y=TPD_RES_Y*850/800;
 		}
 		else if(key&0x02)
 		{
 			ppt->x=300;
-			ppt->y=TPD_RES_Y*850/800;   		
+			ppt->y=TPD_RES_Y*850/800;
 		}
 		else if(key&0x04)
 		{
 			ppt->x=180;
-			ppt->y=TPD_RES_Y*850/800;  		
+			ppt->y=TPD_RES_Y*850/800;
 		}
 		else if(key&0x08)
 		{
 			ppt->x=420;
-			ppt->y=TPD_RES_Y*850/800;   		
+			ppt->y=TPD_RES_Y*850/800;
 		}
-        last_key = 0;  
+        last_key = 0;
 		TPD_DEBUG("[Key][Down] ppt->x = %d, ppt->y = %d, ppt->p = %d\n",ppt->x, ppt->y, ppt->z);
-		tpd_down(ppt->x, ppt->y, ppt->z, key);	
+		tpd_down(ppt->x, ppt->y, ppt->z, key);
     }
 	else if(last_key)
 	{
 		TPD_DEBUG("[Key][Up]>>>>>>>>>>>>\n");
 		tpd_up(0, 0, i);
 	#ifdef TPD_HAVE_BUTTON
-		if(boot_mode!=NORMAL_BOOT && tpd->btn_state) 
-		{ 
+		if(get_boot_mode() == FACTORY_BOOT && tpd->btn_state)
+		{
 			tpd_button(ppt->x, ppt->y, 0);
 		}
 	#endif
@@ -433,7 +432,7 @@ static void tpd_work_func(struct work_struct *work)
 	last_key = key;
     tpd_i2c_write_byte_data(ts->client, 0xFF, 0x00);
 	//input_report_key(tpd->dev, BTN_TOUCH, key);
-#endif	
+#endif
 	input_sync(tpd->dev);
 	ppt = ts->pre_points;
 	ts->pre_points = ts->cur_points;
@@ -643,7 +642,7 @@ static int tp_timer_handler(void)
 			//TPD_DEBUG("[mcz]tmp_data = 0x%x\n",tmp_data);
 			if(0x03 != tmp_data)
 				i2c_smbus_write_i2c_block_data(g_client, 0x6c, 1, &pen_open);
-		
+
 		}
 	}while(!kthread_should_stop());
 	return 0;
@@ -685,8 +684,8 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
 
 	client->addr = 0x20;
 	//tpd_gpio_as_int(GPIO_CTP_INT_PIN);
-	
-	
+
+
 #if !defined CONFIG_MTK_LEGACY
 
 	if(tpd->reg == NULL)
@@ -725,7 +724,7 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
     {
 		if (ret == 0)
 			TPD_DMESG("Empty PDT\n");
-		
+
 		tpd_load_status = -1;
 		TPD_DMESG("Error identifying device (%d)\n", ret);
 		ret = -ENODEV;
@@ -794,14 +793,14 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
 #if defined(AGOLD_CTP_FOR_XS_CHARGE_SHIELD_PEN)
     memset((void*)&r_tpd_timer, 0, sizeof(r_tpd_timer));
     r_tpd_timer.expires  = jiffies + 1000/(1000/HZ);   // wait 1s to stable
-    r_tpd_timer.function = tpd_timer_isr;     
+    r_tpd_timer.function = tpd_timer_isr;
     r_tpd_timer.data     = 0;
     init_timer(&r_tpd_timer);
     add_timer(&r_tpd_timer);
-    
+
     timer_thread = kthread_run(tp_timer_handler,0,"tp_timer");
 	if (IS_ERR(timer_thread))
-	{ 
+	{
 		ret = PTR_ERR(timer_thread );
 		TPD_DEBUG("timer_thread: failed to create kernel thread: %d\n", ret);
 	}
@@ -966,9 +965,9 @@ static int RMI4_check_firmware(struct i2c_client *client,const unsigned char *pg
 	unsigned short UI_block_count;
 	unsigned short CONF_block_count;
 	unsigned short fw_block_size;
-	
 
-	
+
+
   	SynaFirmware = pgm_data;
 	checkSumCode = ExtractLongFromHeader(&(SynaFirmware[0]));
 	m_bootloadImgID = (unsigned int)SynaFirmware[4] + (unsigned int)SynaFirmware[5]*0x100;
@@ -1306,7 +1305,7 @@ static int tpd_local_init(void)
 #if !defined CONFIG_MTK_LEGACY
 	int ret;
 	TPD_DEBUG("tpd_local_init Device Tree get regulator!");
-	
+
 	if(tpd->reg == NULL)
 	{
 		tpd->reg = regulator_get(tpd->tpd_dev, "vtouch");
@@ -1354,9 +1353,6 @@ static int tpd_local_init(void)
     memcpy(tpd_calmat, tpd_def_calmat_local, 8*4);
     memcpy(tpd_def_calmat, tpd_def_calmat_local, 8*4);
 #endif
-
-	boot_mode = get_boot_mode();
-	if (boot_mode == 3) boot_mode = NORMAL_BOOT;
 
 	TPD_DMESG("end %s, %d\n", __FUNCTION__, __LINE__);
 	tpd_type_cap = 1;
