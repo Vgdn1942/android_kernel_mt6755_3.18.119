@@ -21,6 +21,11 @@
 /*pa12201001 als/ps Default*/
 #define PA12_I2C_ADDRESS        0x1E  	//7 bit Address
 
+#define GET_TH_HIGH		1
+#define GET_TH_LOW		2
+#define SET_TH			3
+#define GET_TH_RESULT		4
+
 #define PA12_ALS_TH_HIGH	35000
 #define PA12_ALS_TH_LOW		0
 #define PA12_PS_TH_HIGH		130
