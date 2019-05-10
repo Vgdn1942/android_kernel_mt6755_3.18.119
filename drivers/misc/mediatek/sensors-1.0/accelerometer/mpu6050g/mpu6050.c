@@ -2005,6 +2005,7 @@ static int mpu6050_i2c_probe(struct i2c_client *client, const struct i2c_device_
 		goto exit_kfree;
 	}
 
+	client->addr = 0x69;
 	obj_i2c_data = obj;
 	obj->client = client;
 	/* obj->client->timing = 400; */

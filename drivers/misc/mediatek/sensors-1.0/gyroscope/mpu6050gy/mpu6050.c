@@ -1879,7 +1879,6 @@ static int mpu6050_i2c_probe(struct i2c_client *client, const struct i2c_device_
 		goto exit_init_failed;
 	}
 
-
 	/*GYRO_DBG("gyro_default_i2c_addr: %x\n", client->addr);*/
 #ifdef MPU6050_ACCESS_BY_GSE_I2C
 	obj->hw.addr = MPU6050_I2C_SLAVE_ADDR;	/* mtk i2c not allow to probe two same address */
@@ -1891,6 +1890,7 @@ static int mpu6050_i2c_probe(struct i2c_client *client, const struct i2c_device_
 		GYRO_INFO("gyro_use_i2c_addr: %x\n", client->addr);
 	}
 
+	client->addr = 0x69;
 	obj_i2c_data = obj;
 	obj->client = client;
 	new_client = obj->client;

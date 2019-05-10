@@ -17,7 +17,7 @@
 
 #include <linux/ioctl.h>
 
-#define MPU6050_ACCESS_BY_GSE_I2C
+//#define MPU6050_ACCESS_BY_GSE_I2C
 
 #ifdef MPU6050_ACCESS_BY_GSE_I2C
 #define MPU6050_I2C_SLAVE_ADDR		(0xD2)	/* mtk i2c not allow to probe two same address */
