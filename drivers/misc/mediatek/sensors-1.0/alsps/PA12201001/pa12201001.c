@@ -65,7 +65,8 @@ u16 als_count=0;
 extern long agold_strtol(char *str);
 #endif
 
-static unsigned int PA12201001_Current_Ps_Thd_Value = 0x60;
+static unsigned int PA12201001_Current_Ps_Thd_Value = 0xA;
+
 static int intr_flag_value = 0;
 #if defined(AGOLD_PROX_CALI_ENABLE)
 static DEFINE_SPINLOCK(ps_cali_lock);
@@ -630,7 +631,7 @@ static ssize_t pa12201001_show_ps(struct device_driver *ddri, char *buf)
 	u8 raw_ps;
 	if(!pa12201001_obj)
 	{
-		APS_ERR("cm3623_obj is null!!\n");
+		APS_ERR("pa12201001_obj is null!!\n");
 		return 0;
 	}
 
