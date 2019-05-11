@@ -18,7 +18,7 @@
 #include <linux/device.h>
 #include <linux/types.h>
 
-#define M_CUST_I2C_ADDR_NUM 2
+#define M_CUST_I2C_ADDR_NUM 4
 
 struct mag_hw {
 	int i2c_num;
