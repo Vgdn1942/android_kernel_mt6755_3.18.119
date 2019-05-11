@@ -77,26 +77,6 @@
  */
 
 /*******************************************************************/
-#define SENODIAIO                   0xA1
-
-/* IOCTLs for st480d */
-#define MSENSOR_IOCTL_SET_CALIDATA     	  	_IOW(MSENSOR, 0x0a, int)
-#define MSENSOR_IOCTL_SET_POSTURE        	_IOW(MSENSOR, 0x09, int)
-
-#define IOCTL_SENSOR_GET_DATA_MAG           _IO(SENODIAIO, 0x01)
-#define IOCTL_SENSOR_WRITE_DATA_COMPASS     _IO(SENODIAIO, 0x02)
-#define IOCTL_SENSOR_GET_COMPASS_FLAG	    _IO(SENODIAIO, 0x03)
-#define IOCTL_SENSOR_GET_COMPASS_DELAY 	    _IO(SENODIAIO, 0x04)
-
-#ifdef CONFIG_COMPAT
-#define COMPAT_MSENSOR_IOCTL_SET_CALIDATA     	  	_IOW(MSENSOR, 0x0a, compat_int_t)
-#define COMPAT_MSENSOR_IOCTL_SET_POSTURE        	_IOW(MSENSOR, 0x09, compat_int_t)
-
-#define COMPAT_IOCTL_SENSOR_GET_DATA_MAG           _IO(SENODIAIO, 0x01)
-#define COMPAT_IOCTL_SENSOR_WRITE_DATA_COMPASS     _IO(SENODIAIO, 0x02)
-#define COMPAT_IOCTL_SENSOR_GET_COMPASS_FLAG	    _IO(SENODIAIO, 0x03)
-#define COMPAT_IOCTL_SENSOR_GET_COMPASS_DELAY 	    _IO(SENODIAIO, 0x04)
-#endif
 
 struct SensorData {
 	rwlock_t datalock;
