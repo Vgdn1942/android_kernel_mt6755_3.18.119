@@ -1,0 +1,5 @@
+
+config MTK_HSPPAD030
+	bool "HSPPAD030 for MediaTek package"
+	default n
+

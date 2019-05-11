@@ -11,13 +11,9 @@
 # GNU General Public License for more details.
 #
 
-# In case the platform does NOT support this type of sensors
+
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/sensors-1.0/barometer/inc
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/sensors-1.0/hwmon/include
 
-obj-y   +=  barometer.o barometer_factory.o
+obj-y	:=  hsppad030.o
 
-obj-$(CONFIG_MTK_BAROHUB)      +=  barohub/
-ifneq ($(CONFIG_MTK_BAROHUB),y)
-obj-$(CONFIG_MTK_BMP280_NEW) += BMP280-new/
-obj-$(CONFIG_MTK_HSPPAD030) += hsppad030/
-endif
