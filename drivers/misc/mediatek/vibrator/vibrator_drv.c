@@ -29,6 +29,8 @@ i * but WITHOUT ANY WARRANTY; without even the implied warranty of
 #include <linux/timer.h>
 #include <linux/debugfs.h>
 
+#include <mt-plat/upmu_common.h>
+
 /* #include <mach/mt6577_pm_ldo.h> */
 
 #include <vibrator.h>
@@ -248,6 +250,37 @@ static ssize_t store_vibr_on(struct device *dev, struct device_attribute *attr,
 
 static DEVICE_ATTR(vibr_on, 0220, NULL, store_vibr_on);
 
+/******************************************************************************/
+/* default is 5 in device tree */
+static int vib_vol = 5;
+
+static ssize_t show_vibr_vol(struct device *dev, struct device_attribute *attr,
+								char *buf)
+{
+	return scnprintf(buf, PAGE_SIZE, "%d\n", vib_vol);
+}
+
+static ssize_t store_vibr_vol(struct device *dev, struct device_attribute *attr,
+			     const char *buf, size_t size)
+{
+	int val;
+	sscanf(buf, "%d ", &val);
+	if (val >= 0 && val <= 5) {
+		vib_vol = val;
+#ifdef CONFIG_MTK_PMIC_CHIP_MT6353
+		pmic_set_register_value(PMIC_RG_VIBR_VOSEL, vib_vol);
+#else
+		pmic_set_register_value(MT6351_PMIC_RG_VIBR_VOSEL, vib_vol);
+#endif
+	} else {
+		VIB_DEBUG("Value must be between 0-5\n");
+	}
+
+	return size;
+}
+
+static DEVICE_ATTR(vibr_vol, 0644, show_vibr_vol, store_vibr_vol);
+
 /******************************************************************************
  * vib_mod_init
  *
@@ -302,7 +335,6 @@ static int vib_mod_init(void)
 	timed_output_dev_register(&mtk_vibrator);/* timed_output driver model */
 
 	ret = platform_driver_register(&vibrator_driver);
-
 	if (ret) {
 		VIB_DEBUG("Unable to register vibrator driver (%d)\n", ret);
 		return ret;
@@ -311,6 +343,10 @@ static int vib_mod_init(void)
 	ret = device_create_file(mtk_vibrator.dev, &dev_attr_vibr_on);
 	if (ret)
 		VIB_DEBUG("device_create_file vibr_on fail!\n");
+
+	ret = device_create_file(mtk_vibrator.dev, &dev_attr_vibr_vol);
+	if (ret)
+		VIB_DEBUG("device_create_file vibr_vol fail!\n");
 
 	/* Add vibrator debug node */
 #ifdef CONFIG_MTK_ENG_BUILD
