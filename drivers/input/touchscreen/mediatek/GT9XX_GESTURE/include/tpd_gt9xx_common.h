@@ -6,11 +6,11 @@
  * Without the prior written permission of MediaTek inc. and/or its licensors,
  * any reproduction, modification, use or disclosure of MediaTek Software,
  * and information contained herein, in whole or in part, shall be strictly prohibited.
- */ 
+ */
 /* MediaTek Inc. (C) 2010. All rights reserved.
- * 
+ *
  * BY OPENING THIS FILE, RECEIVER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
- * THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("MEDIATEK SOFTWARE") 
+ * THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("MEDIATEK SOFTWARE")
  * RECEIVED FROM MEDIATEK AND/OR ITS REPRESENTATIVES ARE PROVIDED TO RECEIVER ON
  * AN "AS-IS" BASIS ONLY. MEDIATEK EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
@@ -102,7 +102,7 @@ extern u8 load_fw_process;
 extern int gtp_tpd_halt;
 extern s32 gtp_send_cfg(struct i2c_client *client);
 extern void gtp_reset_guitar(struct i2c_client *client, s32 ms);
-extern void gtp_int_sync(s32 ms);       
+extern void gtp_int_sync(s32 ms);
 extern u8 gup_init_update_proc(struct i2c_client *client);
 extern u8 gup_init_fw_proc(struct i2c_client *client);
 extern void mt_eint_unmask(unsigned int line);
@@ -124,7 +124,7 @@ extern unsigned char gtp_hotknot_calibration_section0[];
 //***************************PART1:ON/OFF define*******************************
 #define GTP_CUSTOM_CFG        0
 #define GTP_DRIVER_SEND_CFG   0//1       // driver send config to TP in intilization
-#define GTP_HAVE_TOUCH_KEY    0
+#define GTP_HAVE_TOUCH_KEY    1
 #define GTP_POWER_CTRL_SLEEP  0       // turn off/on power on suspend/resume
 
 #define GTP_AUTO_UPDATE       0       // auto updated fw by .bin file
@@ -138,7 +138,7 @@ extern unsigned char gtp_hotknot_calibration_section0[];
 #define GTP_ESD_PROTECT       0       // esd protection with a cycle of 2 seconds
 #define GTP_CHARGER_SWITCH    0       // charger plugin & plugout detect
 
-#define GTP_WITH_PEN          0      
+#define GTP_WITH_PEN          0
 #define GTP_PEN_HAVE_BUTTON   0       // active pen has buttons, functions together with GTP_WITH_PEN
 
 #ifdef AGOLD_MTK_HOTKNOT_SUPPORT
@@ -170,9 +170,8 @@ extern unsigned char gtp_hotknot_calibration_section0[];
 #define IIC_MAX_TRANSFER_SIZE         8
 #define IIC_DMA_MAX_TRANSFER_SIZE     250
 
-//#define TPD_HAVE_BUTTON 	1
 //#define TPD_PROXIMITY
-////#define TPD_HAVE_BUTTON             // report key as coordinate,Vibration feedback
+#define TPD_HAVE_BUTTON       0       // report key as coordinate,Vibration feedback
 //#define TPD_WARP_X                  // mirrored x coordinate
 //#define TPD_WARP_Y                  // mirrored y coordinate
 #define GTP_DEBUG_ON          0
@@ -188,15 +187,15 @@ extern void force_reset_guitar(void);
 //***************************PART2:TODO define**********************************
 //STEP_1(REQUIRED):Change config table.
 // Sensor_ID Map:
-/* sensor_opt1 sensor_opt2 Sensor_ID 
-    GND         GND         0 
-    VDDIO       GND         1 
-    NC          GND         2 
-    GND         NC/300K     3 
-    VDDIO       NC/300K     4 
-    NC          NC/300K     5 
+/* sensor_opt1 sensor_opt2 Sensor_ID
+    GND         GND         0
+    VDDIO       GND         1
+    NC          GND         2
+    GND         NC/300K     3
+    VDDIO       NC/300K     4
+    NC          NC/300K     5
 */
-// TODO: define your own default or for Sensor_ID == 0 config here. 
+// TODO: define your own default or for Sensor_ID == 0 config here.
 // The predefined one is just a sample config, which is not suitable for your tp in most cases.
 #define CTP_CFG_GROUP1 {\
     0x41,0xD0,0x02,0x00,0x05,0x05,0x34,0x00,0x01,0x8C,\
@@ -261,10 +260,10 @@ extern void force_reset_guitar(void);
 
 // STEP_3(optional):Custom set some config by themself,if need.
 #if GTP_CUSTOM_CFG
-  #define GTP_MAX_HEIGHT   800           
+  #define GTP_MAX_HEIGHT   800
   #define GTP_MAX_WIDTH    480
   #define GTP_INT_TRIGGER  0    //0:Rising 1:Falling
-#else 
+#else
   #define GTP_MAX_HEIGHT   4096
   #define GTP_MAX_WIDTH    4096
   #define GTP_INT_TRIGGER  1
@@ -274,9 +273,12 @@ extern void force_reset_guitar(void);
 #define TPD_VELOCITY_CUSTOM_X 15
 #define TPD_VELOCITY_CUSTOM_Y 15
 
-//STEP_4(optional):If this project have touch key,Set touch key config.                                    
+//STEP_4(optional):If this project have touch key,Set touch key config.
 #if GTP_HAVE_TOUCH_KEY
-    #define GTP_KEY_TAB  {KEY_MENU, KEY_HOME, KEY_BACK, KEY_SEND}
+#define GTP_KEY_TAB	 {KEY_MENU, KEY_HOME, KEY_BACK, KEY_SEARCH}
+#define GTP_MAX_KEY_NUM  4
+
+extern const u16 gt9x_touch_key_array[];
 #endif
 
 //***************************PART3:OTHER define*********************************

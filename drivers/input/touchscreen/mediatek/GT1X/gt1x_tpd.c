@@ -695,7 +695,7 @@ void gt1x_touch_down(s32 x, s32 y, s32 size, s32 id)
 	input_mt_sync(tpd->dev);
 #endif
 
-#ifdef TPD_HAVE_BUTTON
+#if TPD_HAVE_BUTTON
 	if (FACTORY_BOOT == get_boot_mode()/* || RECOVERY_BOOT == get_boot_mode() */) {
 		tpd_button(x, y, 1);
 	}
@@ -711,7 +711,7 @@ void gt1x_touch_up(s32 id)
 	input_report_key(tpd->dev, BTN_TOUCH, 0);
 	input_mt_sync(tpd->dev);
 #endif
-#ifdef TPD_HAVE_BUTTON
+#if TPD_HAVE_BUTTON
 	if (FACTORY_BOOT == get_boot_mode()/* || RECOVERY_BOOT == get_boot_mode() */) {
 		tpd_button(0, 0, 0);
 	}

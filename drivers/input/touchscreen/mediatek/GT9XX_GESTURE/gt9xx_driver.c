@@ -90,6 +90,13 @@ unsigned int touch_irq = 0;
 
 #define TPD_CONFIG_REG_BASE     0x8047
 
+#if (GTP_HAVE_TOUCH_KEY && TPD_HAVE_BUTTON)
+#error GTP_HAVE_TOUCH_KEY and TPD_HAVE_BUTTON are mutually exclusive.
+#endif
+
+#if GTP_HAVE_TOUCH_KEY
+const u16 gt9x_touch_key_array[] = GTP_KEY_TAB;
+#endif
 
 static int ONLY_ONCE=0;
 #if GTP_GESTURE_WAKEUP
@@ -1079,6 +1086,9 @@ static s32 tpd_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
 {
     s32 err = 0;
     s32 ret = 0;
+#if GTP_HAVE_TOUCH_KEY
+	s32 idx = 0;
+#endif
 	u8 buf[3] = {GTP_REG_SENSOR_ID >> 8,GTP_REG_SENSOR_ID & 0xff,0};
     u16 version_info;
 
@@ -1122,6 +1132,12 @@ static s32 tpd_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
         err = PTR_ERR(thread);
         GTP_INFO(TPD_DEVICE " failed to create kernel thread: %d\n", err);
     }
+
+#if GTP_HAVE_TOUCH_KEY
+	for (idx = 0; idx < GTP_MAX_KEY_NUM; idx++) {
+		input_set_capability(tpd->dev, EV_KEY, gt9x_touch_key_array[idx]);
+	}
+#endif
 
 #if GTP_GESTURE_WAKEUP
     g_gesture_support = 0x7E7F;
@@ -1213,7 +1229,7 @@ static int tpd_i2c_remove(struct i2c_client *client)
 
 static void tpd_down(s32 x, s32 y, s32 size, s32 id)
 {
-	#ifdef TPD_HAVE_BUTTON
+	#if TPD_HAVE_BUTTON
 	if(0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "270", 3) || 0 == strncmp(MTK_LCM_PHYSICAL_ROTATION, "90", 2))
     {
 		if((get_boot_mode()==FACTORY_BOOT/* || get_boot_mode()==RECOVERY_BOOT */) && x>=AGOLD_TPD_RES_Y)
@@ -1303,7 +1319,7 @@ static int touch_event_handler(void *unused)
     s32 id = 0;
     s32 i  = 0;
     s32 ret = -1;
-#ifdef TPD_HAVE_BUTTON
+#if TPD_HAVE_BUTTON
     static u8  last_key = 0;
     u32 key_x = 0, key_y = 0, key_z = 0;
 #endif
@@ -1319,12 +1335,12 @@ static int touch_event_handler(void *unused)
 
         while (gtp_tpd_halt)
         {
-        #if GTP_GESTURE_WAKEUP
+#if GTP_GESTURE_WAKEUP
             if (DOZE_ENABLED == doze_status)
             {
                 break;
             }
-        #endif
+#endif
             tpd_flag = 0;
             msleep(20);
         }
@@ -1337,8 +1353,6 @@ static int touch_event_handler(void *unused)
 #if GTP_GESTURE_WAKEUP
         if (DOZE_ENABLED == doze_status)
         {
-
-
             ret = gtp_i2c_read(i2c_client_point, doze_buf, 3);
             GTP_DEBUG("0x814B = 0x%02X", doze_buf[2]);
             if (ret > 0)
@@ -1418,7 +1432,6 @@ static int touch_event_handler(void *unused)
             continue;
         }
 #endif
-
         ret = gtp_i2c_read(i2c_client_point, point_data, 12);
         if (ret < 0)
         {
@@ -1456,7 +1469,7 @@ static int touch_event_handler(void *unused)
 
 	 	key_value = point_data[3 + 8 * touch_num];
         pre_key = key_value;
-#ifdef TPD_HAVE_BUTTON
+#if TPD_HAVE_BUTTON
         TPD_DEBUG("pre_touch:%02x, finger:%02x, pre_key = 0x%02x, last_key = 0x%02x\n", pre_touch, finger,pre_key, last_key);
 #endif
         if (touch_num)
@@ -1481,12 +1494,20 @@ static int touch_event_handler(void *unused)
 		   		tpd_up(input_x, input_y, id);
             }
         }
-
-#ifdef TPD_HAVE_BUTTON
-
+#if GTP_HAVE_TOUCH_KEY
+		if (pre_key) {
+			for (i = 0; i < GTP_MAX_KEY_NUM; i++) {
+				input_report_key(tpd->dev, gt9x_touch_key_array[i], key_value & (0x01 << i));
+			}
+			if (pre_key) {
+				GTP_DEBUG("Key Down.");
+			} else {
+				GTP_DEBUG("Key Up.");
+			}
+		}
+#elif TPD_HAVE_BUTTON
     	if (pre_key)
     	{
-
 			if (pre_key & 0x01) {
 				key_x=60;
 				key_y=AGOLD_TPD_RES_Y*850/800;
@@ -1679,7 +1700,7 @@ static int tpd_local_init(void)
         return -1;
     }
 
-#ifdef TPD_HAVE_BUTTON
+#if (GTP_HAVE_TOUCH_KEY || TPD_HAVE_BUTTON)
 	if (tpd_dts_data.use_tpd_button) {
 		/*initialize tpd button data*/
 		tpd_button_setting(tpd_dts_data.tpd_key_num, tpd_dts_data.tpd_key_local,
