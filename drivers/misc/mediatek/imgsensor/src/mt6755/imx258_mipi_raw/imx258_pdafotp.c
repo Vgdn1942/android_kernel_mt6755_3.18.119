@@ -185,7 +185,7 @@ bool IMX258CheckLensVersion(void)
     read_imx258_eeprom_size(IMX258_EEPROM_READ_ID,0x0001,data,7);
 
 #if defined(AGOLD_CAMERA_VERSION)
-	#if defined(AGOLD_IMX258_OTP_XL)
+	//#if defined(AGOLD_IMX258_OTP_XL)
 	agold_camera_info[g_cur_cam_sensor-1].mf_id = data[3];
     agold_camera_info[g_cur_cam_sensor-1].date[0] = data[0];
     agold_camera_info[g_cur_cam_sensor-1].date[1] = data[1];
@@ -193,7 +193,7 @@ bool IMX258CheckLensVersion(void)
     agold_camera_info[g_cur_cam_sensor-1].lens_id = data[4];
     agold_camera_info[g_cur_cam_sensor-1].sen_id = 0x00;
 
-	#else
+	//#else
     agold_camera_info[g_cur_cam_sensor-1].mf_id = data[0];
     agold_camera_info[g_cur_cam_sensor-1].date[0] = data[4];
     agold_camera_info[g_cur_cam_sensor-1].date[1] = data[5];
@@ -208,7 +208,7 @@ bool IMX258CheckLensVersion(void)
     printk("[zbl]read imx258 otp Lens_ID = %x\n", data[1]);
     printk("[zbl]read imx258 otp VCM_ID = %x\n", data[2]);
     printk("[zbl]read imx258 otp VCM_Driver_ID = %x\n", data[3]);
-	#endif
+	//#endif
 //    LOG_INF("[zbl]read imx258 otp corlo temperature = %d\n", data[8]);
 #endif
 
