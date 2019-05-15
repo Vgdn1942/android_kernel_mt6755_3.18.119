@@ -1308,11 +1308,10 @@ s32 gt1x_touch_event_handler(u8 * data, struct input_dev * dev, struct input_dev
 #if (GTP_HAVE_STYLUS_KEY || GTP_HAVE_TOUCH_KEY || TPD_HAVE_BUTTON)
 		/* get current key states */
 		if (key_value & 0x0F) {
-			if((key_value & 0x0F)&&(touch_num))
+			if((key_value & 0x0F) && (touch_num))
 			{
 				printk("chenpeng Gesture 1219\n");
-			}
-			else{
+			} else {
 			SET_BIT(cur_event, BIT_TOUCH_KEY);
 			}
 		}
