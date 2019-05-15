@@ -38,7 +38,7 @@ typedef struct
 {
 	char* sensor_name;
 	char* lens_name;
-}AGOLD_SENSOR_LENS_STRUCT;
+} AGOLD_SENSOR_LENS_STRUCT;
 
 const AGOLD_SENSOR_LENS_STRUCT LensList[] =
 {
@@ -88,7 +88,7 @@ extern void agold_driver_set_camera_version(char* camera_version1,char* camera_v
 typedef struct
 {
 	char camera_version[2][32]; //selected camera version
-}camera_para;
+} camera_para;
 
 camera_para agold_cam_version;
 
@@ -170,7 +170,6 @@ void agold_get_version_proc(char version[][32])
 			DEBUG_LOG("reset default bg[%d]=0x%x, rg[%d]=0x%x lens=%s otp ver %s\n", i, g_bg_ratio[i], i, g_rg_ratio[i], g_lens_para[i], *(version+i));
 		}
 	}
-
 }
 
 void agold_get_cam_soft_info(char* version1, char* version2)
@@ -198,7 +197,6 @@ void agold_get_cam_soft_info(char* version1, char* version2)
 		sprintf(version2, "0%s", agold_cam_version.camera_version[1]);
 	}
 }
-
 
 int agold_get_camver_index(int index)
 {
@@ -462,7 +460,6 @@ static  struct file_operations fcamera_lens_driver = {
 
 static int __init agold_cam_version_init(void)
 {
-
 	agold_driver_set_camera_version(agold_cam_version.camera_version[0],agold_cam_version.camera_version[1]);
 
 	proc_create("driver/camera_index", 0, NULL, &fcamera_index_fops);

@@ -10,7 +10,7 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/delay.h>
-#include <asm/uaccess.h>  
+#include <asm/uaccess.h>
 #include <linux/slab.h>
 
 #define AGOLD_CAMVER_DEBUG
@@ -23,7 +23,6 @@
 #define CAMVER_INFO(fmt, arg...) printk("[agold_cam_info]" fmt "\n", ##arg);
 #define CAMVER_ERR(fmt, arg...) printk("[agold_cam_info]" fmt, ##arg);
 #endif
-
 
 typedef struct
 {

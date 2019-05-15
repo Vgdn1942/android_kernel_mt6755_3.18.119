@@ -53,7 +53,7 @@
 
 extern kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id);
 extern kal_bool IMX214MIPI_ReadAWBFromOtp(void);
-#if defined(AGOLD_CAMERA_VERSION)
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 #include "agold_camera_info.h"
 #endif
 

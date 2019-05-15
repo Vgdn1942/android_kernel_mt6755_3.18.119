@@ -23,7 +23,7 @@
 #define LOG_1 LOG_INF("S5K3L8,MIPI 4LANE\n")
 #define SENSORDB LOG_INF
 /****************************   Modify end    *******************************************/
-#if defined(AGOLD_CAMERA_VERSION)
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 
 #include "agold_camera_info.h"
 
@@ -75,7 +75,7 @@ static int s5k3l8_write_id;
 #define GAIN_DEFAULT       0x0100
 #define GbGr_ratio_Typical  1027
 
-#if defined(AGOLD_CAMERA_VERSION)
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 #define RGr_ratio_Typical  cur_rg_ratio
 #define BGr_ratio_Typical  cur_bg_ratio
 #else
@@ -190,7 +190,7 @@ void S5K3L8_MIPI_write_otp_wb(S5K3L8_OTP_TYPE *otp)
     BGr_ratio = otp->BGr_ratio;
     GbGr_ratio = otp->GbGr_ratio;
 
-    #if defined (AGOLD_CAMERA_VERSION)
+    #if defined (CONFIG_MTK_CAMERA_VERSION)
 	BGr_ratio_Typical=agold_get_bg_ratio(g_cur_cam_sensor-1);
 	RGr_ratio_Typical=agold_get_rg_ratio(g_cur_cam_sensor-1);
     #endif
@@ -297,7 +297,7 @@ kal_bool read_s5k3l8_otp_eeprom( kal_uint16 addr, BYTE* data, kal_uint32 size)
 bool s5k3l8CheckLensVersion(int id)
 {
     kal_uint8 otp_flag = 0;
-#if defined(AGOLD_CAMERA_VERSION)
+#if defined(CONFIG_MTK_CAMERA_VERSION)
     kal_uint8 data[8] = { 0 };
 #endif
     s5k3l8_write_id=id;
@@ -322,7 +322,7 @@ bool s5k3l8CheckLensVersion(int id)
 	#endif
         return false;
     }
-#if defined(AGOLD_CAMERA_VERSION)
+#if defined(CONFIG_MTK_CAMERA_VERSION)
     #ifdef AGOLD_S5K3L8_OTP_JLX
    	read_s5k3l8_eeprom_size(S5K3L8_EEPROM_READ_ID,0x0c01,data,8);
    	agold_camera_info[g_cur_cam_sensor-1].mf_id = data[0];

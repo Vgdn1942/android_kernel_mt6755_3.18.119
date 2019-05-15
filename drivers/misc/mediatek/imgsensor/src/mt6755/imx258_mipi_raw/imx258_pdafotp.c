@@ -35,7 +35,7 @@
 #include "kd_imgsensor_errcode.h"
 
 
-#if defined(AGOLD_CAMERA_VERSION)
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 
 #include "agold_camera_info.h"
 
@@ -184,7 +184,7 @@ bool IMX258CheckLensVersion(void)
 
     read_imx258_eeprom_size(IMX258_EEPROM_READ_ID,0x0001,data,7);
 
-#if defined(AGOLD_CAMERA_VERSION)
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 	//#if defined(AGOLD_IMX258_OTP_XL)
 	agold_camera_info[g_cur_cam_sensor-1].mf_id = data[3];
     agold_camera_info[g_cur_cam_sensor-1].date[0] = data[0];

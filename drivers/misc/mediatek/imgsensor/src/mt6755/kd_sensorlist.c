@@ -74,9 +74,9 @@ struct clk *g_camclk_univpll2_d2;
 #include <linux/regulator/consumer.h>
 #endif
 
-#if defined(AGOLD_CAMERA_VERSION)
-#include "agold_camera_info.h"
-#endif
+//#if defined(CONFIG_MTK_CAMERA_VERSION)
+//#include "agold_camera_info.h"
+//#endif
 
 #define PROC_CAMERA_INFO "driver/camera_info"
 #define camera_info_size 128
@@ -1458,18 +1458,19 @@ inline static int adopt_CAMERA_HW_CheckIsAlive(void)
         }
         else {
 
-#if defined(AGOLD_CAMERA_VERSION)
+//#if defined(CONFIG_MTK_CAMERA_VERSION)
+#if 0
 		if(g_invokeSocketIdx[i] == DUAL_CAMERA_MAIN_SENSOR)
 		{
-			strcpy(agold_main_camera_drv_name,g_invokeSensorNameStr[i]);						
+			strcpy(agold_main_camera_drv_name, g_invokeSensorNameStr[i]);
 			memcpy((char *)agold_camera_info[0].cam_name, (char *)g_invokeSensorNameStr[i], 32);
 		}
 		else if(g_invokeSocketIdx[i] == DUAL_CAMERA_SUB_SENSOR)
 		{
-			strcpy(agold_sub_camera_drv_name,g_invokeSensorNameStr[i]);
+			strcpy(agold_sub_camera_drv_name, g_invokeSensorNameStr[i]);
 			memcpy((char *)agold_camera_info[1].cam_name, (char *)g_invokeSensorNameStr[i], 32);
 		}
-		agold_set_lens();		
+		agold_set_lens();
 		//PK_XLOG_INFO("get camera name %s %s", agold_camera_info[0].cam_name, agold_camera_info[1].cam_name);
 #endif
             PK_INF(" Sensor found ID = 0x%x\n", sensorID);

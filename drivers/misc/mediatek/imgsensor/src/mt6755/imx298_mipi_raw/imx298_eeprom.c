@@ -9,8 +9,8 @@
 #include <linux/slab.h>
 //#include <linux/xlog.h>
 
-#if defined(AGOLD_CAMERA_VERSION)
-#include "agold_camera_info.h" 
+#if defined(CONFIG_MTK_CAMERA_VERSION)
+#include "agold_camera_info.h"
 #endif
 
 #define PFX "imx298_pdafotp"
@@ -34,7 +34,7 @@ extern int iMultiReadReg(u16 a_u2Addr , u8 * a_puBuff , u16 i2cId, u8 number);
 
 #define imx298_EEPROM_READ_ID  0xA0
 #define imx298_EEPROM_WRITE_ID   0xA1
-#define imx298_I2C_SPEED        100  
+#define imx298_I2C_SPEED        100
 #define imx298_MAX_OFFSET		0xFFFF
 
 #define DATA_SIZE 2048
@@ -84,9 +84,9 @@ static bool _read_imx298_eeprom(kal_uint16 addr, BYTE* data, int size ){
 bool read_imx298_SPC(BYTE* data){
 	int addr = 0x901;
 	int size = 252;
-	
+
 	LOG_INF("read imx298 SPC, size = %d, get_done = %d, last_size = %d, last_offset = %d\n", size, get_done, last_size, last_offset);
-	
+
 	if(!get_done || last_size != size || last_offset != addr) {
 		if(!_read_imx298_eeprom(addr, imx298_SPC_data, size)){
 			get_done = 0;
@@ -104,9 +104,9 @@ bool read_imx298_SPC(BYTE* data){
 bool read_imx298_DCC( kal_uint16 addr,BYTE* data, kal_uint32 size){
 	addr = 0xA63;
 	size = 96;
-	
+
 	LOG_INF("read imx298 SPC, size = %d, get_done = %d, last_size = %d, last_offset = %d\n", size, get_done, last_size, last_offset);
-	
+
 	if(!get_done || last_size != size || last_offset != addr) {
 		if(!_read_imx298_eeprom(addr, imx298_DCC_data, size)){
 			get_done = 0;
@@ -123,32 +123,32 @@ bool read_imx298_DCC( kal_uint16 addr,BYTE* data, kal_uint32 size){
 
 bool IMX298CheckLensVersion(void)
 {
-    kal_uint8 otp_flag = 0;   
+    kal_uint8 otp_flag = 0;
     kal_uint8 data[8] = { 0 };
-    
-  
-  
+
+
+
     LOG_INF("IMX298CheckLensVersion enter\n");
     _read_imx298_eeprom(0x0000,&otp_flag,1);
     LOG_INF("[zbl]read imx258 otp flag = %d\n", otp_flag);
-    
+
     if(!otp_flag)
     {
         LOG_INF("[zbl]read otp failed!\n");
         return false;
     }
-    
+
     _read_imx298_eeprom(0x0001,data,7);
-    
+
     agold_camera_info[g_cur_cam_sensor-1].mf_id = data[3];
     agold_camera_info[g_cur_cam_sensor-1].date[0] = data[0];
     agold_camera_info[g_cur_cam_sensor-1].date[1] = data[1];
     agold_camera_info[g_cur_cam_sensor-1].date[2] = data[2];
     agold_camera_info[g_cur_cam_sensor-1].lens_id = data[4];
     agold_camera_info[g_cur_cam_sensor-1].sen_id = data[5];
-    
-    
-       
+
+
+
     LOG_INF("[zbl]read imx258 otp year = %d\n", data[0]);
     LOG_INF("[zbl]read imx258 otp month = %d\n", data[1]);
     LOG_INF("[zbl]read imx258 otp day = %d\n", data[2]);
@@ -158,11 +158,7 @@ bool IMX298CheckLensVersion(void)
     LOG_INF("[zbl]read imx258 otp VCM_Driver_ID = %d\n", data[6]);
 
 //    LOG_INF("[zbl]read imx258 otp corlo temperature = %d\n", data[8]);
-    
+
     return true;
 }
-
-
-
-
 

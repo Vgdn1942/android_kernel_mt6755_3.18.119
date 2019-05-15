@@ -1,12 +1,12 @@
 /*
 NOTE:
-The modification is appended to initialization of image sensor. 
+The modification is appended to initialization of image sensor.
 After sensor initialization, use the function
 bool otp_update_wb()
 and
 bool otp_update_lenc(void)
 and
-then the calibration of AWB & LSC & BLC will be applied. 
+then the calibration of AWB & LSC & BLC will be applied.
 After finishing the OTP written, we will provide you the typical value of golden sample.
 */
 
@@ -25,12 +25,12 @@ After finishing the OTP written, we will provide you the typical value of golden
 #include "kd_imgsensor.h"
 #include "kd_imgsensor_define.h"
 #include "kd_imgsensor_errcode.h"
-	
+
 #include "ov8856mipiraw_Sensor.h"
 //#include "ov8856mipiraw_Camera_Sensor_para.h"
 //#include "ov8856mipiraw_CameraCustomized.h"
-#if defined(AGOLD_CAMERA_VERSION)
-#include "agold_camera_info.h" 
+#if defined(CONFIG_MTK_CAMERA_VERSION)
+#include "agold_camera_info.h"
 #endif
 
 
@@ -46,7 +46,7 @@ extern int iWriteReg(u16 a_u2Addr , u32 a_u4Data , u32 a_u4Bytes , u16 i2cId);
 
 #define LENC_START_ADDR       0x5900
 #define LENC_REG_SIZE         240
-			
+
 #define OTP_LENC_GROUP_FLAG   0x7028
 #define OTP_LENC_GROUP_ADDR   0x7029
 
@@ -76,7 +76,7 @@ extern int iWriteReg(u16 a_u2Addr , u32 a_u4Data , u32 a_u4Bytes , u16 i2cId);
 #define OV8856_OTP_DEBUG
 #ifdef OV8856_OTP_DEBUG
 #define LOG_INF(format, args...)	printk(PFX "[%s] " format, __FUNCTION__, ##args)
-#else 
+#else
 #define LOG_INF(format, args...)
 #endif
 
@@ -111,7 +111,7 @@ static void write_cmos_sensor(kal_uint32 addr, kal_uint32 para)
 void otp_read_enable(void)
 {
 	write_cmos_sensor(OTP_LOAD_ADDR, 0x01);
-	mdelay(5); // 
+	mdelay(5); //
 }
 
 // Disable OTP read function
@@ -130,19 +130,19 @@ void otp_read(unsigned short otp_addr, unsigned char* otp_data)
 
 /*******************************************************************************
 * Function    :  otp_clear
-* Description :  Clear OTP buffer 
+* Description :  Clear OTP buffer
 * Parameters  :  none
 * Return      :  none
-*******************************************************************************/	
+*******************************************************************************/
 void otp_clear(unsigned short star, unsigned short end)
 {
 	unsigned short i;
 	// After read/write operation, the OTP buffer should be cleared to avoid accident write
-	for ( i=star; i<end; i++) 
+	for ( i=star; i<end; i++)
 	{
 		write_cmos_sensor(i, 0x00);
 	}
-	
+
 }
 
 /*******************************************************************************
@@ -153,9 +153,9 @@ void otp_clear(unsigned short star, unsigned short end)
                  1, group index has invalid data
                  2, group index has valid data
                 -1, group index error
-*******************************************************************************/	
+*******************************************************************************/
 signed char otp_check_wb_group(int index)
-{   
+{
 	unsigned char  flagBasic;
 	unsigned short otp_addr  = OTP_BASIC_GROUP_FLAG;
     if (index > 2)
@@ -164,7 +164,7 @@ signed char otp_check_wb_group(int index)
 		return -1;
 	}
 
-	DPCFuncDisable();	
+	DPCFuncDisable();
 	// select base information flag
 
 	write_cmos_sensor(OTP_BANK_ADDR, 0xc0);
@@ -177,9 +177,9 @@ signed char otp_check_wb_group(int index)
 	write_cmos_sensor(otp_addr, 0x00);
 	DPCFuncEnable();
 
-	// Check all bytes of a group. If all bytes are '0', then the group is empty. 
+	// Check all bytes of a group. If all bytes are '0', then the group is empty.
 	// Check from group 1 to group 2, then group 3.
-	
+
     if (index==0)
 	{
 
@@ -205,7 +205,7 @@ signed char otp_check_wb_group(int index)
 	{
 
 		flagBasic=(flagBasic>>4) & 0x03;
-		
+
 		if (!flagBasic)
 		{
 			LOG_INF("wb group %d is empty", index);
@@ -226,14 +226,14 @@ signed char otp_check_wb_group(int index)
 
 /*******************************************************************************
 * Function    :  otp_read_wb_group
-* Description :  Read group value and store it in OTP Struct 
+* Description :  Read group value and store it in OTP Struct
 * Parameters  :  [in] index : index of otp group (0, 1, 2)
 * Return      :  group index (0, 1, 2)
                  -1, error
-*******************************************************************************/	
+*******************************************************************************/
 signed char otp_read_wb_group(void)
 {
-	unsigned char  mid, AWB_light_LSB, rg_ratio_MSB, bg_ratio_MSB,lens; 
+	unsigned char  mid, AWB_light_LSB, rg_ratio_MSB, bg_ratio_MSB,lens;
 	unsigned short otp_addr=0;
 	// Check first OTP with valid data
 	int index =0;
@@ -289,7 +289,7 @@ signed char otp_read_wb_group(void)
 	}
 	otp_read(otp_addr+5,  &rg_ratio_MSB);
 	otp_read(otp_addr+6,  &bg_ratio_MSB);
-	otp_read(otp_addr+7, &AWB_light_LSB);	
+	otp_read(otp_addr+7, &AWB_light_LSB);
 	otp_clear(otp_addr,otp_addr+7);
 	DPCFuncEnable();
 	rg_ratio = (rg_ratio_MSB<<2) | ((AWB_light_LSB & 0xC0)>>6);
@@ -306,7 +306,7 @@ signed char otp_read_wb_group(void)
 * Parameters  :  [in] golden_rg : R/G of golden camera module
                  [in] golden_bg : B/G of golden camera module
 * Return      :  1, success; 0, fail
-*******************************************************************************/	
+*******************************************************************************/
 bool otp_apply_wb()
 {
 	unsigned short gain_r = GAIN_DEFAULT_VALUE;
@@ -461,8 +461,8 @@ bool otp_apply_wb(void)
 * Description :  Update white balance settings from OTP
 * Parameters  :  void
 * Return      :  1, success; 0, fail
-*******************************************************************************/	
-bool otp_update_wb(void) 
+*******************************************************************************/
+bool otp_update_wb(void)
 {
 	LOG_INF("start wb update\n");
 
@@ -486,13 +486,13 @@ bool otp_update_wb(void)
                  1, group index has invalid data
                  2, group index has valid data
                 -1, group index error
-*******************************************************************************/	
+*******************************************************************************/
 signed char otp_check_lenc_group(int  index)
-{   
+{
 	unsigned char  flag;
 	// select lenc flag
     unsigned short otp_addr = OTP_LENC_GROUP_FLAG;
-    
+
     DPCFuncDisable();
 
     write_cmos_sensor(OTP_BANK_ADDR, 0xc0);
@@ -505,7 +505,7 @@ signed char otp_check_lenc_group(int  index)
 	write_cmos_sensor(otp_addr, 0x00);
 	DPCFuncEnable();
 
-	// Check all bytes of a group. If all bytes are '0', then the group is empty. 
+	// Check all bytes of a group. If all bytes are '0', then the group is empty.
 	// Check from group 1 to group 2, then group 3.
 	if (index==0)
 	{
@@ -532,7 +532,7 @@ signed char otp_check_lenc_group(int  index)
 	{
 
 		flag=(flag>>4) & 0x03;
-		
+
 		if (!flag)
 		{
 			LOG_INF("lenc group %d is empty", index);
@@ -556,11 +556,11 @@ signed char otp_check_lenc_group(int  index)
 
 /*******************************************************************************
 * Function    :  otp_read_lenc_group
-* Description :  Read group value and store it in OTP Struct 
+* Description :  Read group value and store it in OTP Struct
 * Parameters  :  [in] int index : index of otp group (0, 1, 2)
 * Return      :  group index (0, 1, 2)
                  -1, error
-*******************************************************************************/	
+*******************************************************************************/
 signed char otp_read_lenc_group(void)
 {
 	int i,index =0;
@@ -589,7 +589,7 @@ signed char otp_read_lenc_group(void)
 	write_cmos_sensor(OTP_H_END_ADDR, ((otp_addr+LENC_REG_SIZE)>>8) & 0xff);
 	write_cmos_sensor(OTP_L_END_ADDR, (otp_addr+LENC_REG_SIZE) & 0xff);
 	otp_read_enable();
-	for (i=0; i<LENC_REG_SIZE; i++) 
+	for (i=0; i<LENC_REG_SIZE; i++)
 	{
 		otp_lenc_data[i] = read_cmos_sensor(otp_addr);
 		otp_addr++;
@@ -597,7 +597,7 @@ signed char otp_read_lenc_group(void)
 	otp_read_disable();
 	otp_clear(otp_addr,otp_addr+LENC_REG_SIZE);
 	DPCFuncEnable();
-	
+
 	LOG_INF("read lenc finished\n");
 	return index;
 }
@@ -607,7 +607,7 @@ signed char otp_read_lenc_group(void)
 * Description :  Apply lens correction setting to module
 * Parameters  :  none
 * Return      :  none
-*******************************************************************************/	
+*******************************************************************************/
 void otp_apply_lenc(void)
 {
 	int i;
@@ -620,7 +620,7 @@ void otp_apply_lenc(void)
 		write_cmos_sensor(LENC_START_ADDR+i, otp_lenc_data[i]);
 		LOG_INF("0x%x, 0x%x\n", LENC_START_ADDR+i, otp_lenc_data[i]);
 	}
-	
+
 	LOG_INF("LSC_Enable:0x%x\n", temp);
 }
 
@@ -629,8 +629,8 @@ void otp_apply_lenc(void)
 * Description :  Get lens correction setting from otp, then apply to module
 * Parameters  :  none
 * Return      :  1, success; 0, fail
-*******************************************************************************/	
-bool otp_update_lenc(void) 
+*******************************************************************************/
+bool otp_update_lenc(void)
 {
 	LOG_INF("start lenc update\n");
 
@@ -646,8 +646,8 @@ bool otp_update_lenc(void)
 }
 /*****************************************************************************
 *Function    :  DPC Function
-*Description :  To avoid  OTP memory R/W error 
- Before doing OTP read/write,register 0x5002[3] must be set to ¡°0¡±. 
+*Description :  To avoid  OTP memory R/W error
+ Before doing OTP read/write,register 0x5002[3] must be set to ¡°0¡±.
  After OTP memory access,set register 0x5002[3] back to ¡°1¡±.
 ******************************************************************************/
 void DPCFuncEnable(void)
@@ -705,12 +705,12 @@ void OV8856CheckLensVersion(int writeid)
 	write_cmos_sensor(OTP_L_END_ADDR, (otp_addr+7) & 0xff);
     mdelay(5);
     otp_read_enable();
-    #if defined(AGOLD_CAMERA_VERSION)		
-    agold_camera_info[g_cur_cam_sensor-1].mf_id =  read_cmos_sensor(otp_addr);      
-	agold_camera_info[g_cur_cam_sensor-1].lens_id =  read_cmos_sensor(otp_addr+1);	
-	agold_camera_info[g_cur_cam_sensor-1].date[0] =  read_cmos_sensor(otp_addr+2);	
-	agold_camera_info[g_cur_cam_sensor-1].date[1] =  read_cmos_sensor(otp_addr+3);	
-	agold_camera_info[g_cur_cam_sensor-1].date[2] =  read_cmos_sensor(otp_addr+4);	
+    #if defined(CONFIG_MTK_CAMERA_VERSION)
+    agold_camera_info[g_cur_cam_sensor-1].mf_id =  read_cmos_sensor(otp_addr);
+	agold_camera_info[g_cur_cam_sensor-1].lens_id =  read_cmos_sensor(otp_addr+1);
+	agold_camera_info[g_cur_cam_sensor-1].date[0] =  read_cmos_sensor(otp_addr+2);
+	agold_camera_info[g_cur_cam_sensor-1].date[1] =  read_cmos_sensor(otp_addr+3);
+	agold_camera_info[g_cur_cam_sensor-1].date[2] =  read_cmos_sensor(otp_addr+4);
 	#endif
 	LOG_INF("OV8856CheckLensVersion midid:%d lensid:%d\n",agold_camera_info[g_cur_cam_sensor-1].mf_id, agold_camera_info[g_cur_cam_sensor-1].lens_id);
     LOG_INF("zbl year: %d,month:%d,day:%d\n",agold_camera_info[g_cur_cam_sensor-1].date[0],agold_camera_info[g_cur_cam_sensor-1].date[1],
@@ -720,8 +720,4 @@ void OV8856CheckLensVersion(int writeid)
     checkVersion=1;
     write_cmos_sensor(0x0100, 0x00);
 }
-
-
-
-
 

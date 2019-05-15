@@ -115,3 +115,53 @@ unsigned char lcm_name_list[][128] = {
 unsigned int lcm_count = sizeof(lcm_driver_list) / sizeof(LCM_DRIVER *);
 LCM_COMPILE_ASSERT(0 != sizeof(lcm_driver_list) / sizeof(LCM_DRIVER *));
 
+#if defined(CONFIG_MTK_CAMERA_VERSION)
+#include "cust_agold_driver.h"
+
+extern int printk(const char *fmt, ...);
+#define LCM_DEBUG(fmt,arg...)  printk("[kernel]" "[%s]" fmt "\r\n",__func__,##arg)
+
+extern void agold_driver_set_lcm_driver_name(char* lcm_drv_name);
+extern void agold_driver_set_camera_driver_name(char* camera_drv_name1,char* camera_drv_name2);
+extern void agold_driver_set_camera_version(char* camera_version1,char* camera_version2);
+
+LCM_DRIVER *agold_driver_lcm_reset_driver(void)
+{
+	int i = 0;
+
+	for(i = 0;i<lcm_count;i++)
+	{
+		if (strncmp(agold_lcm_drv_data.lcm_drv_name,"auto_detect", 12) ==0)
+		{
+			LCM_DEBUG("[lcm driver] use auto detect, lcm_count = %d\n",lcm_count);
+		    //lcm_count -= 1;
+			break;
+		}
+
+		else if (strcmp(lcm_driver_list[i]->name,agold_lcm_drv_data.lcm_drv_name) ==0)
+		{
+			LCM_DEBUG("[lcm driver][select:%s]\r\n",agold_lcm_drv_data.lcm_drv_name);
+			lcm_driver_list[0]=lcm_driver_list[i];
+			agold_driver_set_lcm_driver_name(agold_lcm_drv_data.lcm_drv_name);
+			lcm_count = 1;
+			break;
+		}
+	}
+	return lcm_driver_list[0];
+}
+
+LCM_DRIVER *agold_get_driver(void)
+{
+	//custom lcm drv
+	agold_driver_set_lcm_driver_name(agold_lcm_drv_data.lcm_drv_name);
+	//custom camera drv
+	agold_driver_set_camera_driver_name(agold_lcm_drv_data.camera_drv_name1,agold_lcm_drv_data.camera_drv_name2);
+
+	return agold_driver_lcm_reset_driver();
+}
+
+const LCM_DRIVER* LCM_GetDriver(void)
+{
+	return agold_get_driver();
+}
+#endif

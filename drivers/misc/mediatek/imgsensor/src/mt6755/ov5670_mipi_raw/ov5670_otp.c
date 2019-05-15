@@ -7,7 +7,7 @@
 #include <linux/fs.h>
 #include <asm/atomic.h>
 //#include <linux/xlog.h>
-#include <linux/proc_fs.h> 
+#include <linux/proc_fs.h>
 
 
 #include <linux/dma-mapping.h>
@@ -19,7 +19,7 @@
 
 #include "ov5670mipi_Sensor.h"
 
-#if defined(AGOLD_CAMERA_VERSION)
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 #include "agold_camera_info.h"
 #define BG_Ratio_Typical  cur_bg_ratio
 #define RG_Ratio_Typical  cur_rg_ratio
@@ -84,19 +84,19 @@ static int read_otp(struct otp_struct *otp_ptr)
     // OTP into
     otp_flag = OV5670_read_i2c(0x7010);
     addr = 0;
-    if((otp_flag & 0xc0) == 0x40) 
+    if((otp_flag & 0xc0) == 0x40)
     {
         addr = 0x7011; // base address of info group 1
     }
-    else if((otp_flag & 0x30) == 0x10) 
+    else if((otp_flag & 0x30) == 0x10)
     {
         addr = 0x7016; // base address of info group 2
-    }   
-    else if((otp_flag & 0x0c) == 0x04) 
+    }
+    else if((otp_flag & 0x0c) == 0x04)
     {
         addr = 0x701b; // base address of info group 3
     }
-    if(addr != 0) 
+    if(addr != 0)
     {
         (*otp_ptr).flag = 0x80; // valid base info in OTP
         (*otp_ptr).module_integrator_id = OV5670_read_i2c( addr );
@@ -105,7 +105,7 @@ static int read_otp(struct otp_struct *otp_ptr)
         (*otp_ptr).production_month = OV5670_read_i2c( addr + 3);
         (*otp_ptr).production_day = OV5670_read_i2c( addr + 4);
     }
-    else 
+    else
     {
         (*otp_ptr).flag = 0x00; // not info in OTP
         (*otp_ptr).module_integrator_id = 0;
@@ -117,31 +117,31 @@ static int read_otp(struct otp_struct *otp_ptr)
     // OTP WB Calibration
     otp_flag = OV5670_read_i2c(0x7020);
     addr = 0;
-    if((otp_flag & 0xc0) == 0x40) 
+    if((otp_flag & 0xc0) == 0x40)
     {
         addr = 0x7021; // base address of WB Calibration group 1
     }
-    else if((otp_flag & 0x30) == 0x10) 
+    else if((otp_flag & 0x30) == 0x10)
     {
         addr = 0x7024; // base address of WB Calibration group 2
-    }   
-    else if((otp_flag & 0x0c) == 0x04) 
+    }
+    else if((otp_flag & 0x0c) == 0x04)
     {
         addr = 0x7027; // base address of WB Calibration group 3
     }
-    if(addr != 0) 
+    if(addr != 0)
     {
         (*otp_ptr).flag |= 0x40;
         temp = OV5670_read_i2c( addr + 2);
         (*otp_ptr).rg_ratio = (OV5670_read_i2c(addr)<<2) + ((temp>>6) & 0x03);
         (*otp_ptr).bg_ratio = (OV5670_read_i2c( addr + 1)<<2) + ((temp>>4) & 0x03);
     }
-    else 
+    else
     {
         (*otp_ptr).rg_ratio = 0;
         (*otp_ptr).bg_ratio = 0;
     }
-    for(i=0x7010;i<=0x7029;i++) 
+    for(i=0x7010;i<=0x7029;i++)
     {
         OV5670_write_i2c(i,0); // clear OTP buffer, recommended use continuous write to accelarate
     }
@@ -157,12 +157,12 @@ static int read_otp(struct otp_struct *otp_ptr)
 static int apply_otp(struct otp_struct *otp_ptr)
 {
     int rg, bg, R_gain, G_gain, B_gain, Base_gain;
-    #if defined (AGOLD_CAMERA_VERSION)	//Add by Lancelot 2014-06-10
+    #if defined (CONFIG_MTK_CAMERA_VERSION)	//Add by Lancelot 2014-06-10
 	BG_Ratio_Typical=agold_get_bg_ratio(g_cur_cam_sensor-1);
 	RG_Ratio_Typical=agold_get_rg_ratio(g_cur_cam_sensor-1);
     #endif
     // apply OTP WB Calibration
-    if ((*otp_ptr).flag & 0x40) 
+    if ((*otp_ptr).flag & 0x40)
     {
         rg = (*otp_ptr).rg_ratio;
         bg = (*otp_ptr).bg_ratio;
@@ -186,17 +186,17 @@ static int apply_otp(struct otp_struct *otp_ptr)
         B_gain = 0x400 * B_gain / (Base_gain);
         G_gain = 0x400 * G_gain / (Base_gain);
         // update sensor WB gain
-        if (R_gain>0x400) 
+        if (R_gain>0x400)
         {
             OV5670_write_i2c(0x5032, R_gain>>8);
             OV5670_write_i2c(0x5033, R_gain & 0x00ff);
         }
-        if (G_gain>0x400) 
+        if (G_gain>0x400)
         {
             OV5670_write_i2c(0x5034, G_gain>>8);
             OV5670_write_i2c(0x5035, G_gain & 0x00ff);
         }
-        if (B_gain>0x400) 
+        if (B_gain>0x400)
         {
             OV5670_write_i2c(0x5036, B_gain>>8);
             OV5670_write_i2c(0x5037, B_gain & 0x00ff);
@@ -227,7 +227,7 @@ void OV5670CheckLensVersion(kal_uint8 i2c_write_id)
         if(!checkVersion)
         {
             OV5670_write_i2c(0x0100,0x01);// ; stream on
-            
+
             temp1 = OV5670_read_i2c(0x5002);
             OV5670_write_i2c(0x5002, (0x00 & 0x08) | (temp1 & (~0x08)));
             // read OTP into buffer
@@ -252,7 +252,7 @@ void OV5670CheckLensVersion(kal_uint8 i2c_write_id)
 				}
 			}
 			if(index <= 3)
-			{			
+			{
 				agold_camera_info[g_cur_cam_sensor-1].mf_id = OV5670_read_i2c(0x700C + 5*index);	//0x7011 0x7016 0x701B
 				agold_camera_info[g_cur_cam_sensor-1].lens_id = OV5670_read_i2c(0x700D + 5*index);	//0x7012 0x7017 0x701C
 				agold_camera_info[g_cur_cam_sensor-1].date[0] = OV5670_read_i2c(0x700E + 5*index);	//0x7013 0x7018 0x701D
@@ -263,33 +263,19 @@ void OV5670CheckLensVersion(kal_uint8 i2c_write_id)
 			{
 				OV5670_write_i2c(index, 0x00);
 			}
-			
+
 			LOG_INF("ov5670 get otp info %x %x %d.%d.%d\n",
 				    agold_camera_info[g_cur_cam_sensor-1].mf_id,
 				    agold_camera_info[g_cur_cam_sensor-1].lens_id,
 				    agold_camera_info[g_cur_cam_sensor-1].date[0],
 				    agold_camera_info[g_cur_cam_sensor-1].date[1],
 				    agold_camera_info[g_cur_cam_sensor-1].date[2]);
-			
+
 			temp1 = OV5670_read_i2c(0x5002);
             OV5670_write_i2c(0x5002, (0x02 & 0x08) | (temp1 & (~0x08)));
             checkVersion = 1;
             OV5670_write_i2c(0x0100,0x00);
-        }            
+        }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

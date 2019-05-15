@@ -8,7 +8,7 @@
 #include <asm/atomic.h>
 #include <linux/types.h>
 #include <mt-plat/mt_boot.h>
-#include <linux/proc_fs.h> 
+#include <linux/proc_fs.h>
 #include <linux/dma-mapping.h>
 
 #include "kd_camera_typedef.h"
@@ -38,8 +38,8 @@ int VCM_dir;
 };
 
 
-#if defined(AGOLD_CAMERA_VERSION)
-#include "agold_camera_info.h" 
+#if defined(CONFIG_MTK_CAMERA_VERSION)
+#include "agold_camera_info.h"
 #endif
 
 
@@ -115,7 +115,7 @@ int read_otp(struct otp_struct *otp_ptr)
     int otp_flag, addr, temp, i;
     int checksum2=0;
     int temp1;
-    
+
     OV8858_R2A_write_i2c(0x100 , 0x01);
     //set 0x5002[3] to “0”
     temp1 = OV8858_R2A_read_i2c(0x5002);
@@ -132,15 +132,15 @@ int read_otp(struct otp_struct *otp_ptr)
     otp_flag = OV8858_R2A_read_i2c(0x7010);
     LOG_INF("[zbl] module info otp_flag = %d\n",otp_flag);
     addr = 0;
-    if((otp_flag & 0xc0) == 0x40) 
+    if((otp_flag & 0xc0) == 0x40)
     {
         addr = 0x7011; // base address of info group 1
     }
-    else if((otp_flag & 0x30) == 0x10) 
+    else if((otp_flag & 0x30) == 0x10)
     {
         addr = 0x7019; // base address of info group 2
     }
-    if(addr != 0) 
+    if(addr != 0)
     {
         (*otp_ptr).flag = 0xC0; // valid info and AWB in OTP
         (*otp_ptr).module_integrator_id = OV8858_R2A_read_i2c(addr);
@@ -152,7 +152,7 @@ int read_otp(struct otp_struct *otp_ptr)
         (*otp_ptr).rg_ratio = (OV8858_R2A_read_i2c(addr + 5)<<2) + ((temp>>6) & 0x03);
         (*otp_ptr).bg_ratio = (OV8858_R2A_read_i2c(addr + 6)<<2) + ((temp>>4) & 0x03);
     }
-    else 
+    else
     {
         (*otp_ptr).flag = 0x00; // not info and AWB in OTP
         (*otp_ptr).module_integrator_id = 0;
@@ -168,15 +168,15 @@ int read_otp(struct otp_struct *otp_ptr)
     otp_flag = OV8858_R2A_read_i2c(0x7021);
     LOG_INF("[zbl] VCM info otp_flag = %d\n",otp_flag);
     addr = 0;
-    if((otp_flag & 0xc0) == 0x40) 
+    if((otp_flag & 0xc0) == 0x40)
     {
         addr = 0x7022; // base address of VCM Calibration group 1
     }
-    else if((otp_flag & 0x30) == 0x10) 
+    else if((otp_flag & 0x30) == 0x10)
     {
         addr = 0x7025; // base address of VCM Calibration group 2
     }
-    if(addr != 0) 
+    if(addr != 0)
     {
         (*otp_ptr).flag |= 0x20;
         temp = OV8858_R2A_read_i2c(addr + 2);
@@ -184,29 +184,29 @@ int read_otp(struct otp_struct *otp_ptr)
         (* otp_ptr).VCM_end = (OV8858_R2A_read_i2c(addr + 1) << 2) | ((temp>>4) & 0x03);
         (* otp_ptr).VCM_dir = (temp>>2) & 0x03;
     }
-    else 
+    else
     {
         (* otp_ptr).VCM_start = 0;
         (* otp_ptr).VCM_end = 0;
         (* otp_ptr).VCM_dir = 0;
     }
-    
+
     // OTP Lenc Calibration
     otp_flag = OV8858_R2A_read_i2c(0x7028);
     LOG_INF("[zbl] Lenc info otp_flag = %d\n",otp_flag);
     addr = 0;
-    
-    if((otp_flag & 0xc0) == 0x40) 
+
+    if((otp_flag & 0xc0) == 0x40)
     {
         addr = 0x7029; // base address of Lenc Calibration group 1
     }
-    else if((otp_flag & 0x30) == 0x10) 
+    else if((otp_flag & 0x30) == 0x10)
     {
         addr = 0x711a; // base address of Lenc Calibration group 2
     }
-    if(addr != 0) 
+    if(addr != 0)
     {
-        for(i=0;i<240;i++) 
+        for(i=0;i<240;i++)
         {
             (* otp_ptr).lenc[i]=OV8858_R2A_read_i2c(addr + i);
             checksum2 += (* otp_ptr).lenc[i];
@@ -218,14 +218,14 @@ int read_otp(struct otp_struct *otp_ptr)
             (*otp_ptr).flag |= 0x10;
         }
     }
-    else 
+    else
     {
-        for(i=0;i<240;i++) 
+        for(i=0;i<240;i++)
         {
             (* otp_ptr).lenc[i]=0;
         }
     }
-    for(i=0x7010;i<=0x720a;i++) 
+    for(i=0x7010;i<=0x720a;i++)
     {
         OV8858_R2A_write_i2c(i,0); // clear OTP buffer, recommended use continuous write to accelarate
     }
@@ -250,7 +250,7 @@ int apply_otp(struct otp_struct *otp_ptr)
 {
     int rg, bg, R_gain, G_gain, B_gain, Base_gain, temp, i;
     // apply OTP WB Calibration
-    if ((*otp_ptr).flag & 0x40) 
+    if ((*otp_ptr).flag & 0x40)
     {
         rg = (*otp_ptr).rg_ratio;
         bg = (*otp_ptr).bg_ratio;
@@ -272,31 +272,31 @@ int apply_otp(struct otp_struct *otp_ptr)
         R_gain = 0x400 * R_gain / (Base_gain);
         B_gain = 0x400 * B_gain / (Base_gain);
         G_gain = 0x400 * G_gain / (Base_gain);
-        
+
         // update sensor WB gain
-        if (R_gain>0x400) 
+        if (R_gain>0x400)
         {
             OV8858_R2A_write_i2c(0x5032, R_gain>>8);
             OV8858_R2A_write_i2c(0x5033, R_gain & 0x00ff);
         }
-        if (G_gain>0x400) 
+        if (G_gain>0x400)
         {
             OV8858_R2A_write_i2c(0x5034, G_gain>>8);
             OV8858_R2A_write_i2c(0x5035, G_gain & 0x00ff);
         }
-        if (B_gain>0x400) 
+        if (B_gain>0x400)
         {
             OV8858_R2A_write_i2c(0x5036, B_gain>>8);
             OV8858_R2A_write_i2c(0x5037, B_gain & 0x00ff);
         }
     }
     // apply OTP Lenc Calibration
-    if ((*otp_ptr).flag & 0x10) 
+    if ((*otp_ptr).flag & 0x10)
     {
         temp = OV8858_R2A_read_i2c(0x5000);
         temp = 0x80 | temp;
         OV8858_R2A_write_i2c(0x5000, temp);
-        for(i=0;i<240;i++) 
+        for(i=0;i<240;i++)
         {
             OV8858_R2A_write_i2c(0x5800 + i, (*otp_ptr).lenc[i]);
         }
@@ -338,7 +338,7 @@ void OV8858CheckLensVersion(int writeid)
 	LOG_INF("[zbl] write_id = %d\n",writeid);
 	if(!checkVersion)
 	{
-	    OV8858_R2A_write_i2c(0x100 , 0x01); 
+	    OV8858_R2A_write_i2c(0x100 , 0x01);
         temp1 = OV8858_R2A_read_i2c(0x5002);
         OV8858_R2A_write_i2c(0x5002, (temp1 & (~0x08)));
         // read OTP into buffer
@@ -349,7 +349,7 @@ void OV8858CheckLensVersion(int writeid)
         OV8858_R2A_write_i2c(0x3d8B, 0x0a);
         OV8858_R2A_write_i2c(0x3d81, 0x01); // load otp into buffer
         Delay(10);
-		
+
 		otp_flag = OV8858_R2A_read_i2c(0x7010);
 		LOG_INF("read info flag (0x7010)=0x%02x\n", otp_flag);
 
@@ -366,10 +366,10 @@ void OV8858CheckLensVersion(int writeid)
 				break;
 			}
 		}
-		
+
 		if(index <= 3)
-		{	
-		    #if defined(AGOLD_CAMERA_VERSION)		
+		{
+		    #if defined(CONFIG_MTK_CAMERA_VERSION)
 			    agold_camera_info[g_cur_cam_sensor-1].mf_id =  OV8858_R2A_read_i2c(0x7011 + 8*(index-1));	//0x7221 0x7226 0x722B
 			    agold_camera_info[g_cur_cam_sensor-1].lens_id =  OV8858_R2A_read_i2c(0x7012 + 8*(index-1));	//0x7222 0x7227 0x722C
 			    agold_camera_info[g_cur_cam_sensor-1].date[0] =  OV8858_R2A_read_i2c(0x7013 + 8*(index-1));	//0x7223 0x7228 0x722D
@@ -388,14 +388,14 @@ void OV8858CheckLensVersion(int writeid)
 		{
 			LOG_INF("[OV13850OTP]invalid info data\n");
 		}
-		
-		for(i=0x7010;i<=0x720a;i++) 
+
+		for(i=0x7010;i<=0x720a;i++)
         {
             OV8858_R2A_write_i2c(i,0); // clear OTP buffer, recommended use continuous write to accelarate
-        }   
-		
-/*			
-		LOG_INF("get otp info %x %x %d.%d.%d %x %x\n",  
+        }
+
+/*
+		LOG_INF("get otp info %x %x %d.%d.%d %x %x\n",
 			    agold_camera_info[g_cur_cam_sensor-1].mf_id,
 			    agold_camera_info[g_cur_cam_sensor-1].lens_id,
 			    agold_camera_info[g_cur_cam_sensor-1].date[0],
@@ -405,13 +405,12 @@ void OV8858CheckLensVersion(int writeid)
 */
 
 		checkVersion = 1;
-			
+
 		//set 0x5002[3] to “1”
         temp1 = OV8858_R2A_read_i2c(0x5002);
         OV8858_R2A_write_i2c(0x5002, (0x08 & 0x08) | (temp1 & (~0x08)));
 	}
 	OV8858_R2A_write_i2c(0x0100,0x00);// ; stream off
-    
-}
 
+}
 

@@ -20,16 +20,11 @@
 #include <linux/fs.h>
 #include <asm/atomic.h>
 
-
 #include "kd_camera_hw.h"
-
 
 #include "kd_imgsensor.h"
 #include "kd_imgsensor_define.h"
 #include "kd_camera_feature.h"
-
-
-
 
 /******************************************************************************
  * Debug configuration
@@ -68,9 +63,10 @@
 #define IDX_PS_CMRST 0
 #define IDX_PS_CMPDN 4
 
-#ifdef AGOLD_CAMERA_VERSION
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 int g_cur_cam_sensor = 0;
 #endif
+
 extern void ISP_MCLK1_EN(BOOL En);
 extern void ISP_MCLK2_EN(BOOL En);
 extern void ISP_MCLK3_EN(BOOL En);
@@ -180,7 +176,7 @@ PowerUp PowerOnList = {
 	   {RST, Vol_High, 5},
 	   {PDN, Vol_Low, 1},
 	   {PDN, Vol_High, 1},
-	   
+
 	   },
 	  },
 	  {SENSOR_DRVNAME_OV5670_MIPI_RAW,
@@ -208,7 +204,7 @@ PowerUp PowerOnList = {
 	   {PDN, Vol_High, 1},
 	   {RST, Vol_High, 0}
 	   },
-	  },	
+	  },
 	  {SENSOR_DRVNAME_OV13853_MIPI_RAW,
 	  {
 	   {SensorMCLK, Vol_High, 0},
@@ -237,7 +233,7 @@ PowerUp PowerOnList = {
 	  },
 	{SENSOR_DRVNAME_GC2755_MIPI_RAW,
 		  {
-			{DOVDD, Vol_1800, 8},	   	
+			{DOVDD, Vol_1800, 8},
 		   	{DVDD, Vol_1800, 0},
 			{AVDD, Vol_2800, 2},
 		   	{AFVDD, Vol_2800, 8},
@@ -350,7 +346,7 @@ PowerUp PowerOnList = {
 	   {PDN, Vol_High, 0},
 	   {RST, Vol_High, 0}
 	   },
-	  }, 
+	  },
 	 {SENSOR_DRVNAME_OV8858_MIPI_RAW,
 	  {
 	   {SensorMCLK, Vol_High, 0},
@@ -390,7 +386,7 @@ PowerUp PowerOnList = {
 	   {RST, Vol_High, 0}
 	   },
 	  },
-	
+
 		 {SENSOR_DRVNAME_MN34152_MIPI_RAW,
 	  	 {
 	   		{SensorMCLK, Vol_High, 0},
@@ -404,7 +400,7 @@ PowerUp PowerOnList = {
 	   		{RST, Vol_High, 0},
 	   	 },
 	   	 },
-	   
+
 	     {SENSOR_DRVNAME_IMX219_MIPI_RAW,
 	  	 {
 		   {SensorMCLK, Vol_High, 0},
@@ -449,7 +445,7 @@ PowerUp PowerOnList = {
 			{SensorMCLK, Vol_High, 0},
 			{AVDD, Vol_2800, 0},
 			{DVDD, Vol_1200, 1},
-			{DOVDD, Vol_1800, 1},	
+			{DOVDD, Vol_1800, 1},
 			{AFVDD, Vol_2800, 5},
 			{PDN, Vol_High, 0},
 			{PDN, Vol_Low, 0},
@@ -459,7 +455,7 @@ PowerUp PowerOnList = {
 		},
 		{SENSOR_DRVNAME_GC5005_MIPI_RAW,
 		  {
-			{DOVDD, Vol_1800, 5},	   	
+			{DOVDD, Vol_1800, 5},
 		   	{DVDD, Vol_1200, 10},
 			{AVDD, Vol_2800, 5},
 		   	{AFVDD, Vol_2800, 5},
@@ -486,7 +482,7 @@ PowerUp PowerOnList = {
 		},
 		{SENSOR_DRVNAME_GC5024_MIPI_RAW,
 		  {
-			{DOVDD, Vol_1800, 5},	   	
+			{DOVDD, Vol_1800, 5},
 		   	{DVDD, Vol_1500, 10},
 			{AVDD, Vol_2800, 5},
 		   	{AFVDD, Vol_2800, 5},
@@ -499,7 +495,7 @@ PowerUp PowerOnList = {
 	 	 },
 	 	 {SENSOR_DRVNAME_GC5025_MIPI_RAW,
 		  {
-			{DOVDD, Vol_1800, 5},	   	
+			{DOVDD, Vol_1800, 5},
 		   	{DVDD, Vol_1200, 10},
 			{AVDD, Vol_2800, 5},
 		   	{AFVDD, Vol_2800, 5},
@@ -509,10 +505,10 @@ PowerUp PowerOnList = {
 		   	{RST, Vol_Low, 0},
 		   	{RST, Vol_High, 0},
 		   },
-	 	 }, 	 
+	 	 },
 	 	 {SENSOR_DRVNAME_GC8024_MIPI_RAW,
 		  {
-			{DOVDD, Vol_1800, 1},	   	
+			{DOVDD, Vol_1800, 1},
 		   	{DVDD, Vol_1200, 1},
 			{AVDD, Vol_2800, 1},
 		   	{AFVDD, Vol_2800, 1},
@@ -775,7 +771,7 @@ int mtkcam_gpio_init(struct platform_device *pdev)
 		ret = PTR_ERR(cam_ldo_sub_vcama_l);
 		PK_DBG("%s : pinctrl err, cam1_avdd_en_l\n", __func__);
 	}
-	
+
 	return ret;
 }
 
@@ -897,12 +893,12 @@ BOOL hwpoweron(PowerInformation pwInfo, char *mode_name)
 				mtkcam_gpio_set(1, SUB_AVDD, 1);
 				PK_DBG("xfl sub avdd on\n");
 			}
-			else 
+			else
 			{
 			    if (TRUE != _hwPowerOn(pwInfo.PowerType, pwInfo.Voltage)) {
 					PK_ERR("[CAMERA SENSOR] Fail to enable analog power\n");
 					return FALSE;
-				}    
+				}
 			}
 			#else
 			{
@@ -1050,7 +1046,7 @@ BOOL hwpowerdown(PowerInformation pwInfo, char *mode_name)
 					PK_ERR("[CAMERA SENSOR] Fail to disable analog power\n");
 					return FALSE;
 				}
-			}		
+			}
 			#else
 			{
 				if (TRUE != _hwPowerDown(pwInfo.PowerType)) {
@@ -1187,7 +1183,7 @@ int kdCISModulePowerOn(CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx, char *currSenso
 	int pwListIdx, pwIdx;
 	BOOL sensorInPowerList = KAL_FALSE;
 	//int iridespwListIdex = 0;
-#ifdef AGOLD_CAMERA_VERSION
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 	g_cur_cam_sensor = SensorIdx;
 #endif
 

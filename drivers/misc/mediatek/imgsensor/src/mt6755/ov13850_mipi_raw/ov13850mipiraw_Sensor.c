@@ -193,20 +193,20 @@ static imgsensor_struct imgsensor = {
 /* Sensor output window information */
 #if 0
 static SENSOR_WINSIZE_INFO_STRUCT imgsensor_winsize_info[5] =
-{{ 4208, 3120, 0, 0, 4208, 3120, 2104, 1560, 0, 0, 2104, 1560, 0, 0, 2096, 1552}, // Preview 
- { 4208, 3120, 0, 0, 4208, 3120, 4208, 3120, 0, 0, 4208, 3120, 0, 0, 4192, 3104}, // capture 
-  { 4208, 3120, 0, 0, 4208, 3120, 4208, 3120, 0, 0, 4208, 3120, 0, 0, 4192, 3104}, // video 
-{ 4208, 3120, 0, 0, 4208, 3120, 2104, 1560, 0, 0, 1056, 594, 0, 0, 640, 480}, //hight speed video 
-	{ 4208, 3120, 0, 0, 4208, 3120, 1296, 730, 0, 0, 1296, 730, 0, 0, 1280, 720}, 
+{{ 4208, 3120, 0, 0, 4208, 3120, 2104, 1560, 0, 0, 2104, 1560, 0, 0, 2096, 1552}, // Preview
+ { 4208, 3120, 0, 0, 4208, 3120, 4208, 3120, 0, 0, 4208, 3120, 0, 0, 4192, 3104}, // capture
+  { 4208, 3120, 0, 0, 4208, 3120, 4208, 3120, 0, 0, 4208, 3120, 0, 0, 4192, 3104}, // video
+{ 4208, 3120, 0, 0, 4208, 3120, 2104, 1560, 0, 0, 1056, 594, 0, 0, 640, 480}, //hight speed video
+	{ 4208, 3120, 0, 0, 4208, 3120, 1296, 730, 0, 0, 1296, 730, 0, 0, 1280, 720},
 
 };
 #else
 static SENSOR_WINSIZE_INFO_STRUCT imgsensor_winsize_info[5] =
-{{ 4256, 3152, 0, 4, 4256, 3152, 2128, 1572, 8, 2, 2112, 1568, 0, 0, 2096, 1552}, // Preview 
- { 4256, 3152, 12, 4, 4232, 3144, 4232, 3144, 4, 4, 4224, 3136, 0, 0, 4192, 3104}, // capture 
- {  4256, 3152, 20, 12,  4216, 3128, 4216, 3128, 4, 4, 4208, 3120, 0, 0, 4192, 3104}, // video 
- { 4256, 3152, 0, 376, 4256, 2392, 1064, 598, 8, 2, 1056, 594, 208, 56, 640, 480}, //hight speed video 
- { 4256, 3152, 824, 842, 2608, 1468, 1304, 734, 4, 2, 1296, 730, 0, 0, 1280, 720}};// slim video 
+{{ 4256, 3152, 0, 4, 4256, 3152, 2128, 1572, 8, 2, 2112, 1568, 0, 0, 2096, 1552}, // Preview
+ { 4256, 3152, 12, 4, 4232, 3144, 4232, 3144, 4, 4, 4224, 3136, 0, 0, 4192, 3104}, // capture
+ {  4256, 3152, 20, 12,  4216, 3128, 4216, 3128, 4, 4, 4208, 3120, 0, 0, 4192, 3104}, // video
+ { 4256, 3152, 0, 376, 4256, 2392, 1064, 598, 8, 2, 1056, 594, 208, 56, 640, 480}, //hight speed video
+ { 4256, 3152, 824, 842, 2608, 1468, 1304, 734, 4, 2, 1296, 730, 0, 0, 1280, 720}};// slim video
 
 #endif
 
@@ -338,7 +338,7 @@ static void set_shutter(kal_uint16 shutter)
    // write_cmos_sensor(0x3500, (shutter >> 12) & 0x0F);
 		write_cmos_sensor(0x3500, (shutter>>12) & 0x0F);
 		write_cmos_sensor(0x3501, (shutter>>4) & 0xFF);
-		write_cmos_sensor(0x3502, (shutter<<4) & 0xF0);	
+		write_cmos_sensor(0x3502, (shutter<<4) & 0xF0);
     LOG_INF("Exit! shutter =%d, framelength =%d\n", shutter,imgsensor.frame_length);
 
 }    /*    set_shutter */
@@ -396,16 +396,16 @@ static kal_uint16 gain2reg(const kal_uint16 gain)
 static kal_uint16 set_gain(kal_uint16 gain)
 {
     kal_uint16 reg_gain;
- 
+
 		reg_gain = gain2reg(gain);
 		spin_lock(&imgsensor_drv_lock);
-		imgsensor.gain = reg_gain; 
+		imgsensor.gain = reg_gain;
 		spin_unlock(&imgsensor_drv_lock);
 		LOG_INF("gain = %d , reg_gain = 0x%x\n ", gain, reg_gain);
-	
+
 		write_cmos_sensor(0x350a, reg_gain >> 8);
-		write_cmos_sensor(0x350b, reg_gain & 0xFF);    
-		
+		write_cmos_sensor(0x350b, reg_gain & 0xFF);
+
 		return gain;
 }    /*    set_gain  */
 
@@ -461,7 +461,7 @@ static void set_mirror_flip(kal_uint8 image_mirror)
 	#if defined(AGOLD_TSC_OV13850_HV_MIRROR)
 	if (mirro_flag==1)
 	{
-		image_mirror = IMAGE_HV_MIRROR;	 
+		image_mirror = IMAGE_HV_MIRROR;
 	    CAMVER_INFO("zbl image mirror\n");
     }
     #endif
@@ -488,7 +488,7 @@ static void set_mirror_flip(kal_uint8 image_mirror)
 					break;
 				case IMAGE_V_MIRROR:
 					write_cmos_sensor(0x3820,((read_cmos_sensor(0x3820) & 0xFB) | 0x04));
-					write_cmos_sensor(0x3821,((read_cmos_sensor(0x3821) & 0xFB) | 0x04));		
+					write_cmos_sensor(0x3821,((read_cmos_sensor(0x3821) & 0xFB) | 0x04));
 					break;
 				case IMAGE_HV_MIRROR:
 					write_cmos_sensor(0x3820,((read_cmos_sensor(0x3820) & 0xFB) | 0x04));
@@ -816,7 +816,7 @@ static void sensor_init(void)
 		write_cmos_sensor(0x5b05, 0x6c);
 		write_cmos_sensor(0x5b09, 0x02);
 		write_cmos_sensor(0x5e00, 0x00);
-		write_cmos_sensor(0x5e10, 0x1c);		
+		write_cmos_sensor(0x5e10, 0x1c);
 		if (ov13850_chip_ver == OV13850_R1A)
 		{
 			write_cmos_sensor(0x351b, 0x00);
@@ -947,10 +947,10 @@ static void preview_setting(void)
 		write_cmos_sensor(0x5401, 0x61);
 		write_cmos_sensor(0x5405, 0x40);
 		write_cmos_sensor(0x0100, 0x01);//
-		mdelay(10);	
+		mdelay(10);
 }    /*    preview_setting  */
 
-/*capture_first_flag & pre_currefps for resolve ov13850r2a 
+/*capture_first_flag & pre_currefps for resolve ov13850r2a
 * low light zsd capture color-line issue
 */
 static int capture_first_flag = 0;
@@ -977,24 +977,24 @@ if (capture_first_flag == 0)
 			write_cmos_sensor(0x0302, 0x28);//
 			write_cmos_sensor(0x0303, 0x00);//
 			write_cmos_sensor(0x3612, 0x27);//
-			write_cmos_sensor(0x3501, 0xc0);//   
+			write_cmos_sensor(0x3501, 0xc0);//
 			write_cmos_sensor(0x3702, 0x40);// ;add for VGA differences
 			write_cmos_sensor(0x370a, 0x24);//
 			//write_cmos_sensor(0x3718, 0x10);//
 			write_cmos_sensor(0x372a, 0x04);//
 			write_cmos_sensor(0x372f, 0xa0);//
 			write_cmos_sensor(0x3800, 0x0);
-			write_cmos_sensor(0x3801, 0x0C);// 
+			write_cmos_sensor(0x3801, 0x0C);//
 			write_cmos_sensor(0x3802, 0x00);// ;add for VGA differences
-			write_cmos_sensor(0x3803, 0x04);// 
+			write_cmos_sensor(0x3803, 0x04);//
 			write_cmos_sensor(0x3804, 0x10);
-			write_cmos_sensor(0x3805, 0x93);// 
+			write_cmos_sensor(0x3805, 0x93);//
 			write_cmos_sensor(0x3806, 0x0c);// ;add for VGA differences
-			write_cmos_sensor(0x3807, 0x4B);// 
+			write_cmos_sensor(0x3807, 0x4B);//
 			write_cmos_sensor(0x3808, 0x10);//
-			write_cmos_sensor(0x3809, 0x80);// 
+			write_cmos_sensor(0x3809, 0x80);//
 			write_cmos_sensor(0x380a, 0x0c);//
-			write_cmos_sensor(0x380b, 0x40);// 
+			write_cmos_sensor(0x380b, 0x40);//
 			write_cmos_sensor(0x380c, ((imgsensor_info.cap1.linelength >> 8) & 0xFF)); // hts = 2688
       		write_cmos_sensor(0x380d, (imgsensor_info.cap1.linelength & 0xFF));        // hts
       		write_cmos_sensor(0x380e, ((imgsensor_info.cap1.framelength >> 8) & 0xFF));  // vts = 1984
@@ -1009,7 +1009,7 @@ if (capture_first_flag == 0)
 			write_cmos_sensor(0x3836, 0x04);//
 			write_cmos_sensor(0x3837, 0x01);//
 			write_cmos_sensor(0x4020, 0x02);//
-			write_cmos_sensor(0x4021, 0x4C);// 
+			write_cmos_sensor(0x4021, 0x4C);//
 			write_cmos_sensor(0x4022, 0x0E);//
 			write_cmos_sensor(0x4023, 0x37);//
 			write_cmos_sensor(0x4024, 0x0F);//
@@ -1028,16 +1028,16 @@ if (capture_first_flag == 0)
 			write_cmos_sensor(0x5401, 0x71);//
 			write_cmos_sensor(0x5405, 0x80);//
 			write_cmos_sensor(0x0100, 0x01);//
-			
+
 
     } else {   //30fps            //30fps for Normal capture & ZSD
- 
+
       		write_cmos_sensor(0x0300, 0x00);//
 			write_cmos_sensor(0x0302, 0x32);//
 			write_cmos_sensor(0x0303, 0x00);//
 			write_cmos_sensor(0x3612, 0x08);// 0x09 for 100.8Mhz sysclk,0x08 for 112Mhz sysclk
 		        write_cmos_sensor(0x3614, 0x2a);// neil add 20150113
-			write_cmos_sensor(0x3501, 0xc0);//   
+			write_cmos_sensor(0x3501, 0xc0);//
 			write_cmos_sensor(0x3702, 0x40);// ;add for VGA differences
 			write_cmos_sensor(0x370a, 0x24);//
                         write_cmos_sensor(0x371b, 0x01); // neil add 20150113
@@ -1057,16 +1057,16 @@ if (capture_first_flag == 0)
 			write_cmos_sensor(0x3781, 0x00); //neil add 20150108
 			write_cmos_sensor(0x3782, 0x01); //neil add 20150108
 			write_cmos_sensor(0x403f, 0x40); //neil add 20150108
-			write_cmos_sensor(0x3801, 0x0C);// 
+			write_cmos_sensor(0x3801, 0x0C);//
 			write_cmos_sensor(0x3802, 0x00);// ;add for VGA differences
-			write_cmos_sensor(0x3803, 0x04);// 
-			write_cmos_sensor(0x3805, 0x93);// 
+			write_cmos_sensor(0x3803, 0x04);//
+			write_cmos_sensor(0x3805, 0x93);//
 			write_cmos_sensor(0x3806, 0x0c);// ;add for VGA differences
-			write_cmos_sensor(0x3807, 0x4B);// 
+			write_cmos_sensor(0x3807, 0x4B);//
 			write_cmos_sensor(0x3808, 0x10);//
-			write_cmos_sensor(0x3809, 0x80);// 
+			write_cmos_sensor(0x3809, 0x80);//
 			write_cmos_sensor(0x380a, 0x0c);//
-			write_cmos_sensor(0x380b, 0x40);// 
+			write_cmos_sensor(0x380b, 0x40);//
 			write_cmos_sensor(0x380c, ((imgsensor_info.cap.linelength >> 8) & 0xFF)); // hts = 2688
       		write_cmos_sensor(0x380d, (imgsensor_info.cap.linelength & 0xFF));        // hts
       		write_cmos_sensor(0x380e, ((imgsensor_info.cap.framelength >> 8) & 0xFF));  // vts = 1984
@@ -1111,7 +1111,7 @@ if (capture_first_flag == 0)
     }
 
     }
-	mdelay(20);	
+	mdelay(20);
 	capture_first_flag = 1;
 }
 
@@ -1221,12 +1221,12 @@ static void hs_video_setting(void)
     write_cmos_sensor(0x3738, 0x00); // neil add 20151020
     write_cmos_sensor(0x3739, 0x00); // neil add 20151020
     write_cmos_sensor(0x373a, 0x00); // neil add 20151020
-    write_cmos_sensor(0x373b, 0x00); // neil add 20151020	
+    write_cmos_sensor(0x373b, 0x00); // neil add 20151020
 		write_cmos_sensor(0x372f, 0x88);
 		write_cmos_sensor(0x3780, 0x10); //neil add 20151020
 		write_cmos_sensor(0x3781, 0x00); //neil add 20151020
 		write_cmos_sensor(0x3782, 0x00); //neil add 20151020
-		write_cmos_sensor(0x403f, 0x7f); //neil add 20151020		
+		write_cmos_sensor(0x403f, 0x7f); //neil add 20151020
 		write_cmos_sensor(0x3800, 0x00);
 		write_cmos_sensor(0x3801, 0x00);
 		write_cmos_sensor(0x3802, 0x01);
@@ -1272,13 +1272,13 @@ static void hs_video_setting(void)
 		write_cmos_sensor(0x4837, 0x19);
 		write_cmos_sensor(0x5401, 0x51);
 		write_cmos_sensor(0x5405, 0x20);
-	
-		
+
+
     if (imgsensor.ihdr_en) {
     } else {
     }
     write_cmos_sensor(0x0100, 0x01);//
-    mdelay(10);	  
+    mdelay(10);
 }
 
 static void slim_video_setting(void)
@@ -1364,13 +1364,13 @@ static void slim_video_setting(void)
 		write_cmos_sensor(0x3806, 0x09);
 		write_cmos_sensor(0x3807, 0x05);
 		write_cmos_sensor(0x3808, 0x05);
-    write_cmos_sensor(0x3809, 0x10);//               
-    write_cmos_sensor(0x380A, 0x02);//               
-    write_cmos_sensor(0x380B, 0xda);//               
-    write_cmos_sensor(0x380C, ((imgsensor_info.slim_video.linelength >> 8) & 0xFF)); // hts = 9600                      
-		write_cmos_sensor(0x380D,     (imgsensor_info.slim_video.linelength & 0xFF));        // hts          
-		write_cmos_sensor(0x380E,   ((imgsensor_info.slim_video.framelength >> 8) & 0xFF));  // vts = 834    
-		write_cmos_sensor(0x380F,   (imgsensor_info.slim_video.framelength & 0xFF));         // vts          
+    write_cmos_sensor(0x3809, 0x10);//
+    write_cmos_sensor(0x380A, 0x02);//
+    write_cmos_sensor(0x380B, 0xda);//
+    write_cmos_sensor(0x380C, ((imgsensor_info.slim_video.linelength >> 8) & 0xFF)); // hts = 9600
+		write_cmos_sensor(0x380D,     (imgsensor_info.slim_video.linelength & 0xFF));        // hts
+		write_cmos_sensor(0x380E,   ((imgsensor_info.slim_video.framelength >> 8) & 0xFF));  // vts = 834
+		write_cmos_sensor(0x380F,   (imgsensor_info.slim_video.framelength & 0xFF));         // vts
 		write_cmos_sensor(0x3811, 0x04);
 		write_cmos_sensor(0x3813, 0x02);
 		write_cmos_sensor(0x3814, 0x31);
@@ -1402,14 +1402,14 @@ static void slim_video_setting(void)
     write_cmos_sensor(0x350b, 0x40);
     write_cmos_sensor(0x3500, 0x00);
     write_cmos_sensor(0x3501, 0x33);
-    write_cmos_sensor(0x3502, 0x90);                            
-#endif 
+    write_cmos_sensor(0x3502, 0x90);
+#endif
     if (imgsensor.ihdr_en) {
     } else {
     }
 		write_cmos_sensor(0x0100, 0x01);//
-		mdelay(10);	
-		
+		mdelay(10);
+
 }
 
 static kal_uint32 set_test_pattern_mode(kal_bool enable)
@@ -1473,7 +1473,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 		        }
 		        else if((read_cmos_sensor(0x302a))==0xb2)
 		        {
-				    LOG_INF("----R2A---- \n");				
+				    LOG_INF("----R2A---- \n");
 				    ov13850_chip_ver = OV13850_R2A;
 		        }
 				OV13850CheckLensVersion();
@@ -1491,7 +1491,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
         *sensor_id = 0xFFFFFFFF;
         return ERROR_SENSOR_CONNECT_FAIL;
     }
-    
+
     LOG_INF("ov13850 Read sensor id ok, id: 0x%x\n", *sensor_id);
     return ERROR_NONE;
 }
@@ -1503,15 +1503,15 @@ struct otp_struct {
 	int sen_id;
 };
 
-#if defined(AGOLD_CAMERA_VERSION)	
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 
 struct otp_struct current_otp = { 0 };
 
 
 void OV13850CheckLensVersion(void)
 {
-	
-	
+
+
 	static int checkVersion = 0;
 	int flag, index;
 	int retVal = 0;
@@ -1528,25 +1528,25 @@ void OV13850CheckLensVersion(void)
 			//set 0x5002[1] to “0”
 			temp1 = read_cmos_sensor(0x5002);
 			write_cmos_sensor(0x5002, (0x00 & 0x02) | (temp1 & (~0x02)));
-			//check awb group 
+			//check awb group
 			//agold_camera_info[g_cur_cam_sensor-1].otp_magic = get_awb_band();
 
-			//check lenc group 
-			//agold_camera_info[g_cur_cam_sensor-1].otp_magic = agold_camera_info[g_cur_cam_sensor-1].otp_magic<<4|get_lenc_band();			
-			
-			
+			//check lenc group
+			//agold_camera_info[g_cur_cam_sensor-1].otp_magic = agold_camera_info[g_cur_cam_sensor-1].otp_magic<<4|get_lenc_band();
+
+
 			write_cmos_sensor(0x3d84, 0xC0);
 			//partial mode OTP write start address
 			write_cmos_sensor(0x3d88, 0x72);
 			write_cmos_sensor(0x3d89, 0x20);
-	
+
 			// partial mode OTP write end address
 			if(ov13850_chip_ver == OV13850_R1A)	{
 			write_cmos_sensor(0x3d8A, 0x72);
 			write_cmos_sensor(0x3d8B, 0x2f);
 			}else{
 			write_cmos_sensor(0x3d8A, 0x73);
-			write_cmos_sensor(0x3d8B, 0xbe);			
+			write_cmos_sensor(0x3d8B, 0xbe);
 			}
 			// read otp into buffer
 			write_cmos_sensor(0x3d81, 0x01);
@@ -1564,11 +1564,11 @@ void OV13850CheckLensVersion(void)
 					break;
 				}
 			}
-			
+
 			if(index <= 3)
-			{		
+			{
 			    if(ov13850_chip_ver == OV13850_R1A)
-			    {	
+			    {
 			        CAMVER_INFO("ov13850_chip_ver == OV13850_R1A\n");
 				    agold_camera_info[g_cur_cam_sensor-1].mf_id = read_cmos_sensor(0x721c + 5*index);	//0x7221 0x7226 0x722B
 				    agold_camera_info[g_cur_cam_sensor-1].lens_id = read_cmos_sensor(0x721d + 5*index);	//0x7222 0x7227 0x722C
@@ -1581,7 +1581,7 @@ void OV13850CheckLensVersion(void)
 					printk("otp_log read sen_id,id=0x%2x,addr=0x%4x\n", agold_camera_info[g_cur_cam_sensor-1].sen_id, 0x723e + 3*index);
 			    }
 			    else
-			    {   
+			    {
 			        CAMVER_INFO("ov13850_chip_ver == OV13850_R2A\n");
 			        agold_camera_info[g_cur_cam_sensor-1].mf_id = read_cmos_sensor(0x7219 + 8*index);	//0x7221 0x7229
 				    agold_camera_info[g_cur_cam_sensor-1].lens_id = read_cmos_sensor(0x721a + 8*index);	//0x7222 0x722A
@@ -1591,20 +1591,20 @@ void OV13850CheckLensVersion(void)
 				    agold_camera_info[g_cur_cam_sensor-1].sen_id = read_cmos_sensor(0x73aa + 3*index);	//0x73ad 0x73b0 0x73b0
 					printk("otp_log read sen_id,id=0x%2x,addr=0x%4x\n", agold_camera_info[g_cur_cam_sensor-1].sen_id, 0x73aa + 3*index);
 			    }
-			    
+
 			}
 			else
 			{
 				CAMVER_INFO("[OV13850OTP]invalid info data\n");
 			}
 
-			
+
 			for(index = 0x7240; index <= 0x7247; index++)
 			{
 				write_cmos_sensor(index, 0x00);
 			}
-			
-			
+
+
 			CAMVER_INFO("get otp info %x %x %d.%d.%d %x %x\n",
 				agold_camera_info[g_cur_cam_sensor-1].mf_id,
 				agold_camera_info[g_cur_cam_sensor-1].lens_id,
@@ -1618,17 +1618,17 @@ void OV13850CheckLensVersion(void)
 
 		    #if defined(AGOLD_TSC_OV13850_HV_MIRROR)
 		    CAMVER_INFO("mfid = %d\n",agold_camera_info[g_cur_cam_sensor-1].mf_id);
-			if (agold_camera_info[g_cur_cam_sensor-1].mf_id==0xfc)	
-			{	
+			if (agold_camera_info[g_cur_cam_sensor-1].mf_id==0xfc)
+			{
 				mirro_flag=1;                //	imgsensor_info.sensor_output_dataformat=SENSOR_OUTPUT_FORMAT_RAW_B;
 			}
-			#endif	
+			#endif
 			//set 0x5002[1] to “1”
 			temp1 = read_cmos_sensor(0x5002);
 			write_cmos_sensor(0x5002, (0x02 & 0x02) | (temp1 & (~0x02)));
 		}
 		write_cmos_sensor(0x0100,0x00);// ; stream off
-		
+
 	}else{
 		printk("get cur sensor index error!!!\n");
 	}
@@ -1684,15 +1684,15 @@ static kal_uint32 open(void)
     }
     if (imgsensor_info.sensor_id != sensor_id)
         return ERROR_SENSOR_CONNECT_FAIL;
-        
+
     /* initail sequence write in  */
     sensor_init();
 	  //for OTP
 	#if defined(AGOLD_OV13850_OTP)
 	OV13850_otp_cali(imgsensor.i2c_write_id);
-    #endif	
+    #endif
 	write_cmos_sensor(0x0100, 0x00);
-	  
+
     spin_lock(&imgsensor_drv_lock);
 
     imgsensor.autoflicker_en= KAL_FALSE;
@@ -1798,7 +1798,7 @@ static kal_uint32 capture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
                           MSDK_SENSOR_CONFIG_STRUCT *sensor_config_data)
 {
     LOG_INF("E\n");
-	
+
     spin_lock(&imgsensor_drv_lock);
     imgsensor.sensor_mode = IMGSENSOR_MODE_CAPTURE;
     if (imgsensor.current_fps == imgsensor_info.cap1.max_framerate) {//PIP capture: 24fps for less than 13M, 20fps for 16M,15fps for 20M
@@ -1819,7 +1819,7 @@ static kal_uint32 capture(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
     spin_unlock(&imgsensor_drv_lock);
     capture_setting(imgsensor.current_fps);
 	  set_mirror_flip(imgsensor.mirror);
-	  
+
     return ERROR_NONE;
 }    /* capture() */
 static kal_uint32 normal_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
@@ -1836,7 +1836,7 @@ static kal_uint32 normal_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
     //imgsensor.current_fps = 300;
     imgsensor.autoflicker_en = KAL_FALSE;
     spin_unlock(&imgsensor_drv_lock);
-    normal_video_setting(imgsensor.current_fps);	
+    normal_video_setting(imgsensor.current_fps);
 	//set_mirror_flip(sensor_config_data->SensorImageMirror);
 		set_mirror_flip(imgsensor.mirror);
     return ERROR_NONE;
@@ -1858,7 +1858,7 @@ static kal_uint32 hs_video(MSDK_SENSOR_EXPOSURE_WINDOW_STRUCT *image_window,
     imgsensor.dummy_pixel = 0;
     imgsensor.autoflicker_en = KAL_FALSE;
     spin_unlock(&imgsensor_drv_lock);
-    hs_video_setting();	
+    hs_video_setting();
 	//set_mirror_flip(sensor_config_data->SensorImageMirror);
 		set_mirror_flip(imgsensor.mirror);
     return ERROR_NONE;
@@ -2250,7 +2250,7 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
             break;
         case SENSOR_FEATURE_CHECK_SENSOR_ID:
             get_imgsensor_id(feature_return_para_32);
-	    #if defined(AGOLD_CAMERA_VERSION)	//Lancelot 2014-06-10
+	    #if defined(CONFIG_MTK_CAMERA_VERSION)	//Lancelot 2014-06-10
 	    //if(ret == ERROR_NONE)
             	OV13850CheckLensVersion();
 	    #endif

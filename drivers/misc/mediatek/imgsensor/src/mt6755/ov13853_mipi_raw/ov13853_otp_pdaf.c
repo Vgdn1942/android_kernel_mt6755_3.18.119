@@ -23,7 +23,7 @@
 #include "ov13853mipiraw_Sensor.h"
 
 
-#if defined(AGOLD_CAMERA_VERSION)
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 #include "agold_camera_info.h"
 #define BG_Ratio_Typical cur_bg_ratio
 #define RG_Ratio_Typical cur_rg_ratio
@@ -185,7 +185,7 @@ static bool apply_awb_otp(void)
     int check_sum = 0;
     kal_uint8  data[12];
 
-    #if defined (AGOLD_CAMERA_VERSION)	//Add by Lancelot 2014-06-10
+    #if defined (CONFIG_MTK_CAMERA_VERSION)	//Add by Lancelot 2014-06-10
 	BG_Ratio_Typical=agold_get_bg_ratio(g_cur_cam_sensor-1);
 	RG_Ratio_Typical=agold_get_rg_ratio(g_cur_cam_sensor-1);
     #endif
@@ -297,7 +297,7 @@ kal_bool OV13853CheckLensVersion(kal_uint8 i2c_write_id)
 
 
 	OV13853_read_eeprom(0x0001,data,10);
-#if defined(AGOLD_CAMERA_VERSION)
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 	agold_camera_info[g_cur_cam_sensor-1].mf_id = data[3];
 	agold_camera_info[g_cur_cam_sensor-1].date[0] = data[0];  //year
 	agold_camera_info[g_cur_cam_sensor-1].date[1] = data[1];  //month

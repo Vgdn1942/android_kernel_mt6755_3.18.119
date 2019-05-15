@@ -83,7 +83,7 @@ static kal_bool IMX214MIPI_ReadOtp(int tempbank,kal_uint16 address,kal_uint8* iB
 	return KAL_TRUE;
 }
 											//ljj  start
-#if defined(AGOLD_CAMERA_VERSION)
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 
 #include "agold_camera_info.h"
 
@@ -100,14 +100,14 @@ static void TestAWBforIMX214(kal_uint16 RoverG_dec,kal_uint16 BoverG_dec,kal_uin
 	kal_uint16 R_test,B_test,G_test;
 	kal_uint16 R_test_H3,R_test_L8,B_test_H3,B_test_L8,G_test_H3,G_test_L8;
 	kal_uint32 G_test_R, G_test_B;
-#if defined (AGOLD_CAMERA_VERSION)	//Add by Lancelot 2014-06-10
+#if defined (CONFIG_MTK_CAMERA_VERSION)	//Add by Lancelot 2014-06-10
 	BG_Ratio_Typical_Value=agold_get_bg_ratio(g_cur_cam_sensor-1);
 	RG_Ratio_Typical_Value=agold_get_rg_ratio(g_cur_cam_sensor-1);
 #endif
 	RoverG_dec_base = RG_Ratio_Typical_Value;//the typcical value
 	BoverG_dec_base = BG_Ratio_Typical_Value;//the typcical value
 	//GboverGr_dec_base = ;//the typcical value					//ljj end
-#if defined (AGOLD_CAMERA_VERSION)
+#if defined (CONFIG_MTK_CAMERA_VERSION)
 	SENSORDB("[ljj] g_cur_cam_sensor = 0x%x\n",g_cur_cam_sensor);
 #endif
 	SENSORDB("[ljj] RoverG_dec_base = 0x%x\n",RoverG_dec_base);
@@ -259,7 +259,7 @@ kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 		return KAL_FALSE;
 	}
 */
-#if defined (AGOLD_CAMERA_VERSION)
+#if defined (CONFIG_MTK_CAMERA_VERSION)
 	//4.check module information
 	printk("[IMX214][ljj] g_cur_cam_sensor=%d\n", g_cur_cam_sensor);
 	if(g_cur_cam_sensor==1 || g_cur_cam_sensor ==2)
@@ -367,7 +367,7 @@ kal_bool IMX214MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 	}
 */
 	//4.check module information
-#if defined (AGOLD_CAMERA_VERSION)
+#if defined (CONFIG_MTK_CAMERA_VERSION)
 	printk("[IMX214][ljj] g_cur_cam_sensor=%d\n", g_cur_cam_sensor);
 #endif
 

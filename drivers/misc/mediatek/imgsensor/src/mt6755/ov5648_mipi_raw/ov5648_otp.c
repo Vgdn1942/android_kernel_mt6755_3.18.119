@@ -16,7 +16,7 @@
 #include "kd_imgsensor_define.h"
 #include "kd_imgsensor_errcode.h"
 
-#if defined(AGOLD_CAMERA_VERSION)
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 #include "agold_camera_info.h"
 #endif
 //#include "ov5648_otp.h"
@@ -474,7 +474,7 @@ void OV5648CheckLensVersion(kal_uint8  write_id)
 	}
 	LOG_INF("[zbl] module id=0x%x\n",data[0]);
 	LOG_INF("[zbl] lens_id=0x%x,sensid=0x%x\n",data[1],data[2]);
-#if defined(AGOLD_CAMERA_VERSION)
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 	agold_camera_info[g_cur_cam_sensor-1].mf_id = data[0];
 	agold_camera_info[g_cur_cam_sensor-1].lens_id = data[1];
 	agold_camera_info[g_cur_cam_sensor-1].sen_id = data[2];

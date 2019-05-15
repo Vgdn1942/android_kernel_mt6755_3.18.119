@@ -31,7 +31,7 @@
 #include "kd_imgsensor_errcode.h"
 
 
-#if defined(AGOLD_CAMERA_VERSION)
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 
 #include "agold_camera_info.h"
 #define BoverGr_dec_base 0x22d  //cur_bg_ratio

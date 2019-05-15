@@ -15,8 +15,6 @@
 # Makefile for misc devices that really don't fit anywhere else.
 #
 
-
-
 define FILTER_PROJECT_DRV
 ifeq ($(wildcard $(srctree)/drivers/misc/mediatek/imgsensor/src/$(MTK_PLATFORM)/camera_project/$(ARCH_MTK_PROJECT)/$(1)),)
 platform_drv += $(1)
@@ -27,6 +25,10 @@ endef
 
 MTK_PLATFORM := $(subst ",,$(CONFIG_MTK_PLATFORM))
 ARCH_MTK_PROJECT := $(subst ",,$(CONFIG_ARCH_MTK_PROJECT))
+
+#ifeq ($(CONFIG_MTK_CAMERA_VERSION),y)
+#ccflags-y += -I$(srctree)/drivers/misc/mediatek/cam_version
+#endif
 
 obj-y				+= kd_sensorlist.o
 

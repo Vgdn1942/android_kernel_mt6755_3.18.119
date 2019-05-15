@@ -10,6 +10,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
+ifeq ($(CONFIG_MTK_CAMERA_VERSION),y)
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/cam_version
+endif
 
 obj-y += imx258_pdafotp.o
 obj-y += imx258mipiraw_Sensor.o

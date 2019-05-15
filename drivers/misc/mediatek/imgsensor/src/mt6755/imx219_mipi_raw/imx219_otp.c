@@ -13,10 +13,10 @@
 
 #include "kd_camera_hw.h"
 #include "kd_imgsensor.h"
-#include "kd_imgsensor_define.h" 
+#include "kd_imgsensor_define.h"
 #include "kd_imgsensor_errcode.h"
 
-static kal_uint8 imx219mipi_write_id = 0x0;  //i2c address 
+static kal_uint8 imx219mipi_write_id = 0x0;  //i2c address
 
 
 // add by Suny , for IMX219  otp
@@ -81,7 +81,7 @@ static kal_uint16 IMX219MIPI_read_cmos_sensor(kal_uint32 addr)
 	return KAL_TRUE;
 }
 	*/										//ljj  start
-#if defined(AGOLD_CAMERA_VERSION)
+#if defined(CONFIG_MTK_CAMERA_VERSION)
 
 #include "agold_camera_info.h"
 
@@ -104,13 +104,13 @@ kal_bool IMX219MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 	kal_uint16 flag;
 	//int retVal,index = 0;
 	int temp;
-	
+
 	imx219mipi_write_id = i2c_write_id;
 	SENSORDB("[fj] imx219mipi_write_id = 0x%x \n",imx219mipi_write_id);
     IMX219MIPI_write_cmos_sensor(0x0100,0x00);
 	msleep(5);
 	//1.check valid group
-		
+
 	//turn on OTP read mode
 	IMX219MIPI_write_cmos_sensor(0x3302,0x01);
 	IMX219MIPI_write_cmos_sensor(0x3303,0x2C);
@@ -118,15 +118,15 @@ kal_bool IMX219MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 	IMX219MIPI_write_cmos_sensor(0x021B,0x00);
 	IMX219MIPI_write_cmos_sensor(0x3300,0x00);
 	IMX219MIPI_write_cmos_sensor(0x3200,0x01);
-		
-		
+
+
 	flag = IMX219MIPI_read_cmos_sensor(0x3201);//Status check : 0x0A01 = 0x01 (bit0 1:read ready)
 	if ((flag&0x01) ==0x01)
 	{
 	    SENSORDB("[fj] read ready flag =0x%x\n",flag);
 	}
 	else
-	{	
+	{
 		SENSORDB("[fj] flag = 0x%x\n",flag);//bit1 1:write ready,  bit2 0:normal 1:data error exists
 		return KAL_FALSE;
 	}
@@ -138,7 +138,7 @@ kal_bool IMX219MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
     SENSORDB("[IMX219][fj] g_cur_cam_sensor=%d\n", g_cur_cam_sensor);
     if(g_cur_cam_sensor==1 || g_cur_cam_sensor ==2)
     {
-		for(temp = 0; temp < 3; temp++)  
+		for(temp = 0; temp < 3; temp++)
 		{
 			flag = IMX219MIPI_read_cmos_sensor(0x3204 + temp*9);
 			if((flag&0x03) == 0x01)
@@ -150,10 +150,10 @@ kal_bool IMX219MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 			}else{
 				printk("[fj],group %d is invalid\n",temp+1);
 			}
-	
-		 } 
-         printk("[fj],group +++++++++++=%d\n",temp+1);  
-	    
+
+		 }
+         printk("[fj],group +++++++++++=%d\n",temp+1);
+
 	    agold_camera_info[g_cur_cam_sensor-1].mf_id   = IMX219MIPI_read_cmos_sensor(0x3205+temp*9);	//0x3205 0x320e 0x3217
 	    agold_camera_info[g_cur_cam_sensor-1].lens_id = IMX219MIPI_read_cmos_sensor(0x3206+temp*9);	//0x3206 0x320f 0x3218
         //agold_camera_info[g_cur_cam_sensor-1].sen_id =  IMX219MIPI_read_cmos_sensor(0x321a+(index-1)*31);
@@ -164,7 +164,7 @@ kal_bool IMX219MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 			SENSORDB("[IMX219][fj]id=0x%x,addr=0x%4x\n", IMX219MIPI_read_cmos_sensor(0x3205+i+temp*9), (0x3205+i+temp*9));
 		}
 	    //SENSORDB("[dafa]otp_log read sen_id,id=0x%2x,addr=0x%4x\n", agold_camera_info[g_cur_cam_sensor-1].sen_id, (0x321a+(index-1)*31));
-	
+
     }
 
     return KAL_TRUE;
@@ -172,27 +172,27 @@ kal_bool IMX219MIPI_ReadIDFromOtp(kal_uint8 i2c_write_id)
 
 static void IMX219_update(kal_uint16 RoverG_dec,kal_uint16 BoverG_dec,kal_uint16 GboverGr_dec)
 {
-	kal_uint16 RoverG_dec_base,BoverG_dec_base;//GboverGr_dec_base;			
+	kal_uint16 RoverG_dec_base,BoverG_dec_base;//GboverGr_dec_base;
 	kal_uint16 R_test,B_test,G_test;
 	kal_uint16 R_test_H8,R_test_L8,B_test_H8,B_test_L8,G_test_H8,G_test_L8;
 	kal_uint32 G_test_R, G_test_B;
-/*#if defined (AGOLD_CAMERA_VERSION)	//Add by Lancelot 2014-06-10
+/*#if defined (CONFIG_MTK_CAMERA_VERSION)	//Add by Lancelot 2014-06-10
 	BG_Ratio_Typical_Value=agold_get_bg_ratio(g_cur_cam_sensor-1);
 	RG_Ratio_Typical_Value=agold_get_rg_ratio(g_cur_cam_sensor-1);
-#endif		
-	RoverG_dec_base = RG_Ratio_Typical_Value;//the typcical value			
-	BoverG_dec_base = BG_Ratio_Typical_Value;//the typcical value			
+#endif
+	RoverG_dec_base = RG_Ratio_Typical_Value;//the typcical value
+	BoverG_dec_base = BG_Ratio_Typical_Value;//the typcical value
 	//GboverGr_dec_base = ;//the typcical value					//ljj end
 	*/
-	RoverG_dec_base = 0x15f;//the typcical value			
+	RoverG_dec_base = 0x15f;//the typcical value
 	BoverG_dec_base = 0x175;//the typcical value
-	
+
 	printk("[fj] g_cur_cam_sensor = 0x%x\n",g_cur_cam_sensor);
 	printk("[fj] RoverG_dec_base = 0x%x\n",RoverG_dec_base);
 	printk("[fj] BoverG_dec_base = 0x%x\n",BoverG_dec_base);
 	printk("[fj],%s\n",__func__);
-	
-	
+
+
 	if(BoverG_dec < BoverG_dec_base)
 	{
 		if (RoverG_dec < RoverG_dec_base)
@@ -252,7 +252,7 @@ static void IMX219_update(kal_uint16 RoverG_dec,kal_uint16 BoverG_dec,kal_uint16
 	B_test_L8 = B_test &0xFF;
 	G_test_H8 = (G_test>>8)&0xFF;
 	G_test_L8 = G_test &0xFF;
-	
+
 	//reset the digital gain
 	IMX219MIPI_write_cmos_sensor(0x020e,G_test_H8);
 	IMX219MIPI_write_cmos_sensor(0x020F,G_test_L8);
@@ -262,7 +262,7 @@ static void IMX219_update(kal_uint16 RoverG_dec,kal_uint16 BoverG_dec,kal_uint16
 	IMX219MIPI_write_cmos_sensor(0x0213,B_test_L8);
 	IMX219MIPI_write_cmos_sensor(0x0214,G_test_H8);
 	IMX219MIPI_write_cmos_sensor(0x0215,G_test_L8);
-	
+
 	printk("R_test=0x%x,G_test=0x%x,B_test=0x%x",R_test,G_test,B_test);
 }
 
@@ -275,14 +275,14 @@ kal_bool imx219_update_awb(kal_uint8 i2c_write_id)
 	kal_uint16 RG_MSB,BG_MSB,AWB_LSB;
 	kal_uint16  RG = 0,BG = 0,GbGr = 0;
 	int temp;
-	
+
 	imx219mipi_write_id = i2c_write_id;
 	printk("[fj] imx219mipi_write_id = 0x%x \n",imx219mipi_write_id);
 	printk("[fj],%s\n",__func__);
     IMX219MIPI_write_cmos_sensor(0x0100,0x00);
 	msleep(5);
 	//1.check valid group
-		
+
 	//turn on OTP read mode
 	IMX219MIPI_write_cmos_sensor(0x3302,0x01);
 	IMX219MIPI_write_cmos_sensor(0x3303,0x2C);
@@ -290,15 +290,15 @@ kal_bool imx219_update_awb(kal_uint8 i2c_write_id)
 	IMX219MIPI_write_cmos_sensor(0x021B,0x00);
 	IMX219MIPI_write_cmos_sensor(0x3300,0x00);
 	IMX219MIPI_write_cmos_sensor(0x3200,0x01);
-		
-		
+
+
 	flag = IMX219MIPI_read_cmos_sensor(0x3201);//Status check : 0x0A01 = 0x01 (bit0 1:read ready)
 	if ((flag&0x01) ==0x01)
 	{
 	    printk("[fj] read ready flag =0x%x\n",flag);
 	}
 	else
-	{	
+	{
 		printk("[fj] flag = 0x%x\n",flag);//bit1 1:write ready,  bit2 0:normal 1:data error exists
 		return KAL_FALSE;
 	}
@@ -310,7 +310,7 @@ kal_bool imx219_update_awb(kal_uint8 i2c_write_id)
     printk("[IMX219][fj] g_cur_cam_sensor=%d\n", g_cur_cam_sensor);
     if(g_cur_cam_sensor==1 || g_cur_cam_sensor ==2)
     {
-		for(temp = 0; temp < 3; temp++)  
+		for(temp = 0; temp < 3; temp++)
 		{
 			flag = IMX219MIPI_read_cmos_sensor(0x3204 + temp*9);
 			if((flag&0x03) == 0x01)
@@ -322,20 +322,20 @@ kal_bool imx219_update_awb(kal_uint8 i2c_write_id)
 			}else{
 				printk("[fj],group %d is invalid\n",temp+1);
 			}
-	
+
 		}
-    printk("[fj],group +++++++++++=%d\n",temp+1);  
+    printk("[fj],group +++++++++++=%d\n",temp+1);
 
 	RG_MSB = IMX219MIPI_read_cmos_sensor(0x320A + temp*9);
 	BG_MSB = IMX219MIPI_read_cmos_sensor(0x320B + temp*9);
 	AWB_LSB = IMX219MIPI_read_cmos_sensor(0x320C + temp*9);
-		
+
 	RG = (RG_MSB<<2)|((AWB_LSB>>6)&0x03);
 	BG = (BG_MSB<<2)|((AWB_LSB>>4)&0x03);
-		
+
 	printk("RG=0x%x,BG=0x%x,GbGr=0x%x",RG,BG,GbGr);
 	IMX219_update(RG,BG,GbGr);
-	
+
 	if(temp==0)
 	{
 		printk("LSC one times:temp=%x",temp);
@@ -367,8 +367,8 @@ kal_bool imx219_update_awb(kal_uint8 i2c_write_id)
 			{
 				printk("LSC Fali times:temp=%x",temp);
 			}
-		
-	
+
+
 	}
 	return KAL_TRUE;
 }
