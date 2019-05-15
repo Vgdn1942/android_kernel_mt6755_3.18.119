@@ -41,6 +41,7 @@ obj-$(CONFIG_MTK_GPT_SCHEME_SUPPORT)	+= partition/
 obj-$(CONFIG_MTK_SYSENV)	+= sysenv/
 obj-$(CONFIG_MTK_PWM)	    += pwm/
 obj-$(CONFIG_MTK_CAM_CAL) += cam_cal/src/
+obj-$(CONFIG_MTK_CAMERA_VERSION) += cam_version/
 obj-$(CONFIG_MTK_SENSORS_1_0) += sensors-1.0/
 obj-$(CONFIG_MTPROF)	+= mtprof/
 ifeq ($(CONFIG_MTK_I2C_EXTENSION),y)
@@ -172,20 +173,4 @@ obj-$(CONFIG_RT_REGMAP) += rt-regmap/
 obj-$(CONFIG_CUSTOM_KERNEL_IRAF) += iraf/
 obj-$(CONFIG_CUSTOM_KERNEL_SNLED) += snled/
 obj-$(CONFIG_CUSTOM_KERNEL_HALL)	+= hall/
-
-ifeq ($(strip $(AGOLD_HW_COMPATIBLE)),yes)
-obj-y += agold_hw_compatible/
-endif
-
-ifeq ($(strip $(AGOLD_CAMERA_VERSION)),yes)
-obj-y	+=  agold_cam_version/
-endif
-
-ifeq ($(strip $(AGOLD_BOARD_VERSION)),yes)
-obj-y	+=  agold_board_version/
-endif
-
-ifeq ($(strip $(AGOLD_HARDWARE_INFO)),yes)
-obj-y	+=  agold_pm_info/
-endif
 

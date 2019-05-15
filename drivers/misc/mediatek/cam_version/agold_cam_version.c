@@ -37,7 +37,7 @@ char g_lens_para[2][32] = {"DEFAULT", "DEFAULT"};
 typedef struct
 {
 	char* sensor_name;
-	char* lens_name;	
+	char* lens_name;
 }AGOLD_SENSOR_LENS_STRUCT;
 
 const AGOLD_SENSOR_LENS_STRUCT LensList[] =
@@ -67,7 +67,7 @@ const AGOLD_SENSOR_LENS_STRUCT LensList[] =
 	{"imx179", "BU6424AF"},   //ma chongze
 	{"imx219", "FM50AF"},
 	{"s5k2p8", "lc898122af"},
-	{"imx175", "BU64291AF"},	
+	{"imx175", "BU64291AF"},
 	{"s5k3m2m", "BU64297AF"},
 	{"s5k3m2", "DW9800AF"},
 	{NULL, "Dummy"}
@@ -85,7 +85,7 @@ int agold_get_camver_index(int index);
 extern void agold_driver_set_camera_driver_name(char* camera_drv_name1,char* camera_drv_name2);
 extern void agold_driver_set_camera_version(char* camera_version1,char* camera_version2);
 
-typedef struct 
+typedef struct
 {
 	char camera_version[2][32]; //selected camera version
 }camera_para;
@@ -224,34 +224,34 @@ ssize_t agold_hw_get_camera_version(struct file *file, char __user *buffer, size
     int len = 0, err = -1;
 	char version[2][32] = {"DEFAULT", "DEFAULT"};
 
-	page = kmalloc(PAGE_SIZE, GFP_KERNEL);	
-	if (!page) 
-	{		
-		kfree(page);		
-		return -ENOMEM;	
+	page = kmalloc(PAGE_SIZE, GFP_KERNEL);
+	if (!page)
+	{
+		kfree(page);
+		return -ENOMEM;
 	}
 	agold_get_version_proc(version);
 	DEBUG_LOG("get version %s %s\n", version[0], version[1]);
-    ptr = page; 
+    ptr = page;
     ptr += sprintf(ptr, "%s,%s", version[0], version[1]);
 
-	len = ptr - page; 			 	
+	len = ptr - page;
 	if(*ppos >= len)
-	{		
-		kfree(page); 		
-		return 0; 	
-	}	
-	
-	err = copy_to_user(buffer,(char *)page,len); 			
-	*ppos += len; 	
-	if(err) 
-	{		
-	    kfree(page); 		
-		return err; 	
-	}	
-	kfree(page); 	
-	
-	return len;	
+	{
+		kfree(page);
+		return 0;
+	}
+
+	err = copy_to_user(buffer,(char *)page,len);
+	*ppos += len;
+	if(err)
+	{
+	    kfree(page);
+		return err;
+	}
+	kfree(page);
+
+	return len;
 }
 
 ssize_t agold_hw_get_camera_lens_ver(struct file *file, char __user *buffer, size_t count, loff_t *ppos)
@@ -261,38 +261,38 @@ ssize_t agold_hw_get_camera_lens_ver(struct file *file, char __user *buffer, siz
     int len = 0, err = -1;
 	char version[2][32] = {"DEFAULT", "DEFAULT"};
 
-	page = kmalloc(PAGE_SIZE, GFP_KERNEL);	
-	if (!page) 
-	{		
-		kfree(page);		
-		return -ENOMEM;	
+	page = kmalloc(PAGE_SIZE, GFP_KERNEL);
+	if (!page)
+	{
+		kfree(page);
+		return -ENOMEM;
 	}
 	agold_get_version_proc(version);
 	DEBUG_LOG("get lens %s %s\n", g_lens_para[0], g_lens_para[1]);
-	
-    ptr = page; 
+
+    ptr = page;
     ptr += sprintf(ptr, "%s,%s", g_lens_para[0], g_lens_para[1]);
 
-	len = ptr - page; 			 	
+	len = ptr - page;
 	if(*ppos >= len)
-	{		
-		kfree(page); 		
-		return 0; 	
-	}	
-	
-	err = copy_to_user(buffer,(char *)page,len); 			
-	*ppos += len; 	
-	if(err) 
-	{		
-	    kfree(page); 		
-		return err; 	
-	}	
-	kfree(page); 	
-	
-	return len;	
+	{
+		kfree(page);
+		return 0;
+	}
+
+	err = copy_to_user(buffer,(char *)page,len);
+	*ppos += len;
+	if(err)
+	{
+	    kfree(page);
+		return err;
+	}
+	kfree(page);
+
+	return len;
 }
 
-
+#if 0
 void agold_set_lens(void)
 {
 	int i = 0;
@@ -337,6 +337,7 @@ void agold_set_lens(void)
 
 	return;
 }
+#endif
 
 ssize_t agold_get_camera_index(struct file *file, char __user *buffer, size_t count, loff_t *ppos)
 {
@@ -344,31 +345,31 @@ ssize_t agold_get_camera_index(struct file *file, char __user *buffer, size_t co
     char *ptr = NULL;
     int len = 0, err = -1;
 
-	page = kmalloc(PAGE_SIZE, GFP_KERNEL);	
-	if (!page) 
-	{		
-		kfree(page);		
-		return -ENOMEM;	
+	page = kmalloc(PAGE_SIZE, GFP_KERNEL);
+	if (!page)
+	{
+		kfree(page);
+		return -ENOMEM;
 	}
-    ptr = page; 
+    ptr = page;
     ptr += sprintf(ptr, "%d", g_cur_cam_sensor);
 
-	len = ptr - page; 			 	
+	len = ptr - page;
 	if(*ppos >= len)
-	{		
-		kfree(page); 		
-		return 0; 	
-	}	
-	
-	err = copy_to_user(buffer,(char *)page,len); 			
-	*ppos += len; 	
-	if(err) 
-	{		
-	    kfree(page); 		
-		return err; 	
-	}	
-	kfree(page); 	
-	return len;	
+	{
+		kfree(page);
+		return 0;
+	}
+
+	err = copy_to_user(buffer,(char *)page,len);
+	*ppos += len;
+	if(err)
+	{
+	    kfree(page);
+		return err;
+	}
+	kfree(page);
+	return len;
 }
 
 
@@ -397,16 +398,16 @@ static struct file_operations fcamera_version_fops = {
 	.write = NULL
 };
 
-static  struct file_operations fcamera_lens_fops = { 
+static  struct file_operations fcamera_lens_fops = {
     .read = agold_hw_get_camera_lens,
     .write = NULL,
 };
-static  struct file_operations fcamera_af_fops = { 
+static  struct file_operations fcamera_af_fops = {
     .read = agold_hw_get_camera_lens_ver,
     .write = NULL,
 };
 
-static  struct file_operations fcamera_index_fops = { 
+static  struct file_operations fcamera_index_fops = {
     .read = agold_get_camera_index,
     .write = NULL,
 };
@@ -427,33 +428,33 @@ ssize_t agold_get_camera_lens_driver(struct file *file, char __user *buffer, siz
 		return err;
 	}
 	DEBUG_LOG("[xfl]lens_deriver_name:%s, sensor_id:%d\n", lens_deriver_name, sensor_id);
-	page = kmalloc(PAGE_SIZE, GFP_KERNEL);	
-	if (!page) 
-	{		
-		kfree(page);		
-		return -ENOMEM;	
+	page = kmalloc(PAGE_SIZE, GFP_KERNEL);
+	if (!page)
+	{
+		kfree(page);
+		return -ENOMEM;
 	}
 	ptr = page;
 	ptr += sprintf(ptr, "%s,%d", lens_deriver_name, sensor_id);
-	len = ptr - page; 			 	
+	len = ptr - page;
 	if(*ppos >= len)
-	{		
-		kfree(page); 		
-		return 0; 	
+	{
+		kfree(page);
+		return 0;
 	}
-	err = copy_to_user(buffer,(char *)page,len); 			
-	*ppos += len; 	
-	if(err) 
-	{		
-	    kfree(page); 		
-		return err; 	
-	}	
-	kfree(page); 	
-	
-	return len;	
+	err = copy_to_user(buffer,(char *)page,len);
+	*ppos += len;
+	if(err)
+	{
+	    kfree(page);
+		return err;
+	}
+	kfree(page);
+
+	return len;
 }
 
-static  struct file_operations fcamera_lens_driver = { 
+static  struct file_operations fcamera_lens_driver = {
     .read = agold_get_camera_lens_driver,
     .write = NULL,
 };
@@ -463,7 +464,7 @@ static int __init agold_cam_version_init(void)
 {
 
 	agold_driver_set_camera_version(agold_cam_version.camera_version[0],agold_cam_version.camera_version[1]);
-	
+
 	proc_create("driver/camera_index", 0, NULL, &fcamera_index_fops);
 	proc_create("driver/camera_version", 0, NULL, &fcamera_version_fops);
 	proc_create("driver/camera_lens", 0, NULL, &fcamera_lens_fops);
@@ -478,7 +479,7 @@ static int __init agold_cam_version_init(void)
 static void __exit agold_cam_version_exit(void)
 {
 
-	return;	
+	return;
 }
 
 module_init(agold_cam_version_init);
