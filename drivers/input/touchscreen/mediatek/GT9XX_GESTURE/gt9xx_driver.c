@@ -1319,7 +1319,9 @@ static int touch_event_handler(void *unused)
     s32 id = 0;
     s32 i  = 0;
     s32 ret = -1;
-#if TPD_HAVE_BUTTON
+#if GTP_HAVE_TOUCH_KEY
+    static u8  last_key = 0;
+#elif TPD_HAVE_BUTTON
     static u8  last_key = 0;
     u32 key_x = 0, key_y = 0, key_z = 0;
 #endif
@@ -1495,16 +1497,20 @@ static int touch_event_handler(void *unused)
             }
         }
 #if GTP_HAVE_TOUCH_KEY
-		if (pre_key) {
+		if ((pre_key) || (last_key)) {
 			for (i = 0; i < GTP_MAX_KEY_NUM; i++) {
-				input_report_key(tpd->dev, gt9x_touch_key_array[i], key_value & (0x01 << i));
+				input_report_key(tpd->dev, gt9x_touch_key_array[i], pre_key & (0x01 << i));
 			}
 			if (pre_key) {
+			    last_key = 0;
 				GTP_DEBUG("Key Down.");
-			} else {
+			} else if (last_key) {
 				GTP_DEBUG("Key Up.");
 			}
+//		last_key = pre_key;
 		}
+
+		last_key = pre_key;
 #elif TPD_HAVE_BUTTON
     	if (pre_key)
     	{
@@ -1529,7 +1535,7 @@ static int touch_event_handler(void *unused)
 			TPD_DEBUG("[Key][Down] key_x = %d, key_y = %d, key_z = %d,pre_key=%d \n",key_x, key_y, key_z,pre_key);
 			tpd_down(key_x, key_y, key_z, pre_key);
     	}
-		else if(last_key) {
+		else if (last_key) {
 			TPD_DEBUG("[Key][Up]>>>>>>>>>>>>\n");
 			tpd_up(key_x, key_y, 0);
 
