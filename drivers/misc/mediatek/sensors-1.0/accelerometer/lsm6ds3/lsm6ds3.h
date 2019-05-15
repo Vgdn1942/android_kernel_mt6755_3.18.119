@@ -16,9 +16,9 @@
  */
 #ifndef L3M6DS3_H
 #define L3M6DS3_H
-	 
+
 #include <linux/ioctl.h>
-	 
+
 #define LSM6DS3_I2C_SLAVE_ADDR		0xD0
 #define LSM6DS3_FIXED_DEVID			0x69
 
@@ -323,20 +323,9 @@ typedef enum {
 
 #define LSM6DS3_ACC_GYRO_INT_LATCH_CTL_MASK 0x01
 
-
-
 #define LSM6DS3_SIGNICANT_MOTION_INT_STATUS 0x40
 #define LSM6DS3_TILT_INT_STATUS 0x20
 #define LSM6DS3_STEP_DETECT_INT_STATUS 0x10
-
-
-
-#define LSM6DS3_SUCCESS		       0
-#define LSM6DS3_ERR_I2C		      -1
-#define LSM6DS3_ERR_STATUS			  -3
-#define LSM6DS3_ERR_SETUP_FAILURE	  -4
-#define LSM6DS3_ERR_GETGSENSORDATA  -5
-#define LSM6DS3_ERR_IDENTIFICATION	  -6
 
 #define LSM6DS3_BUFSIZE 60
 
@@ -345,6 +334,6 @@ typedef enum {
 // 1 rad = 180/PI degree, L3G4200D_OUT_MAGNIFY = 131,
 // 180*131/PI = 7506
 #define DEGREE_TO_RAD	180*1000000/PI//7506  // fenggy mask
-//#define DEGREE_TO_RAD 819	 
+//#define DEGREE_TO_RAD 819
 #endif //L3M6DS3_H
 
