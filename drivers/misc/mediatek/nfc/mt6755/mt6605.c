@@ -424,7 +424,7 @@ static int mt6605_probe(struct i2c_client *client,
 	/*                   0); */
 
 	/*  NFC IRQ settings     */
-	node = of_find_compatible_node(NULL, NULL, "mediatek, IRQ_NFC-eint");
+	node = of_find_compatible_node(NULL, NULL, "mediatek, irq_nfc-eint");
 
 	if (node) {
 
@@ -815,7 +815,7 @@ static long mt6605_dev_unlocked_ioctl(struct file *filp, unsigned int cmd,
 		/*  NFC IRQ settings */
 		node =
 		    of_find_compatible_node(NULL, NULL,
-					    "mediatek, IRQ_NFC-eint");
+					    "mediatek, irq_nfc-eint");
 
 		if (node) {
 
