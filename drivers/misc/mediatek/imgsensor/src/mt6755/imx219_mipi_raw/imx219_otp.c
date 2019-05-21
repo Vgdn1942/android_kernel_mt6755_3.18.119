@@ -177,8 +177,8 @@ static void IMX219_update(kal_uint16 RoverG_dec,kal_uint16 BoverG_dec,kal_uint16
 	kal_uint16 R_test_H8,R_test_L8,B_test_H8,B_test_L8,G_test_H8,G_test_L8;
 	kal_uint32 G_test_R, G_test_B;
 /*#if defined (CONFIG_MTK_CAMERA_VERSION)	//Add by Lancelot 2014-06-10
-	BG_Ratio_Typical_Value=agold_get_bg_ratio(g_cur_cam_sensor-1);
-	RG_Ratio_Typical_Value=agold_get_rg_ratio(g_cur_cam_sensor-1);
+	BG_Ratio_Typical_Value = agold_get_bg_ratio(g_cur_cam_sensor-1);
+	RG_Ratio_Typical_Value = agold_get_rg_ratio(g_cur_cam_sensor-1);
 #endif
 	RoverG_dec_base = RG_Ratio_Typical_Value;//the typcical value
 	BoverG_dec_base = BG_Ratio_Typical_Value;//the typcical value

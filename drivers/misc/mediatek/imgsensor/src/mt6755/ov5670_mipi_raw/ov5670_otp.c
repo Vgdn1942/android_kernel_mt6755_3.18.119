@@ -158,8 +158,8 @@ static int apply_otp(struct otp_struct *otp_ptr)
 {
     int rg, bg, R_gain, G_gain, B_gain, Base_gain;
     #if defined (CONFIG_MTK_CAMERA_VERSION)	//Add by Lancelot 2014-06-10
-	BG_Ratio_Typical=agold_get_bg_ratio(g_cur_cam_sensor-1);
-	RG_Ratio_Typical=agold_get_rg_ratio(g_cur_cam_sensor-1);
+	BG_Ratio_Typical = agold_get_bg_ratio(g_cur_cam_sensor-1);
+	RG_Ratio_Typical = agold_get_rg_ratio(g_cur_cam_sensor-1);
     #endif
     // apply OTP WB Calibration
     if ((*otp_ptr).flag & 0x40)

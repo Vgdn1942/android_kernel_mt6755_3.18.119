@@ -2153,7 +2153,7 @@ firmware_class.path=/vendor/firmware loop.max_part=7";
 			mediatek,version = <0x1>;
 		};
 
-		nfc:nfcC@0 {
+		nfc:nfc@0 {
 			compatible = "mediatek,nfc-gpio-v2";
 			gpio-ven = <26>;
 			gpio-rst = <25>;
@@ -3166,7 +3166,7 @@ firmware_class.path=/vendor/firmware loop.max_part=7";
 
 	irq_nfc: irq_nfc {
 		compatible = "mediatek, irq_nfc-eint";
-		status = "disabled";
+		status = "okay";
 	};
 
 	eint_wpc: eint_wpc {

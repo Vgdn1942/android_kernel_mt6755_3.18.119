@@ -475,7 +475,6 @@ static int __init agold_cam_version_init(void)
 
 static void __exit agold_cam_version_exit(void)
 {
-
 	return;
 }
 

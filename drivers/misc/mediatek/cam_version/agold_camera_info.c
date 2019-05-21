@@ -61,15 +61,15 @@ AGOLD_CAMERA_TABLE_STRUCT agold_camera_version_table[] =
 	//{"ov13850_mipi_raw",0xfcfd7f,"TSC_50064_v1",{0xff,0xff},"null"},
 	{"ov13850_mipi_raw",0xfcfd00,"TSC_50064_v1",{0x119,0x130},"null"},
 	{"ov13850_mipi_raw",0xfcfde2,"TSC_50064_v1",{0x119,0x130},"null"},
-	{"ov13850_mipi_raw",0x0c5000,"YH_1111_v1",{0xff,0xff},"dw9714af_v9"}, //s16v55c2k yh 
+	{"ov13850_mipi_raw",0x0c5000,"YH_1111_v1",{0xff,0xff},"dw9714af_v9"}, //s16v55c2k yh
     {"ov13850_mipi_raw",0x0caf00,"YH_1111_v2",{0xff,0xff},"dw9714af_v9"}, //s16v55c2k yh-2
-	{"ov13850_mipi_raw",0xecf701,"JCX_50021A_v1",{0xff,0xff},"dw9714af_v3"},     //lemu s12v55c2k 
+	{"ov13850_mipi_raw",0xecf701,"JCX_50021A_v1",{0xff,0xff},"dw9714af_v3"},     //lemu s12v55c2k
 	{"ov13853_mipi_raw",0x521201,"SYX_50016A_v1",{0x16a,0x189},"dw9763af_v1"},     //Jk s12v55
-	
+
 	{"ov5648_mipi_raw",0x7cfd00,"TSC_HY517_v1",{0x159,0x13f},"null"},
 	{"ov5648_mipi_raw",0x7cfd81,"TSC_HY517_v1",{0x159,0x13f},"null"},
 	{"ov5648_mipi_raw",0x0dfb02,"KMJ_40093A1_v1",{0xff,0xff},"null"},     //lemu s12
-	
+
 	{"s5k3p3sx_mipi_raw",0x230201,"NB_50016_v1",{0xff,0xff},"dw9714af_v10"},     //JS s12v55c2k_j9s_f
 
 	{"gc5024_mipi_raw",0xed0201,"SBT_DL520_v1",{0xff,0xff},"null"},   //ysf s12v55c2k
@@ -82,7 +82,7 @@ AGOLD_CAMERA_TABLE_STRUCT agold_camera_version_table[] =
 };
 
 
-AGOLD_OTP_DEFAULT_RATIO_STRUCT  agold_otp_default_table[] = 
+AGOLD_OTP_DEFAULT_RATIO_STRUCT  agold_otp_default_table[] =
 {
 	{SENSOR_DRVNAME_OV8825_MIPI_RAW, {0x56, 0x57}},
 	{SENSOR_DRVNAME_OV8865_MIPI_RAW, {0x13f, 0x120}},
@@ -130,7 +130,7 @@ AGOLD_CAMERA_M_STRUCT mf_list_ov[] =
 	{0x48, "ShenTai"},
 	{0x49, "Brodsands"},
 	{0x51, "Method"},
-    {0x52, "Sunwin"}, 	     
+    {0x52, "Sunwin"},
 	{0x7c, "TSC"},          //天时创
 	{0xfc, "TSC"},
 	{0x00, "Unknown"},
@@ -348,11 +348,11 @@ ssize_t agold_hw_get_camera_lens(struct file *file, char __user *buffer, size_t 
 	char version[2][32] = {"DEFAULT", "DEFAULT"};
 	char* p = NULL;
 
-	page = kmalloc(PAGE_SIZE, GFP_KERNEL);	
-	if (!page) 
-	{		
-		kfree(page);		
-		return -ENOMEM;	
+	page = kmalloc(PAGE_SIZE, GFP_KERNEL);
+	if (!page)
+	{
+		kfree(page);
+		return -ENOMEM;
 	}
 	agold_get_version_proc(version);
 
@@ -394,7 +394,7 @@ ssize_t agold_hw_get_camera_lens(struct file *file, char __user *buffer, size_t 
 				}
 			}
 			memcpy(agold_camera_info[i].mf_name, agold_camera_mf[j].mf_name, sizeof(agold_camera_mf[j].mf_name));
-			DEBUG_LOG("menufacturer %d %d %x %s", i, j, agold_camera_info[i].mf_id, agold_camera_info[i].mf_name);
+			DEBUG_LOG("manufacturer %d %d %x %s", i, j, agold_camera_info[i].mf_id, agold_camera_info[i].mf_name);
 		}
 
 		if(agold_camera_info[i].lens_id)
@@ -432,9 +432,9 @@ ssize_t agold_hw_get_camera_lens(struct file *file, char __user *buffer, size_t 
 	s_otp:fac, lens, version, RG, BG, magic
 ***************************************************************/
 	agold_get_cam_soft_info(agold_camera_info[0].version, agold_camera_info[1].version);
-	
 
-    ptr = page; 
+
+    ptr = page;
     ptr += sprintf(ptr, "Main:0x%02x,0x%02x%02x%02x,Time:%02d.%02d.%02d  Sub:0x%02x,0x%02x%02x%02x,Time:%02d.%02d.%02d  sw:%s+%s,%s+%s  cur:%s,%s  Main:%s,Lens:%s,Sen:0x%02x,RG:0x%x,BG:0x%x,AF:%s,%c  Sub:%s,Lens:%s,Sen:0x%02x,RG:0x%x,BG:0x%x,AF:%s,%c",
 				agold_camera_info[0].otp_magic, agold_camera_info[0].mf_id,
 				agold_camera_info[0].lens_id, agold_camera_info[0].sen_id,
@@ -452,23 +452,23 @@ ssize_t agold_hw_get_camera_lens(struct file *file, char __user *buffer, size_t 
 				agold_camera_info[1].sen_id, g_rg_ratio[1], g_bg_ratio[1],
 				g_lens_para[1], agold_camera_info[1].version[0]);
 
-	len = ptr - page; 			 	
+	len = ptr - page;
 	if(*ppos >= len)
-	{		
-		kfree(page); 		
-		return 0; 	
-	}	
-	
-	err = copy_to_user(buffer,(char *)page,len); 			
-	*ppos += len; 	
-	if(err) 
-	{		
-	    kfree(page); 		
-		return err; 	
-	}	
-	kfree(page); 	
-	
-	return len;	
+	{
+		kfree(page);
+		return 0;
+	}
+
+	err = copy_to_user(buffer,(char *)page,len);
+	*ppos += len;
+	if(err)
+	{
+	    kfree(page);
+		return err;
+	}
+	kfree(page);
+
+	return len;
 }
 
 //[agold][xfl][20151102]

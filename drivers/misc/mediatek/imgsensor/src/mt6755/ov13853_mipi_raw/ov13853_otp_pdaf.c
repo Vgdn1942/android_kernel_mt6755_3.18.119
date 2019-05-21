@@ -186,8 +186,8 @@ static bool apply_awb_otp(void)
     kal_uint8  data[12];
 
     #if defined (CONFIG_MTK_CAMERA_VERSION)	//Add by Lancelot 2014-06-10
-	BG_Ratio_Typical=agold_get_bg_ratio(g_cur_cam_sensor-1);
-	RG_Ratio_Typical=agold_get_rg_ratio(g_cur_cam_sensor-1);
+	BG_Ratio_Typical = agold_get_bg_ratio(g_cur_cam_sensor-1);
+	RG_Ratio_Typical = agold_get_rg_ratio(g_cur_cam_sensor-1);
     #endif
 
     OV13853_selective_read_eeprom(addr,&awb_flag);
@@ -332,36 +332,5 @@ kal_bool read_ov13853_otp_pdaf( kal_uint16 addr, BYTE* data, kal_uint32 size)
 
     return KAL_TRUE;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //
